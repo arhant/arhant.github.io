@@ -1,567 +1,491 @@
 <!DOCTYPE html>
-
-<html lang="en" >
+<html lang="en">
 <head>
+  <meta charset="utf-8">
+  <title>Arhant Jain</title>
+  <meta name="description" content="Arhant Jain - Personal website">
+  <meta name="author" content="Arhant Jain">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-   <!--- Basic Page Needs
-   ================================================== -->
-   <meta charset="utf-8">
-	<title>Arhant Jain</title>
-	<meta name="description" content="">
-	<meta name="author" content="">
+  <!-- CSS -->
+  <!-- Updated to Bootstrap 4.6.2 -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.6.2/css/bootstrap.min.css" integrity="sha384-6C5g24g9LA8lDxQOYz2fQO9nK1Y/6Qh1V+NPZlH9+0I3B7Vb37z5M4o2Ck5BZV3Q" crossorigin="anonymous">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/animate.css">
+  <link rel="stylesheet" href="css/pushy.css">
+  <link rel="stylesheet" href="css/fonts.css">
+  <link rel="stylesheet" href="css/font-awesome/css/font-awesome.min.css">
 
-   <!-- Mobile Specific Metas
-   ================================================== -->
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Arhant Jain - Personal website">
-	<!-- CSS
-    ================================================== -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
-	<link rel="stylesheet" href="css/style.css">
-	<link rel="stylesheet" href="css/animate.css">
-	<link rel="stylesheet" href="css/pushy.css">
-	<link rel="stylesheet" href="css/fonts.css">
-	<link rel="stylesheet" href="css/font-awesome/css/font-awesome.min.css">
-	
-
-
-
-   <!-- Script
-   ================================================== -->
-	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-	<script src="js/jquery.min.js"></script>
-   <script type="text/javascript" src="js/jquery-migrate-1.2.1.min.js"></script>
-   <script src="js/modernizr.js"></script>
-   <script src="js/waypoints.js"></script>
-   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
-   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
-   
-	<link rel="shortcut icon" href="favicon.png" >
-
-	<style>
-		
-canvas {
-  display: block;
-  vertical-align: bottom;
-}
-
-.navigation, .main{
-    height: 100%;
-}
-#about{
-    height:100vh;
-}
-p {
-    margin:0;
-    padding: 0;
-}
-.testimonials{
-width:auto;
-height:auto;
-}
-
-
-
-	</style>
+  <style>
+    canvas {
+      display: block;
+      vertical-align: bottom;
+    }
+    .navigation, .main {
+      height: 100%;
+    }
+    #about {
+      height: 100vh;
+    }
+    p {
+      margin: 0;
+      padding: 0;
+    }
+    .testimonials {
+      width: auto;
+      height: auto;
+    }
+  </style>
 </head>
-	
-	
-<div id="particles-js" class="pushy-link" style="width: 100%; height: 100%;"></div>
 <body>
 
+  <!-- Particles Background -->
+  <div id="particles-js" class="pushy-link" style="width: 100%; height: 100%;"></div>
 
-<section class="navigation">
-  <a id="navicon" class="animated fadeInLeft closed menu-btn"><i class="fa fa-bars"> Menu</i></a>
+  <!-- Navigation Section -->
+  <section class="navigation">
+    <a id="navicon" class="animated fadeInLeft closed menu-btn">
+      <i class="fa fa-bars"></i> Menu
+    </a>
+    <div class="nav pushy pushy-left">
+      <ul>
+        <li>
+          <a class="introduction" href="#">
+            <i class="fa fa-angle-up"></i> Introduction
+          </a>
+        </li>
+        <li>
+          <a class="about" href="#about">
+            <i class="fa fa-user"></i> About Me
+          </a>
+        </li>
+        <li>
+          <a class="education" href="#education">
+            <i class="fa fa-graduation-cap"></i> Education
+          </a>
+        </li>
+        <li>
+          <a class="skills" href="#testimonials">
+            <i class="fa fa-suitcase"></i> Skills
+          </a>
+        </li>
+        <li>
+          <a class="work" href="#work">
+            <i class="fa fa-code-fork"></i> Projects
+          </a>
+        </li>
+        <li>
+          <a class="contact" href="#footer">
+            <i class="fa fa-envelope"></i> Contact
+          </a>
+        </li>
+        <li>
+          <a href="#"><i class="fa fa-file"></i> Resume</a>
+        </li>
+      </ul>
+    </div>
+  </section>
 
-  <div id="" class="nav pushy pushy-left">
-    <ul>
-      <li>
-        <a class="introduction" href="">
-          <i class="fa fa-angle-up"></i> Introduction
+  <div class="site-overlay"></div>
+
+  <!-- Main Section -->
+  <section class="main">
+    <div class="something">
+      <h1 class="animated fadeInUp">Hi, I'm Arhant</h1>
+      <h2 class="animated fadeInUp">Coder by day, Foodie by night.</h2>
+      <a href="#about">
+        <span class="chevron animated fadeInUp">
+          Scroll down to know more about me<br><br>
+          <img alt="Arrow Down Icon" src="img/down-arrow.png">
+        </span>
+      </a>
+    </div>
+  </section>
+
+  <!-- About Section -->
+  <section id="about" class="main">
+    <div class="container">
+      <div class="col-md-12 center">
+        <img class="profile-pic" src="img/arhant.png" alt="Arhant's Profile Picture">
+        <h1>Hello!</h1>
+        <div class="dash animated fadeIn"></div>
+        <p class="concealed visible animated fadeInUp">
+          My name is Arhant Jain.
+          <a href="javascript:void(0)" onclick="playaudio()">
+            <i class="fa fa-volume-up" aria-hidden="true"></i>
+          </a>
+        </p>
+        <p class="padded1">
+          I'm a recently graduated student from <a href="https://www.nyu.edu/" target="_blank" rel="noopener">New York University</a> (Spring 2018) with a Master's degree in Computer Science.
+        </p>
+        <p class="padded1">
+          <br>I did my undergrad from <a href="http://www.niecdelhi.ac.in/" target="_blank" rel="noopener">NIEC, GGIPU - India</a> with a Bachelor's degree in Information Technology.
+        </p>
+        <p class="padded1">
+          <ul class="padded1">
+            <li class="facts">I will either be coding, or</li>
+            <li class="facts">Listening to music for hours, or</li>
+            <li class="facts">Traveling to different cities/countries.</li>
+          </ul>
+        </p>
+        <a id="toskills" href="#education">
+          <span class="chevron animated fadeInUp"><br>
+            <img class="next" alt="Arrow Down Icon" src="img/down-arrow.png">
+          </span>
         </a>
-      </li>
+      </div>
+    </div>
+  </section>
 
-      <li>
-        <a class="about" href="#about">
-          <i class="fa fa-user"></i> About Me
-        </a>
-      </li>
-
-      <li>
-        <a class="education" href="#education">
-          <i class="fa fa-graduation-cap"></i> Education
-        </a>
-      </li>
-
-      <li>
-        <a class="skills" href="#testimonials">
-          <i class="fa fa-suitcase"></i>Skills
-        </a>
-      </li>
-	  <li>
-        <a class="work" href="#work">
-          <i class="fa fa-code-fork"></i>Projects
-        </a>
-      </li>
-
-      <li>
-        <a class="contact" href="#footer">
-          <i class="fa fa-envelope"></i> Contact
-        </a>
-      </li>
-      <li>    
-        <a href=""><i class="fa fa-file"></i> Resume</a>
-      </li>
-    </ul>
-  </div>
-</section>
-
-<div class="site-overlay"></div>
-
-<section id="" class="main">
-   <div class="something">
-
-    <h1 class="animated fadeInUp">Hi, I'm Arhant</h1>
-	<h2 class="animated fadeInUp">Coder by day, Foodie by night.</h2>
-	<a href="#about"><span class="chevron animated fadeInUp">Scroll down to know more about me<br><br><img alt="Arrow Down Icon" src="https://www.solodev.com/assets/anchor/arrow-down.png"></img></span></a>
-  </div>
-<section>
-
-
- <section id="about" class="main">
-  <div class="container">
-    <div class="col-md-12 center">
-      <img class="profile-pic" src="img/arhant.png">
-
-      <h1>Hello!</h1>
-
-      <div class="dash animated fadeIn"></div>
-
-      <p class="concealed visible animated fadeInUp">
-                    </p><p>My name is Arhant Jain. <a><i class="fa fa-volume-up" onclick="playaudio()" aria-hidden="true"></i></a></p>
-      <p class="padded1">I'm a recently graduated student from <a href="http://www.nyu.edu/" target="_blank"> New York University</a> (Spring 2018) with a Master's degree in Computer Science.</p>
-
-        <p class="padded1"><br>I did my undergrad from <a href="http://www.niecdelhi.ac.in/" target="_blank"> NIEC, GGIPU -India</a> with a Bachelor's degree in Information Technology.</p>
-
-         <p class="padded1">
-		 <ul class="padded1">
-		 <li class="facts">I will either be coding, or</li>
-		 <li class="facts">Listening to music for hours, or</li>
-		 <li class="facts">Traveling to different cities/ countries.</li>
-		 </ul>
-		 </p>
-
-	   
-	   <a id="toskills" href="#education"><span class="chevron animated fadeInUp"><br><img class="next" alt="Arrow Down Icon" src="https://www.solodev.com/assets/anchor/arrow-down.png"></img></span></a>
-	
-	   
-</div></div></section>
-
-
-
-
-<section id="education" class="main">
-
-      <!-- Education
-      ----------------------------------------------- -->
-	  <h1><span>Education</span></h1>
-      <div class="row education">
-
-         <div class="nine columns main-col">
-
-            <div class="row item">
-
-               <div class="twelve columns">
-
-                  <h3>New York University<br></h3>
-                  <pre class="college">Master's in Computer Science     <span>&bull;</span> <em class="date"> May 2018</em></pre>
-
-                  <p class="info">
-					The desire to pursue Masters in Computer Science stems from a vision which seeks to compliment my undergraduate subject choice.
-					Being a masters student at a graduate school where I was putting my skills into practice, life was challenging yet exciting.  
-					I graduated in May 2018 and by that time I have completed courses in various fields such as Cloud Computing, Networking, Software Development, and Security. 
-                  </p>
-
-               </div>
-
-            </div> <!-- item end -->
-
-            <div class="row item">
-
-               <div class="twelve columns">
-
-                  <h3><br>NIEC Ggsip University<br></h3>
-                  <pre class="college">B.Tech in Information Technology     <span>&bull;</span> <em class="date"> May 2016</em></pre>
-					
-                  <p class="info">
-					To nurture my aspirations, I joined Northern India Engineering College, GGSIP University, Delhi, specializing in Information Technology.
-					During college, the subjects I studied included Object Oriented Programming, Data Structures, Software Engineering, Computer Architecture and Database Management System.
-					Finding my subjects extremely interesting, I got a fillip to study Computer Science engineering in depth.
-                  </p>
-
-               </div>
-
-            </div> <!-- item end -->
-
-         </div> <!-- main-col end -->
-
-      </div> <!-- End Education -->
-</section>
-
-
-   <!-- Testimonials Section
-   ================================================== -->
-   <section id="testimonials">
-
-		<div class="call-to-action">
-
-               <h1 style="text-align:center">Skills</h1>
-
-            </div>
-   
-      <div class="text-container">
-
-         <div class="row">
-
-            <div class="ten columns flex-container">
-
-               <div class="flexslider">
-
-                  <ul class="slides">
-
-                     <li>
-                        <blockquote>
-                           <pre>
-Software Languages:  C++,   Java,   SQL,   HTML,   CSS,   JavaScript,   Python,   Prolog,   Repy V2,   Google Apps Script,   Pig Latin,   Solidity
-
-Application Tools:  Microsoft Office,   Oracle 10g,   NetBeans IDE,   IntelliJ,   Apache Tomcat,   Wireshark,   Amazon AWS,   Django,   WordPress
-                           </pre>
-                        </blockquote>
-                     </li> <!-- slide ends -->
-
-                     <li>
-                        <blockquote>
-                           <pre>
-Technical Skills:  Apache Spark,   MySQL,   Hadoop,   MapReduce Programming Model,   GIT,   Pandas,   Machine Learning
-                           </pre>
-                        </blockquote>
-                     </li> <!-- slide ends -->
-
-                  </ul>
-
-               </div> <!-- div.flexslider ends -->
-
-            </div> <!-- div.flex-container ends -->
-
-         </div> <!-- row ends -->
-
-       </div>  <!-- text-container ends -->
-
-   </section> <!-- Testimonials Section End-->
-
-
-   
-   <!-- WORK SECTION -->
-   <section id="work">
-  <div class="container">
-    <h1>Projects</h1>
-
-    <div class="left col-md-8">
-		<h3>Tennis360</h3>
-        <div id="prj5" class="padded">
-        	Using official data for Tennis provided by ATP, we calculated the predictability of a player winning the next Grad-Slam on Grass, Clay or Hard court.
-        	<br>
-        	<a href="https://github.com/arhant/Tennis360">https://github.com/arhant/Tennis360</a>
+  <!-- Education Section -->
+  <section id="education" class="main">
+    <h1><span>Education</span></h1>
+    <div class="row education">
+      <div class="nine columns main-col">
+        <div class="row item">
+          <div class="twelve columns">
+            <h3>New York University<br></h3>
+            <pre class="college">Master's in Computer Science &bull; <em class="date">May 2018</em></pre>
+            <p class="info">
+              The desire to pursue a Masters in Computer Science stems from a vision which seeks to complement my undergraduate subject choice.
+              Being a masters student at a graduate school where I was putting my skills into practice, life was challenging yet exciting.
+              I graduated in May 2018 and by that time I had completed courses in various fields such as Cloud Computing, Networking, Software Development, and Security.
+            </p>
+          </div>
         </div>
-		<br>
+        <div class="row item">
+          <div class="twelve columns">
+            <h3><br>NIEC Ggsip University<br></h3>
+            <pre class="college">B.Tech in Information Technology &bull; <em class="date">May 2016</em></pre>
+            <p class="info">
+              To nurture my aspirations, I joined Northern India Engineering College, GGSIP University, Delhi, specializing in Information Technology.
+              During college, the subjects I studied included Object Oriented Programming, Data Structures, Software Engineering, Computer Architecture, and Database Management Systems.
+              Finding my subjects extremely interesting, I got a fillip to study Computer Science engineering in depth.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials (Skills) Section -->
+  <section id="testimonials">
+    <div class="call-to-action">
+      <h1 style="text-align:center">Skills</h1>
+    </div>
+    <div class="text-container">
+      <div class="row">
+        <div class="ten columns flex-container">
+          <div class="flexslider">
+            <ul class="slides">
+              <li>
+                <blockquote>
+                  <pre>
+Software Languages:  C++, Java, SQL, HTML, CSS, JavaScript, Python, Prolog, Repy V2, Google Apps Script, Pig Latin, Solidity
+
+Application Tools:  Microsoft Office, Oracle 10g, NetBeans IDE, IntelliJ, Apache Tomcat, Wireshark, Amazon AWS, Django, WordPress
+                  </pre>
+                </blockquote>
+              </li>
+              <li>
+                <blockquote>
+                  <pre>
+Technical Skills:  Apache Spark, MySQL, Hadoop, MapReduce Programming Model, GIT, Pandas, Machine Learning
+                  </pre>
+                </blockquote>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Projects Section -->
+  <section id="work">
+    <div class="container">
+      <h1>Projects</h1>
+      <div class="left col-md-8">
+        <h3>Tennis360</h3>
+        <div id="prj5" class="padded">
+          Using official data for Tennis provided by ATP, we calculated the predictability of a player winning the next Grand-Slam on Grass, Clay, or Hard court.
+          <br>
+          <a href="https://github.com/arhant/Tennis360" target="_blank" rel="noopener">https://github.com/arhant/Tennis360</a>
+        </div>
+        <br>
         <h3>Gaming Culture: Game Popularity Predictor</h3>
         <div id="prj1" class="padded">
-        	Implemented Data Science and Machine Learning algorithms like K-means, Decision Trees, Random Forest to analyze over 16K game sales data for 
-			popularity based on video game, publisher, platform, genre and predicted which game will continue to be popular in different continents based 
-			on the critic values and ratings
-        	<br>
-        	<a href=""></a>
-	      </div>
-	      <br>
+          Implemented Data Science and Machine Learning algorithms like K-means, Decision Trees, Random Forest to analyze over 16K game sales data for
+          popularity based on video game, publisher, platform, genre and predicted which game will continue to be popular in different continents based
+          on the critic values and ratings.
+          <br>
+          <a href="#" target="_blank" rel="noopener"></a>
+        </div>
+        <br>
         <h3>360FITNESS</h3>
         <div id="prj2" class="padded">
-        	Developed and deployed a web app in the cloud for complete fitness. The Product uses AWS Cognito for login & session, Twilio for SMS 
-			notifications & communicating with AWS Lex offline for exercise information. Gym search is based on location and route in-between is 
-			done by Google Geocoding, Reverse Geocoding & Directions. Data is stored in AWS DynamoDB to calculate BMI & to customize meal plan. 
-			AWS Lex is also integrated with Facebook Chat
-        	<br>
-        	<a href="https://github.com/arhant/360Fitness">https://github.com/arhant/360Fitness</a>
+          Developed and deployed a web app in the cloud for complete fitness. The product uses AWS Cognito for login &amp; session, Twilio for SMS
+          notifications &amp; communicating with AWS Lex offline for exercise information. Gym search is based on location and route in-between is
+          done by Google Geocoding, Reverse Geocoding &amp; Directions. Data is stored in AWS DynamoDB to calculate BMI &amp; to customize meal plan.
+          AWS Lex is also integrated with Facebook Chat.
+          <br>
+          <a href="https://github.com/arhant/360Fitness" target="_blank" rel="noopener">https://github.com/arhant/360Fitness</a>
         </div>
         <br>
         <h3>Tweet Trends</h3>
         <div id="prj3" class="padded">
-        The System used Front-End hosted on AWS S3, API Gateway to trigger AWS Lambda functions, which used Tweepy to extract tweets and MonkeyLearn for 
-		sentimental analysis. SNS and SQS were used for communication, and tweets were plotted on Google Maps with sentiments using Elasticsearch.
-        <br>
-        <a href="https://github.com/arhant/Tweet_Trend">https://github.com/arhant/Tweet_Trend</a>
+          The system used Front-End hosted on AWS S3, API Gateway to trigger AWS Lambda functions, which used Tweepy to extract tweets and MonkeyLearn for
+          sentimental analysis. SNS and SQS were used for communication, and tweets were plotted on Google Maps with sentiments using Elasticsearch.
+          <br>
+          <a href="https://github.com/arhant/Tweet_Trend" target="_blank" rel="noopener">https://github.com/arhant/Tweet_Trend</a>
         </div>
         <br>
         <h3>NYC Crime</h3>
         <div id="prj4" class="padded">
-        	Worked on a Big Data Project to analyze and clean the data provided by NYPD for crime records till 2016. The system provided detailed graphs
-			showing crime locations, time and frequency based on which hypothesis could be made, pinpointing all the vulnerable locations and peak hours
-			for crime in NYC, thus reducing the probability of crimes.
-        	<br>
-        	<a href="https://github.com/arhant/NYC-Crime-Analysis">https://github.com/arhant/NYC-Crime-Analysis</a>
+          Worked on a Big Data Project to analyze and clean the data provided by NYPD for crime records till 2016. The system provided detailed graphs
+          showing crime locations, time and frequency based on which hypothesis could be made, pinpointing all the vulnerable locations and peak hours
+          for crime in NYC, thus reducing the probability of crimes.
+          <br>
+          <a href="https://github.com/arhant/NYC-Crime-Analysis" target="_blank" rel="noopener">https://github.com/arhant/NYC-Crime-Analysis</a>
         </div>
+      </div>
+      <div class="right col-md-4">
+        <h2>Tools Used</h2>
+        <div class="bars">
+          <div id="1" class="bar concealed visible animated fadeInRight">Python</div>
+          <div id="2" class="bar concealed visible animated fadeInRight">Java</div>
+          <div id="3" class="bar concealed visible animated fadeInRight">Google Apps Script</div>
+          <div id="4" class="bar concealed visible animated fadeInRight">C++</div>
+          <div id="5" class="bar concealed visible animated fadeInRight">Javascript</div>
+          <div id="6" class="bar concealed visible animated fadeInRight">Data Science (Numpy, Pandas)</div>
+          <div id="7" class="bar concealed visible animated fadeInRight">SQL</div>
+          <div id="8" class="bar concealed visible animated fadeInRight">Git</div>
+          <div id="9" class="bar concealed visible animated fadeInRight">Cloud Computing</div>
+          <div id="10" class="bar concealed visible animated fadeInRight">Solidity</div>
+          <div id="11" class="bar concealed visible animated fadeInRight">HTML5</div>
+        </div>
+      </div>
+      <div class="clearfix"></div>
     </div>
+  </section>
 
-    <div class="right col-md-4">
-      <h2>Tools Used</h2>
-      <div class="bars">
-        <div id="1" class="bar concealed visible animated fadeInRight">Python</div>
-        <div id="2" class="bar concealed visible animated fadeInRight">Java</div>
-        <div id="3" class="bar concealed visible animated fadeInRight">Google Apps Script</div>
-        <div id="4" class="bar concealed visible animated fadeInRight">C++</div>
-        <div id="5" class="bar concealed visible animated fadeInRight">Javascript</div>
-        <div id="6" class="bar concealed visible animated fadeInRight">Data Science(Numpy, Pandas)</div>
-        <div id="7" class="bar concealed visible animated fadeInRight">SQL</div>
-        <div id="8" class="bar concealed visible animated fadeInRight">Git</div>
-        <div id="9" class="bar concealed visible animated fadeInRight">HTML5</div>
-        <div id="10" class="bar concealed visible animated fadeInRight">Cloud Computing</div>
-        <div id="11" class="bar concealed visible animated fadeInRight">Solidity</div>
+  <!-- Footer Section -->
+  <section id="footer">
+    <div class="container">
+      <h3>Contact Me</h3>
+      <ul>
+        <li class="email">
+          <a href="mailto:arhantjain94@gmail.com">
+            <i class="fa fa-envelope"></i>
+            <p>Email</p>
+          </a>
+        </li>
+        <li class="linkedin">
+          <a href="https://in.linkedin.com/in/arhant-jain" target="_blank" rel="noopener">
+            <i class="fa fa-linkedin"></i>
+            <p>LinkedIn</p>
+          </a>
+        </li>
+        <li class="github">
+          <a href="https://github.com/arhant" target="_blank" rel="noopener">
+            <i class="fa fa-github"></i>
+            <p>GitHub</p>
+          </a>
+        </li>
+        <li class="instagram">
+          <a href="https://www.instagram.com/arhant_jain/" target="_blank" rel="noopener">
+            <i class="fa fa-instagram"></i>
+            <p>Instagram</p>
+          </a>
+        </li>
+        <li class="facebook">
+          <a href="https://www.facebook.com/arhanj" target="_blank" rel="noopener">
+            <i class="fa fa-facebook"></i>
+            <p>Facebook</p>
+          </a>
+        </li>
+      </ul>
+      <div class="license">
+        Made with HTML, CSS, JavaScript, Bootstrap, Font Awesome, Pushy, and Particles
       </div>
     </div>
+  </section>
 
-    <div class="clearfix"></div>
-  </div>
-</section>
-   
-<!-- SECTION Footer-->
-<section id="footer">
-  <div class="container">
-    <h3>Contact Me</h3>
+  <!-- Scripts -->
+  <!-- jQuery (updated to 3.6.0) -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha384-/xUj+3OJ+3yXD0Kv4SXX1EnX+krAKfT+qsEyhJzLs0RNE3e9I62pNfCEqC3DXAw5" crossorigin="anonymous"></script>
+  <!-- Popper.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.1/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDuqS0VKaIzap3H4zNf1VxB9fvjXzY5Yz3z6A+5o5bLZ0aU8bX" crossorigin="anonymous"></script>
+  <!-- Bootstrap JS -->
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.6.2/js/bootstrap.min.js" integrity="sha384-+YQ4/32vWVL9Qk8R9vYwpR5T6NZfOxMYLOvnZ0/0iAaRJjx7RNIwRPFqUX3F6g9T" crossorigin="anonymous"></script>
 
-    <ul>
-      <li class="email">
-        <a href="mailto:arhantjain94@gmail.com">
-          <i class="fa fa-envelope"></i>
-          <p>Email</p>
-        </a>
-      </li>
-      <li class="linkedin">
-        <a href="http://in.linkedin.com/in/arhant-jain">
-          <i class="fa fa-linkedin"></i>
-          <p>Linkedin</p>
-        </a>
-      </li>
-      <li class="github">
-        <a href="https://github.com/arhant">
-          <i class="fa fa-github"></i>
-          <p>GitHub</p>
-        </a>
-      </li>
-      <li class="instagram">
-        <a href="https://www.instagram.com/arhant_jain/">
-          <i class="fa fa-instagram"></i>
-          <p>Instagram</p>
-        </a>
-      </li>
+  <!-- Other Plugins -->
+  <script src="js/pushy.min.js"></script>
+  <script src="js/particles.js"></script>
+  <script src="js/init.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/jquery.fittext.js"></script>
+  <script src="js/jquery.flexslider.js"></script>
 
-      <li class="facebook">
-        <a href="https://www.facebook.com/arhanj">
-          <i class="fa fa-facebook"></i>
-          <p>Facebook</p>
-        </a>
-      </li>
-    </ul>
-
-    <div class="license">
-      Made with HTML, CSS, Javascript, Bootstrap, Font Awesome, Pushy and Particles
-    </div>
-
-  </div>
-</section>
-   
-   
-
-	
-<script src="js/pushy.min.js"></script>	
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-<script>window.jQuery || document.write('<script src="js/jquery-1.10.2.min.js"><\/script>')</script>
-<script type="text/javascript" src="js/jquery-migrate-1.2.1.min.js"></script>
-<script src="js/particles.js"></script>	
-<script src="js/init.js"></script>
-<script src="js/app.js"></script>	
-<script src="js/jquery.fittext.js"></script>
-<script src="js/jquery.flexslider.js"></script>
-<script src="js/jquery.min.js"></script>
-
-
-<script>
-$(document).ready(function(){
-
-  $("a").on('click', function(event) {
-
-    if (this.hash !== "") {
-      event.preventDefault();
-      var hash = this.hash;
-
-      $('html, body').animate({
-        scrollTop: $(hash).offset().top
-      }, 800, function(){
-   
-        // Add hash (#) to URL when done scrolling (default click behavior)
-        window.location.hash = hash;
+  <!-- Inline Scripts -->
+  <script>
+    $(document).ready(function() {
+      // Smooth scrolling for anchor links
+      $("a").on('click', function(event) {
+        if (this.hash !== "") {
+          event.preventDefault();
+          var hash = this.hash;
+          $('html, body').animate({
+            scrollTop: $(hash).offset().top
+          }, 800, function(){
+            window.location.hash = hash;
+          });
+        }
       });
-    } // End if
-  });
-});
-</script>
-
-<script>
-$(document).ready(function(){
-  
-  $("#prj5").mouseover(function(){
-     $("#1").text("Python");
-	 $("#2").text("Numpy");
-	 $("#3").text("Pandas");
-	 $("#4").text("PIG Latin");
-	 $("#5").text("Spark");
-	 $("#6").text("Machine Learning");
-	 $("#7").text("Hadoop");
-	 $("#8").text("matplotlib");
-	 $("#9").text("");
-	 $("#10").text("");
-	 $("#11").text("");
-   });
-   $("#prj5").mouseout(function(){
-     $("#1").text("Python");
-	 $("#2").text("Java");
-	 $("#3").text("Google Apps Script");
-	 $("#4").text("C++");
-	 $("#5").text("Javascript");
-	 $("#6").text("Data Science(Numpy, Pandas)");
-	 $("#7").text("SQL");
-	 $("#8").text("Git");
-	 $("#9").text("Cloud Computing");
-	 $("#10").text("Solidity");
-	 $("#11").text("HTML5");
-   });
-  $("#prj1").mouseover(function(){
-     $("#1").text("Python");
-	 $("#2").text("Numpy");
-	 $("#3").text("Pandas");
-	 $("#4").text("Random Forest");
-	 $("#5").text("Jupyter Notebook");
-	 $("#6").text("matplotlib");
-	 $("#7").text("K-means");
-	 $("#8").text("Decision Trees");
-	 $("#9").text("");
-	 $("#10").text("");
-	 $("#11").text("");
-   });
-   $("#prj1").mouseout(function(){
-     $("#1").text("Python");
-	 $("#2").text("Java");
-	 $("#3").text("Google Apps Script");
-	 $("#4").text("C++");
-	 $("#5").text("Javascript");
-	 $("#6").text("Data Science(Numpy, Pandas)");
-	 $("#7").text("SQL");
-	 $("#8").text("Git");
-	 $("#9").text("Cloud Computing");
-	 $("#10").text("Solidity");
-	 $("#11").text("HTML5");
-   });
-   $("#prj2").mouseover(function(){
-     $("#1").text("AWS Cognito");
-	 $("#2").text("Twilio");
-	 $("#3").text("AWS Lex");
-	 $("#4").text("Google Geocoding");
-	 $("#5").text("Reverse Geocoding");
-	 $("#6").text("AWS DynamoDB");
-	 $("#7").text("EC2");
-	 $("#8").text("Django");
-	 $("#9").text("HTML, CSS, Javascript");
-	 $("#10").text("AWS Lambda");
-	 $("#11").text("API Gateway");
-   });
-   $("#prj2").mouseout(function(){
-     $("#1").text("Python");
-	 $("#2").text("Java");
-	 $("#3").text("Google Apps Script");
-	 $("#4").text("C++");
-	 $("#5").text("Javascript");
-	 $("#6").text("Data Science(Numpy, Pandas)");
-	 $("#7").text("SQL");
-	 $("#8").text("Git");
-	 $("#9").text("Cloud Computing");
-	 $("#10").text("Solidity");
-	 $("#11").text("HTML5");
-   });
-	$("#prj3").mouseover(function(){
-     $("#1").text("AWS S3");
-	 $("#2").text("API Gateway");
-	 $("#3").text("AWS Lambda");
-	 $("#4").text("Tweepy");
-	 $("#5").text("MonkeyLearn");
-	 $("#6").text("SNS");
-	 $("#7").text("SQS");
-	 $("#8").text("Elastic Search");
-	 $("#9").text("Google Map API");
-	 $("#10").text("Javascript");
-	 $("#11").text("");
-   });
-   $("#prj3").mouseout(function(){
-     $("#1").text("Python");
-	 $("#2").text("Java");
-	 $("#3").text("Google Apps Script");
-	 $("#4").text("C++");
-	 $("#5").text("Javascript");
-	 $("#6").text("Data Science(Numpy, Pandas)");
-	 $("#7").text("SQL");
-	 $("#8").text("Git");
-	 $("#9").text("Cloud Computing");
-	 $("#10").text("Solidity");
-	 $("#11").text("HTML5");
-   });
-   $("#prj4").mouseover(function(){
-     $("#1").text("Map Reduce");
-	 $("#2").text("Python");
-	 $("#3").text("matplotlib");
-	 $("#4").text("PySpark");
-	 $("#5").text("OpenRefine");
-	 $("#6").text("Hadoop");
-	 $("#7").text("EC2");
-	 $("#8").text("");
-	 $("#9").text("");
-	 $("#10").text("");
-	 $("#11").text("");
-   });
-   $("#prj4").mouseout(function(){
-     $("#1").text("Python");
-	 $("#2").text("Java");
-	 $("#3").text("Google Apps Script");
-	 $("#4").text("C++");
-	 $("#5").text("Javascript");
-	 $("#6").text("Data Science(Numpy, Pandas)");
-	 $("#7").text("SQL");
-	 $("#8").text("Git");
-	 $("#9").text("Cloud Computing");
-	 $("#10").text("Solidity");
-	 $("#11").text("HTML5");
-   });
-});
-</script>
-<!-- Global site tag (gtag.js) - Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=UA-120912491-1"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'UA-120912491-1');
-</script>
-
-   
+    });
+  </script>
+  <script>
+    $(document).ready(function(){
+      $("#prj5").mouseover(function(){
+         $("#1").text("Python");
+         $("#2").text("Numpy");
+         $("#3").text("Pandas");
+         $("#4").text("PIG Latin");
+         $("#5").text("Spark");
+         $("#6").text("Machine Learning");
+         $("#7").text("Hadoop");
+         $("#8").text("matplotlib");
+         $("#9").text("");
+         $("#10").text("");
+         $("#11").text("");
+       });
+       $("#prj5").mouseout(function(){
+         $("#1").text("Python");
+         $("#2").text("Java");
+         $("#3").text("Google Apps Script");
+         $("#4").text("C++");
+         $("#5").text("Javascript");
+         $("#6").text("Data Science (Numpy, Pandas)");
+         $("#7").text("SQL");
+         $("#8").text("Git");
+         $("#9").text("Cloud Computing");
+         $("#10").text("Solidity");
+         $("#11").text("HTML5");
+       });
+      $("#prj1").mouseover(function(){
+         $("#1").text("Python");
+         $("#2").text("Numpy");
+         $("#3").text("Pandas");
+         $("#4").text("Random Forest");
+         $("#5").text("Jupyter Notebook");
+         $("#6").text("matplotlib");
+         $("#7").text("K-means");
+         $("#8").text("Decision Trees");
+         $("#9").text("");
+         $("#10").text("");
+         $("#11").text("");
+       });
+       $("#prj1").mouseout(function(){
+         $("#1").text("Python");
+         $("#2").text("Java");
+         $("#3").text("Google Apps Script");
+         $("#4").text("C++");
+         $("#5").text("Javascript");
+         $("#6").text("Data Science (Numpy, Pandas)");
+         $("#7").text("SQL");
+         $("#8").text("Git");
+         $("#9").text("Cloud Computing");
+         $("#10").text("Solidity");
+         $("#11").text("HTML5");
+       });
+       $("#prj2").mouseover(function(){
+         $("#1").text("AWS Cognito");
+         $("#2").text("Twilio");
+         $("#3").text("AWS Lex");
+         $("#4").text("Google Geocoding");
+         $("#5").text("Reverse Geocoding");
+         $("#6").text("AWS DynamoDB");
+         $("#7").text("EC2");
+         $("#8").text("Django");
+         $("#9").text("HTML, CSS, Javascript");
+         $("#10").text("AWS Lambda");
+         $("#11").text("API Gateway");
+       });
+       $("#prj2").mouseout(function(){
+         $("#1").text("Python");
+         $("#2").text("Java");
+         $("#3").text("Google Apps Script");
+         $("#4").text("C++");
+         $("#5").text("Javascript");
+         $("#6").text("Data Science (Numpy, Pandas)");
+         $("#7").text("SQL");
+         $("#8").text("Git");
+         $("#9").text("Cloud Computing");
+         $("#10").text("Solidity");
+         $("#11").text("HTML5");
+       });
+       $("#prj3").mouseover(function(){
+         $("#1").text("AWS S3");
+         $("#2").text("API Gateway");
+         $("#3").text("AWS Lambda");
+         $("#4").text("Tweepy");
+         $("#5").text("MonkeyLearn");
+         $("#6").text("SNS");
+         $("#7").text("SQS");
+         $("#8").text("Elastic Search");
+         $("#9").text("Google Map API");
+         $("#10").text("Javascript");
+         $("#11").text("");
+       });
+       $("#prj3").mouseout(function(){
+         $("#1").text("Python");
+         $("#2").text("Java");
+         $("#3").text("Google Apps Script");
+         $("#4").text("C++");
+         $("#5").text("Javascript");
+         $("#6").text("Data Science (Numpy, Pandas)");
+         $("#7").text("SQL");
+         $("#8").text("Git");
+         $("#9").text("Cloud Computing");
+         $("#10").text("Solidity");
+         $("#11").text("HTML5");
+       });
+       $("#prj4").mouseover(function(){
+         $("#1").text("Map Reduce");
+         $("#2").text("Python");
+         $("#3").text("matplotlib");
+         $("#4").text("PySpark");
+         $("#5").text("OpenRefine");
+         $("#6").text("Hadoop");
+         $("#7").text("EC2");
+         $("#8").text("");
+         $("#9").text("");
+         $("#10").text("");
+         $("#11").text("");
+       });
+       $("#prj4").mouseout(function(){
+         $("#1").text("Python");
+         $("#2").text("Java");
+         $("#3").text("Google Apps Script");
+         $("#4").text("C++");
+         $("#5").text("Javascript");
+         $("#6").text("Data Science (Numpy, Pandas)");
+         $("#7").text("SQL");
+         $("#8").text("Git");
+         $("#9").text("Cloud Computing");
+         $("#10").text("Solidity");
+         $("#11").text("HTML5");
+       });
+    });
+  </script>
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-120912491-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-120912491-1');
+  </script>
 </body>
-
 </html>
