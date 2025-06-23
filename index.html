@@ -842,33 +842,466 @@
                 rgba(14, 165, 233, 0.1) 100%);
         }
         
+        /* Loading screen */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-dark);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+        
+        .loading-screen.fade-out {
+            opacity: 0;
+            visibility: hidden;
+        }
+        
+        .loader {
+            width: 80px;
+            height: 80px;
+            position: relative;
+            margin-bottom: 20px;
+        }
+        
+        .loader-circle {
+            position: absolute;
+            border: 3px solid transparent;
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        .loader-circle:nth-child(1) {
+            width: 80px;
+            height: 80px;
+            animation-duration: 0.8s;
+        }
+        
+        .loader-circle:nth-child(2) {
+            width: 60px;
+            height: 60px;
+            top: 10px;
+            left: 10px;
+            animation-duration: 1s;
+            border-top-color: var(--primary-dark);
+            animation-direction: reverse;
+        }
+        
+        .loader-circle:nth-child(3) {
+            width: 40px;
+            height: 40px;
+            top: 20px;
+            left: 20px;
+            animation-duration: 1.2s;
+            border-top-color: #06B6D4;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            color: var(--text-light);
+            font-size: 1.2rem;
+            font-weight: 300;
+            letter-spacing: 2px;
+            opacity: 0.8;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 0.4; }
+        }
+        
+        /* Scroll-triggered animations */
+        .fade-in-up {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        
+        .fade-in-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .fade-in-left {
+            opacity: 0;
+            transform: translateX(-30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        
+        .fade-in-left.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .fade-in-right {
+            opacity: 0;
+            transform: translateX(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        
+        .fade-in-right.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .scale-in {
+            opacity: 0;
+            transform: scale(0.9);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        
+        .scale-in.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+        
+        /* Stagger animation delays */
+        .stagger-1 { transition-delay: 0.1s; }
+        .stagger-2 { transition-delay: 0.2s; }
+        .stagger-3 { transition-delay: 0.3s; }
+        .stagger-4 { transition-delay: 0.4s; }
+        
+        /* Section transitions */
+        .section {
+            position: relative;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+        
+        .section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Parallax sections */
+        .parallax-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 120%;
+            z-index: -1;
+            transform: translateY(0);
+            transition: transform 0.3s ease-out;
+        }
+        
+        /* Number counter animation */
+        .counter {
+            display: inline-block;
+        }
+        
+        /* Interactive particles glow */
+        .particle-glow {
+            position: fixed;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(14, 165, 233, 0.3) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            transform: translate(-50%, -50%);
+        }
+        
+        /* Section reveal masks */
+        .section::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            left: 0;
+            width: 100%;
+            height: 50px;
+            background: linear-gradient(to bottom, transparent 0%, var(--bg-dark) 100%);
+            z-index: 1;
+        }
+        
+        /* Smooth section transitions */
+        .section-transition {
+            height: 100px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .section-transition::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                var(--primary) 50%, 
+                transparent 100%);
+            opacity: 0.3;
+            transform: translateX(-100%);
+            animation: slide-line 3s ease-in-out infinite;
+        }
+        
+        @keyframes slide-line {
+            to {
+                transform: translateX(100%);
+            }
+        }
         @media (max-width: 768px) {
-            .project-grid {
-                grid-template-columns: 1fr;
+            .container {
+                padding: 20px 10px;
             }
             
-            .job-header {
+            /* Hide desktop nav dots on mobile */
+            .nav-dots {
+                display: none;
+            }
+            
+            /* Mobile bottom navigation */
+            .mobile-nav {
+                display: flex;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: rgba(15, 23, 42, 0.95);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+                border-top: 1px solid rgba(255, 255, 255, 0.1);
+                padding: 10px 0;
+                z-index: 1000;
+                justify-content: space-around;
+                box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+            }
+            
+            .mobile-nav-item {
+                display: flex;
                 flex-direction: column;
-                align-items: flex-start;
-                gap: 10px;
+                align-items: center;
+                color: var(--text-dim);
+                font-size: 0.7rem;
+                padding: 5px 10px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                border-radius: 10px;
+            }
+            
+            .mobile-nav-item i {
+                font-size: 1.2rem;
+                margin-bottom: 3px;
+                transition: all 0.3s ease;
+            }
+            
+            .mobile-nav-item.active {
+                color: var(--primary);
+            }
+            
+            .mobile-nav-item:active {
+                transform: scale(0.95);
+            }
+            
+            /* Adjust header for mobile */
+            header {
+                padding: 30px 20px;
+                margin-bottom: 30px;
             }
             
             header h1 {
-                font-size: 2.2rem;
+                font-size: 2rem;
+            }
+            
+            .tagline {
+                font-size: 1.1rem;
+                height: 3em;
+            }
+            
+            .profile-description {
+                font-size: 1rem;
+            }
+            
+            .highlights {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: space-between;
+            }
+            
+            .highlight-item {
+                width: 48%;
+                margin-bottom: 10px;
+            }
+            
+            /* Mobile cards */
+            .card, .project-card {
+                margin-bottom: 20px;
+                padding: 20px;
+                border-radius: 15px;
+            }
+            
+            .section {
+                margin-bottom: 40px;
+                padding-bottom: 80px; /* Space for bottom nav */
             }
             
             .section-title {
                 font-size: 1.8rem;
+                margin-bottom: 25px;
+                position: sticky;
+                top: 0;
+                background: linear-gradient(to bottom, 
+                    var(--bg-dark) 0%, 
+                    var(--bg-dark) 70%, 
+                    transparent 100%);
+                padding: 20px 0 10px 0;
+                z-index: 10;
             }
             
-            .highlights {
-                flex-direction: column;
-                align-items: center;
+            /* Collapsible sections on mobile */
+            .job-description {
+                max-height: 200px;
+                overflow: hidden;
+                position: relative;
+                transition: max-height 0.3s ease;
             }
             
-            .highlight-item {
+            .job-description.expanded {
+                max-height: none;
+            }
+            
+            .expand-btn {
+                display: block;
                 width: 100%;
-                max-width: 250px;
+                text-align: center;
+                padding: 10px;
+                background: linear-gradient(to bottom, 
+                    transparent 0%, 
+                    rgba(15, 23, 42, 0.9) 50%);
+                color: var(--primary);
+                border: none;
+                cursor: pointer;
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                font-size: 0.9rem;
+            }
+            
+            .job-description.expanded .expand-btn {
+                position: relative;
+                background: none;
+                margin-top: 10px;
+            }
+            
+            /* Touch-friendly buttons */
+            .contact-links {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .contact-links a {
+                padding: 15px 25px;
+                font-size: 1rem;
+                width: 100%;
+                justify-content: center;
+            }
+            
+            /* Optimize project grid */
+            .project-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            /* Swipeable project cards */
+            .project-card {
+                touch-action: pan-y;
+            }
+            
+            /* Mobile-optimized particles */
+            #particles-js {
+                opacity: 0.5; /* Reduce opacity for better readability */
+            }
+            
+            /* Theme toggle for mobile */
+            .theme-toggle {
+                top: 10px;
+                right: 10px;
+                width: 40px;
+                height: 40px;
+            }
+            
+            /* Skills grid adjustment */
+            .skills-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            /* Mobile contact section */
+            .contact-section {
+                padding: 30px 20px;
+                margin-bottom: 80px; /* Space for bottom nav */
+            }
+            
+            /* Floating action button */
+            .fab-contact {
+                position: fixed;
+                bottom: 100px;
+                right: 20px;
+                width: 56px;
+                height: 56px;
+                border-radius: 50%;
+                background: var(--primary);
+                color: white;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 4px 20px rgba(14, 165, 233, 0.4);
+                cursor: pointer;
+                transition: all 0.3s ease;
+                z-index: 999;
+            }
+            
+            .fab-contact:active {
+                transform: scale(0.95);
+            }
+            
+            /* Hide gradient borders on mobile for performance */
+            .card::after, .project-card::after {
+                display: none;
+            }
+            
+            /* Simplify hover effects on mobile */
+            .card:hover, .project-card:hover {
+                transform: none;
+            }
+        }
+        
+        /* Desktop-only styles */
+        @media (min-width: 769px) {
+            .mobile-nav {
+                display: none;
+            }
+            
+            .expand-btn {
+                display: none;
+            }
+            
+            .fab-contact {
+                display: none;
+            }
+        }
+        
+        /* Handle notch/safe areas on mobile */
+        @supports (padding: max(0px)) {
+            .mobile-nav {
+                padding-bottom: max(10px, env(safe-area-inset-bottom));
             }
         }
     </style>
@@ -876,6 +1309,19 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
+    <!-- Loading screen -->
+    <div class="loading-screen" id="loading-screen">
+        <div class="loader">
+            <div class="loader-circle"></div>
+            <div class="loader-circle"></div>
+            <div class="loader-circle"></div>
+        </div>
+        <div class="loading-text">LOADING</div>
+    </div>
+    
+    <!-- Particle glow effect -->
+    <div class="particle-glow" id="particle-glow"></div>
+    
     <!-- Particles.js container -->
     <div id="particles-js"></div>
     
@@ -895,38 +1341,67 @@
         <div class="nav-dot" data-section="Contact" onclick="scrollToSection('contact')"></div>
     </nav>
     
+    <!-- Mobile bottom navigation -->
+    <nav class="mobile-nav">
+        <div class="mobile-nav-item active" onclick="scrollToSection('header')">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+        </div>
+        <div class="mobile-nav-item" onclick="scrollToSection('experience')">
+            <i class="fas fa-briefcase"></i>
+            <span>Experience</span>
+        </div>
+        <div class="mobile-nav-item" onclick="scrollToSection('skills')">
+            <i class="fas fa-code"></i>
+            <span>Skills</span>
+        </div>
+        <div class="mobile-nav-item" onclick="scrollToSection('projects')">
+            <i class="fas fa-project-diagram"></i>
+            <span>Projects</span>
+        </div>
+        <div class="mobile-nav-item" onclick="scrollToSection('contact')">
+            <i class="fas fa-envelope"></i>
+            <span>Contact</span>
+        </div>
+    </nav>
+    
+    <!-- Floating action button for mobile -->
+    <div class="fab-contact" onclick="scrollToSection('contact')">
+        <i class="fas fa-message"></i>
+    </div>
+    
     <div class="container">
-        <header id="header">
+        <header id="header" class="fade-in-up">
             <div class="profile-content">
                 <!-- Profile Image - Replace src with your actual image path -->
-                <div class="profile-image">
+                <div class="profile-image scale-in">
                     <img src="arhant-jain.jpg" alt="Arhant Jain" />
                 </div>
                 
-                <h1>Arhant Jain</h1>
-                <div class="tagline">
+                <h1 class="fade-in-up stagger-1">Arhant Jain</h1>
+                <div class="tagline fade-in-up stagger-2">
                     <span class="typewriter" id="typewriter"></span>
                 </div>
                 
-                <p class="profile-description">
+                <p class="profile-description fade-in-up stagger-3">
                     Experienced technical leader with expertise in designing and deploying scalable, secure, cloud-native backend systems. I specialize in AWS infrastructure, microservices architecture, and DevOps automation with a focus on delivering high-performance solutions.
                 </p>
                 
-                <div class="highlights">
+                <div class="highlights fade-in-up stagger-4">
                     <div class="highlight-item">
-                        <div class="highlight-number">6+</div>
+                        <div class="highlight-number"><span class="counter" data-target="6">0</span>+</div>
                         <div class="highlight-text">Years Experience</div>
                     </div>
                     <div class="highlight-item">
-                        <div class="highlight-number">99.99%</div>
+                        <div class="highlight-number"><span class="counter" data-target="99.99">0</span>%</div>
                         <div class="highlight-text">API Uptime</div>
                     </div>
                     <div class="highlight-item">
-                        <div class="highlight-number">20+</div>
+                        <div class="highlight-number"><span class="counter" data-target="20">0</span>+</div>
                         <div class="highlight-text">New Products Deployed</div>
                     </div>
                     <div class="highlight-item">
-                        <div class="highlight-number">2M+</div>
+                        <div class="highlight-number"><span class="counter" data-target="2">0</span>M+</div>
                         <div class="highlight-text">Daily API Requests</div>
                     </div>
                 </div>
@@ -943,9 +1418,10 @@
         </header>
         
         <section class="section" id="experience">
-            <h2 class="section-title">Work Experience</h2>
+            <div class="section-transition"></div>
+            <h2 class="section-title fade-in-up">Work Experience</h2>
             <!-- Job 1 -->
-            <div class="card">
+            <div class="card fade-in-left">
                 <div class="job-header">
                     <div>
                         <h3 class="job-title">Senior Software Engineer (Tech Lead)</h3>
@@ -953,7 +1429,7 @@
                     </div>
                     <div class="job-date">July 2018 to Present</div>
                 </div>
-                <div class="job-description">
+                <div class="job-description" id="job1">
                     <ul>
                         <li>Led & mentored a team of 5 engineers to design high-performing, scalable, secure finance services products. Managed flows for credit apps, contracting, and document signing, integrating with partners like RouteOne, Honda, and Unifi to create a centralized data storage solution generating millions in annual revenue.</li>
                         <li>Coordinated improvements, innovations, and security enhancements including AWS Well-Architected Framework, automated security patching, compliance upgrades, quarterly security reviews, observability dashboards with CloudWatch and New Relic, and real-time service alerts with automated rollbacks.</li>
@@ -963,11 +1439,12 @@
                         <li>Pioneered AWS Lambda, Serverless Framework, and Terraform (Infrastructure as Code) implementations at Cox Automotive.</li>
                         <li>Led the development of Deal Data API, creating 5 high-performance RESTful endpoints within 3 weeks and 10+ custom solutions for DynamoDB operations not supported by boto3 client.</li>
                     </ul>
+                    <button class="expand-btn" onclick="toggleExpand('job1')">Show More ↓</button>
                 </div>
             </div>
             
             <!-- Job 2 -->
-            <div class="card">
+            <div class="card fade-in-right">
                 <div class="job-header">
                     <div>
                         <h3 class="job-title">Data Analyst & Lead Instructor</h3>
@@ -987,7 +1464,7 @@
         
         <section class="section" id="skills">
             <h2 class="section-title">Skills</h2>
-            <div class="card">
+            <div class="card fade-in-up">
                 <div class="skills-grid">
                     <div class="skill-category">
                         <h3><i class="fas fa-code"></i> Software Languages</h3>
@@ -1276,7 +1753,7 @@
         particlesJS('particles-js', {
             particles: {
                 number: {
-                    value: 60,
+                    value: window.innerWidth <= 768 ? 30 : 60,
                     density: {
                         enable: true,
                         value_area: 800
@@ -1368,11 +1845,143 @@
     
     <!-- Theme toggle and navigation scripts -->
     <script>
-        // Typewriter effect
+        // Loading screen
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                document.getElementById('loading-screen').classList.add('fade-out');
+                // Trigger initial animations after loading
+                observeElements();
+            }, 1500);
+        });
+        
+        // Scroll-triggered animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+        
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    
+                    // Animate counters
+                    if (entry.target.classList.contains('counter')) {
+                        animateCounter(entry.target);
+                    }
+                }
+            });
+        }, observerOptions);
+        
+        function observeElements() {
+            // Observe all animated elements
+            document.querySelectorAll('.fade-in-up, .fade-in-left, .fade-in-right, .scale-in, .section').forEach(el => {
+                observer.observe(el);
+            });
+            
+            // Observe counter elements
+            document.querySelectorAll('.counter').forEach(el => {
+                observer.observe(el);
+            });
+        }
+        
+        // Counter animation
+        function animateCounter(element) {
+            const target = parseFloat(element.getAttribute('data-target'));
+            const duration = 2000;
+            const increment = target / (duration / 16);
+            let current = 0;
+            
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    current = target;
+                    clearInterval(timer);
+                }
+                
+                if (element.getAttribute('data-target').includes('.')) {
+                    element.textContent = current.toFixed(2);
+                } else {
+                    element.textContent = Math.floor(current);
+                }
+            }, 16);
+        }
+        
+        // Interactive particles
+        const particleGlow = document.getElementById('particle-glow');
+        let mouseX = 0;
+        let mouseY = 0;
+        
+        document.addEventListener('mousemove', function(e) {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            
+            // Update particle glow position
+            particleGlow.style.left = mouseX + 'px';
+            particleGlow.style.top = mouseY + 'px';
+            particleGlow.style.opacity = '1';
+            
+            // Interactive particles effect
+            if (window.pJSDom && window.pJSDom[0]) {
+                const particles = window.pJSDom[0].pJS.particles.array;
+                particles.forEach(particle => {
+                    const dx = mouseX - particle.x;
+                    const dy = mouseY - particle.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < 100) {
+                        const force = (100 - distance) / 100;
+                        particle.vx += dx * force * 0.01;
+                        particle.vy += dy * force * 0.01;
+                    }
+                });
+            }
+        });
+        
+        document.addEventListener('mouseleave', function() {
+            particleGlow.style.opacity = '0';
+        });
+        
+        // Parallax scrolling effect
+        window.addEventListener('scroll', function() {
+            const scrolled = window.pageYOffset;
+            const parallaxElements = document.querySelectorAll('.parallax-bg');
+            
+            parallaxElements.forEach(element => {
+                const speed = element.getAttribute('data-speed') || 0.5;
+                const yPos = -(scrolled * speed);
+                element.style.transform = `translateY(${yPos}px)`;
+            });
+            
+            // Update section visibility
+            updateActiveSection();
+        });
+        
+        // Smooth section transitions
+        const sections = document.querySelectorAll('.section');
+        let lastScrollY = window.scrollY;
+        
+        window.addEventListener('scroll', function() {
+            const currentScrollY = window.scrollY;
+            const scrollDirection = currentScrollY > lastScrollY ? 'down' : 'up';
+            
+            sections.forEach(section => {
+                const rect = section.getBoundingClientRect();
+                const viewportHeight = window.innerHeight;
+                
+                if (rect.top < viewportHeight && rect.bottom > 0) {
+                    section.style.transform = `translateY(${rect.top * 0.1}px)`;
+                }
+            });
+            
+            lastScrollY = currentScrollY;
+        });
+        
+        // Typewriter effect (enhanced)
         const titles = [
             "Senior Software Engineer & Technical Lead",
             "AWS Cloud, GitOps & DevOps Expert",
-            "Backend Developer & System Designer"
+            "BackEnd Developer & System Designer"
         ];
         
         let titleIndex = 0;
@@ -1383,6 +1992,8 @@
         function typeWriter() {
             const currentTitle = titles[titleIndex];
             const typewriterElement = document.getElementById('typewriter');
+            
+            if (!typewriterElement) return;
             
             if (!isDeleting) {
                 typewriterElement.textContent = currentTitle.substring(0, charIndex + 1);
@@ -1446,26 +2057,114 @@
         }
         
         // Update active navigation dot on scroll
-        window.addEventListener('scroll', function() {
+        function updateActiveSection() {
             const sections = ['header', 'experience', 'skills', 'education', 'projects', 'research', 'contact'];
             const navDots = document.querySelectorAll('.nav-dot');
+            const mobileNavItems = document.querySelectorAll('.mobile-nav-item');
             
             let current = '';
             sections.forEach(sectionId => {
                 const section = document.getElementById(sectionId);
-                const sectionTop = section.offsetTop;
-                const sectionHeight = section.clientHeight;
-                if (window.scrollY >= (sectionTop - 200)) {
-                    current = sectionId;
+                if (section) {
+                    const sectionTop = section.offsetTop;
+                    const sectionHeight = section.clientHeight;
+                    if (window.scrollY >= (sectionTop - 200)) {
+                        current = sectionId;
+                    }
                 }
             });
             
+            // Update desktop nav dots
             navDots.forEach((dot, index) => {
                 dot.classList.remove('active');
                 if (sections[index] === current) {
                     dot.classList.add('active');
                 }
             });
+            
+            // Update mobile nav
+            const mobileNavMap = {
+                'header': 0,
+                'experience': 1,
+                'skills': 2,
+                'education': 2, // Group with skills
+                'projects': 3,
+                'research': 3, // Group with projects
+                'contact': 4
+            };
+            
+            mobileNavItems.forEach((item, index) => {
+                item.classList.remove('active');
+            });
+            
+            if (mobileNavMap[current] !== undefined) {
+                mobileNavItems[mobileNavMap[current]].classList.add('active');
+            }
+        }
+        
+        window.addEventListener('scroll', updateActiveSection);
+        
+        // Toggle expand for mobile
+        function toggleExpand(id) {
+            const element = document.getElementById(id);
+            const button = element.querySelector('.expand-btn');
+            
+            if (element.classList.contains('expanded')) {
+                element.classList.remove('expanded');
+                button.textContent = 'Show More ↓';
+            } else {
+                element.classList.add('expanded');
+                button.textContent = 'Show Less ↑';
+            }
+        }
+        
+        // Optimize particles for mobile
+        if (window.innerWidth <= 768) {
+            // Reduce particles on mobile
+            if (window.pJSDom && window.pJSDom[0]) {
+                window.pJSDom[0].pJS.particles.number.value = 30;
+                window.pJSDom[0].pJS.fn.particlesRefresh();
+            }
+        }
+        
+        // Handle touch gestures for mobile
+        let touchStartX = 0;
+        let touchEndX = 0;
+        
+        function handleSwipe() {
+            if (touchEndX < touchStartX - 50) {
+                // Swipe left - next section
+                const sections = ['header', 'experience', 'skills', 'education', 'projects', 'research', 'contact'];
+                const currentSection = sections.find(id => {
+                    const el = document.getElementById(id);
+                    return el && el.getBoundingClientRect().top >= -100 && el.getBoundingClientRect().top <= 100;
+                });
+                const currentIndex = sections.indexOf(currentSection);
+                if (currentIndex < sections.length - 1) {
+                    scrollToSection(sections[currentIndex + 1]);
+                }
+            }
+            if (touchEndX > touchStartX + 50) {
+                // Swipe right - previous section
+                const sections = ['header', 'experience', 'skills', 'education', 'projects', 'research', 'contact'];
+                const currentSection = sections.find(id => {
+                    const el = document.getElementById(id);
+                    return el && el.getBoundingClientRect().top >= -100 && el.getBoundingClientRect().top <= 100;
+                });
+                const currentIndex = sections.indexOf(currentSection);
+                if (currentIndex > 0) {
+                    scrollToSection(sections[currentIndex - 1]);
+                }
+            }
+        }
+        
+        document.addEventListener('touchstart', e => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+        
+        document.addEventListener('touchend', e => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
         });
     </script>
 </body>
