@@ -763,37 +763,123 @@
             transform: translateY(-1px) rotateX(5deg);
         }
 
-        /* Enhanced Theme Toggle with Glow */
+        /* Theme Toggle Enhanced - Icon Only with High Contrast Colors */
         .theme-toggle {
             position: fixed;
             top: 20px;
             right: 20px;
-            width: 60px;
-            height: 60px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
-            background: var(--glass-bg);
+            background: rgba(255, 255, 255, 0.2);
             backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            cursor: pointer;
             transition: var(--transition);
-            z-index: 1000;
-            box-shadow: var(--shadow-small);
-            animation: themeGlow 3s ease-in-out infinite;
-        }
-
-        @keyframes themeGlow {
-            0%, 100% { box-shadow: 0 0 20px rgba(102, 126, 234, 0.5); }
-            50% { box-shadow: 0 0 40px rgba(102, 126, 234, 0.8); }
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            z-index: 1001;
         }
 
         .theme-toggle:hover {
-            transform: scale(1.1) rotate(180deg);
-            background: var(--glass-bg-light);
-            animation-play-state: paused;
+            transform: translateY(-2px) scale(1.1);
+            background: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .theme-toggle.hidden {
+            opacity: 0;
+            transform: translateY(-20px) scale(0.8);
+            pointer-events: none;
+        }
+
+        .theme-toggle .material-icons {
+            font-size: 20px;
+            transition: var(--transition);
+            color: #ffffff;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        /* Dark Theme Toggle Colors - Bright Visible Colors */
+        [data-theme="dark"] .theme-toggle {
+            background: rgba(30, 30, 30, 0.8);
+            border: 2px solid rgba(255, 215, 0, 0.6);
+            box-shadow: 0 4px 20px rgba(255, 215, 0, 0.3);
+        }
+
+        [data-theme="dark"] .theme-toggle:hover {
+            background: rgba(40, 40, 40, 0.9);
+            border: 2px solid rgba(255, 215, 0, 0.8);
+            box-shadow: 0 8px 30px rgba(255, 215, 0, 0.5);
+        }
+
+        [data-theme="dark"] .theme-toggle .material-icons {
+            color: #ffd700;
+            text-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+        }
+
+        /* Light Theme Toggle Colors - High Contrast */
+        [data-theme="light"] .theme-toggle {
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(44, 62, 80, 0.8);
+            box-shadow: 0 4px 20px rgba(44, 62, 80, 0.3);
+        }
+
+        [data-theme="light"] .theme-toggle:hover {
+            background: rgba(255, 255, 255, 1);
+            border: 2px solid rgba(44, 62, 80, 1);
+            box-shadow: 0 8px 30px rgba(44, 62, 80, 0.5);
+        }
+
+        [data-theme="light"] .theme-toggle .material-icons {
+            color: #2c3e50;
+            text-shadow: 0 0 10px rgba(44, 62, 80, 0.5);
+        }
+
+        .theme-toggle .material-icons.rotating {
+            transform: rotate(360deg);
+        }
+
+        .theme-toggle.ripple {
+            animation: ripple 0.6s ease-out;
+        }
+
+        @keyframes ripple {
+            0% {
+                box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4);
+            }
+            100% {
+                box-shadow: 0 0 0 20px rgba(255, 255, 255, 0);
+            }
+        }
+
+        [data-theme="dark"] .theme-toggle.ripple {
+            animation: rippleDark 0.6s ease-out;
+        }
+
+        @keyframes rippleDark {
+            0% {
+                box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.6);
+            }
+            100% {
+                box-shadow: 0 0 0 20px rgba(255, 215, 0, 0);
+            }
+        }
+
+        [data-theme="light"] .theme-toggle.ripple {
+            animation: rippleLight 0.6s ease-out;
+        }
+
+        @keyframes rippleLight {
+            0% {
+                box-shadow: 0 0 0 0 rgba(44, 62, 80, 0.4);
+            }
+            100% {
+                box-shadow: 0 0 0 20px rgba(44, 62, 80, 0);
+            }
         }
 
         /* Wave Effect for Contact Section */
@@ -1144,7 +1230,7 @@
 
     <!-- Material Design FAB for theme toggle -->
     <button class="theme-toggle" id="theme-toggle">
-        <i class="material-icons" id="theme-icon">dark_mode</i>
+        <i class="material-icons" id="theme-icon"></i>
     </button>
 
     <!-- Mobile Navigation -->
@@ -1569,15 +1655,6 @@
             </div>
         </section>
 
-        <!-- Skills Container in Header -->
-        <div class="skills-container">
-            <span class="skill-chip"><i class="fas fa-code"></i> Python</span>
-            <span class="skill-chip"><i class="fab fa-aws"></i> AWS</span>
-            <span class="skill-chip"><i class="material-icons">dns</i> Microservices</span>
-            <span class="skill-chip"><i class="material-icons">cloud</i> DevOps</span>
-            <span class="skill-chip"><i class="material-icons">cloud_upload</i> CloudOps</span>
-            <span class="skill-chip"><i class="material-icons">precision_manufacturing</i> Serverless</span>
-        </div>
     </div>
 
     <!-- Particles.js Script -->
@@ -1996,3 +2073,4 @@
     </script>
 </body>
 </html>
+
