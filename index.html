@@ -31,15 +31,15 @@
             --accent-secondary: #f5576c;
 
             /* Glassmorphism Colors - More Transparent */
-            --glass-bg: rgba(255, 255, 255, 0.03);
-            --glass-bg-light: rgba(255, 255, 255, 0.06);
-            --glass-border: rgba(255, 255, 255, 0.08);
-            --glass-shadow: rgba(31, 38, 135, 0.15);
+            --glass-bg: rgba(255, 255, 255, 0.02);
+            --glass-bg-light: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.05);
+            --glass-shadow: rgba(31, 38, 135, 0.1);
 
             /* Dark Theme Colors - More Transparent */
-            --surface: rgba(20, 25, 40, 0.3);
-            --surface-variant: rgba(30, 35, 50, 0.4);
-            --surface-light: rgba(40, 45, 60, 0.25);
+            --surface: rgba(20, 25, 40, 0.15);
+            --surface-variant: rgba(30, 35, 50, 0.2);
+            --surface-light: rgba(40, 45, 60, 0.15);
             --on-surface: #ffffff;
             --on-surface-variant: #e0e6ff;
             --on-surface-muted: #b8c4ff;
@@ -67,11 +67,11 @@
 
         /* Dark Theme Adjustments */
         [data-theme="dark"] {
-            --surface: rgba(15, 20, 35, 0.4);
-            --surface-variant: rgba(25, 30, 45, 0.5);
-            --glass-bg: rgba(0, 0, 0, 0.1);
-            --glass-bg-light: rgba(0, 0, 0, 0.15);
-            --glass-border: rgba(255, 255, 255, 0.05);
+            --surface: rgba(15, 20, 35, 0.2);
+            --surface-variant: rgba(25, 30, 45, 0.25);
+            --glass-bg: rgba(0, 0, 0, 0.05);
+            --glass-bg-light: rgba(0, 0, 0, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.03);
             --on-surface: #ffffff;
             --on-surface-variant: #e0e6ff;
             --gradient-primary: linear-gradient(135deg, #2d1b69 0%, #11998e 100%);
@@ -82,16 +82,16 @@
 
         /* Light Theme - More Transparent */
         [data-theme="light"] {
-            --surface: rgba(255, 255, 255, 0.4);
-            --surface-variant: rgba(248, 250, 252, 0.5);
-            --surface-light: rgba(241, 245, 249, 0.3);
+            --surface: rgba(255, 255, 255, 0.2);
+            --surface-variant: rgba(248, 250, 252, 0.25);
+            --surface-light: rgba(241, 245, 249, 0.15);
             --on-surface: #1e293b;
             --on-surface-variant: #475569;
             --on-surface-muted: #64748b;
-            --glass-bg: rgba(255, 255, 255, 0.2);
-            --glass-bg-light: rgba(255, 255, 255, 0.3);
-            --glass-border: rgba(255, 255, 255, 0.3);
-            --glass-shadow: rgba(0, 0, 0, 0.05);
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-bg-light: rgba(255, 255, 255, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --glass-shadow: rgba(0, 0, 0, 0.02);
             --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
         }
@@ -236,13 +236,19 @@
             display: block;
         }
 
-        /* Typography Enhancements */
+        /* Typography Enhancements with Flowing Colors */
         header h1 {
             font-size: clamp(2.5rem, 5vw, 4rem);
             font-weight: 600;
             margin-bottom: 20px;
             letter-spacing: -1px;
-            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(45deg, #fff, #a8edea, #fed6e3, #f093fb, #667eea, #fff);
+            background-size: 400% 400%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: flowingGradient 3s ease-in-out infinite;
+            filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.8));
         }
 
         .tagline {
@@ -319,7 +325,7 @@
             font-size: 16px;
         }
 
-        /* Section Titles */
+        /* Section Titles with Flowing Glowing Colors */
         .section-title {
             font-size: 2.5rem;
             font-weight: 600;
@@ -327,23 +333,32 @@
             color: var(--on-surface);
             position: relative;
             text-align: center;
-            background: var(--gradient-primary);
+            background: linear-gradient(45deg, #667eea, #764ba2, #f093fb, #f5576c, #a8edea, #fed6e3, #667eea);
+            background-size: 400% 400%;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            animation: flowingGradient 4s ease-in-out infinite;
+            filter: drop-shadow(0 0 20px rgba(102, 126, 234, 0.5));
         }
 
-        .section-title::after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80px;
-            height: 4px;
-            background: var(--gradient-primary);
-            border-radius: 2px;
-            box-shadow: var(--shadow-glow);
+        /* Flowing Gradient Animation */
+        @keyframes flowingGradient {
+            0% {
+                background-position: 0% 50%;
+            }
+            25% {
+                background-position: 100% 50%;
+            }
+            50% {
+                background-position: 100% 100%;
+            }
+            75% {
+                background-position: 0% 100%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
         }
 
         /* Card Content */
@@ -532,12 +547,12 @@
 
         /* Enhanced Glassmorphism Components */
         .glass-card {
-            background: var(--glass-bg);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border: 1px solid var(--glass-border);
+            background: rgba(255, 255, 255, 0.005) !important;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.01);
             border-radius: 20px;
-            box-shadow: var(--shadow-medium);
+            box-shadow: 0 4px 15px 0 rgba(31, 38, 135, 0.05);
             transition: var(--transition);
             position: relative;
             overflow: hidden;
@@ -555,8 +570,8 @@
 
         .glass-card:hover {
             transform: translateY(-8px) scale(1.02);
-            box-shadow: var(--shadow-large);
-            background: var(--glass-bg-light);
+            box-shadow: 0 8px 25px 0 rgba(31, 38, 135, 0.05);
+            background: rgba(255, 255, 255, 0.01) !important;
         }
 
         /* Floating Animation for Cards */
@@ -569,15 +584,15 @@
         .experience-card,
         .project-card,
         .education-card {
-            background: var(--glass-bg);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
-            border: 1px solid var(--glass-border);
+            background: rgba(255, 255, 255, 0.005) !important;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.01);
             border-radius: 24px;
             margin-bottom: 30px;
             overflow: hidden;
             transition: var(--transition);
-            box-shadow: var(--shadow-medium);
+            box-shadow: 0 4px 15px 0 rgba(31, 38, 135, 0.05);
             position: relative;
             animation: float 6s ease-in-out infinite;
         }
@@ -626,8 +641,8 @@
         .project-card:hover,
         .education-card:hover {
             transform: translateY(-12px) scale(1.03);
-            box-shadow: var(--shadow-large);
-            background: var(--glass-bg-light);
+            box-shadow: 0 8px 25px 0 rgba(31, 38, 135, 0.05);
+            background: rgba(255, 255, 255, 0.01) !important;
             animation-play-state: paused;
         }
 
@@ -658,10 +673,15 @@
 
         /* Pulse Animation for Highlights */
         .highlight-item {
-            background: var(--glass-bg);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border: 1px solid var(--glass-border);
+            background: rgba(255, 255, 255, 0.005) !important;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border: 2px solid transparent;
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.005), rgba(255, 255, 255, 0.005)),
+                linear-gradient(135deg, #667eea, #764ba2, #f093fb, #667eea);
+            background-origin: border-box;
+            background-clip: content-box, border-box;
             border-radius: 20px;
             padding: 30px 20px;
             text-align: center;
@@ -669,67 +689,37 @@
             position: relative;
             overflow: hidden;
             animation: subtlePulse 4s ease-in-out infinite;
-        }
-
-        @keyframes subtlePulse {
-            0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(102, 126, 234, 0.1); }
-            50% { transform: scale(1.02); box-shadow: 0 0 30px rgba(102, 126, 234, 0.2); }
-        }
-
-        .highlight-item:nth-child(2) { animation-delay: -1s; }
-        .highlight-item:nth-child(3) { animation-delay: -2s; }
-        .highlight-item:nth-child(4) { animation-delay: -3s; }
-
-        .highlight-item::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-            transition: left 0.5s ease;
-        }
-
-        .highlight-item:hover::before {
-            left: 100%;
+            box-shadow:
+                0 4px 15px 0 rgba(31, 38, 135, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2),
+                0 0 20px rgba(102, 126, 234, 0.15);
         }
 
         .highlight-item:hover {
             transform: translateY(-8px) scale(1.05);
-            background: var(--glass-bg-light);
-            box-shadow: var(--shadow-large);
+            background: rgba(255, 255, 255, 0.01) !important;
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.01), rgba(255, 255, 255, 0.01)),
+                linear-gradient(135deg, #a8b5ff, #f093fb, #764ba2, #667eea);
+            box-shadow:
+                0 8px 25px 0 rgba(31, 38, 135, 0.15),
+                0 0 30px rgba(102, 126, 234, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
             animation-play-state: paused;
         }
 
         /* Rotating Border Effect for Skills */
         .skill-category {
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
+            background: rgba(255, 255, 255, 0.005) !important;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.01);
             border-radius: 20px;
             padding: 30px;
             transition: var(--transition);
-            box-shadow: var(--shadow-small);
+            box-shadow: 0 4px 15px 0 rgba(31, 38, 135, 0.05);
             position: relative;
             overflow: hidden;
-        }
-
-        .skill-category::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: conic-gradient(
-                transparent, transparent, transparent,
-                var(--primary), transparent, transparent, transparent
-            );
-            animation: rotate 4s linear infinite;
-            opacity: 0;
-            transition: opacity 0.3s ease;
         }
 
         @keyframes rotate {
@@ -743,8 +733,8 @@
 
         .skill-category:hover {
             transform: translateY(-5px) scale(1.02);
-            box-shadow: var(--shadow-medium);
-            background: var(--glass-bg-light);
+            box-shadow: 0 8px 25px 0 rgba(31, 38, 135, 0.05);
+            background: rgba(255, 255, 255, 0.01) !important;
         }
 
         /* Morphing Buttons */
@@ -1214,6 +1204,38 @@
             /* Reduce particles opacity on mobile */
             #particles-js {
                 opacity: 0.4;
+            }
+
+            /* Mobile Optimizations - Reduce flickering */
+            /* Disable animations and blur effects on mobile to prevent flickering */
+            .experience-card,
+            .project-card,
+            .education-card,
+            .glass-card,
+            .highlight-item,
+            .skill-category {
+                animation: none !important;
+                backdrop-filter: none !important;
+                -webkit-backdrop-filter: none !important;
+                transform: none !important;
+                will-change: auto !important;
+            }
+
+            /* Simplify transitions on mobile */
+            .experience-card:hover,
+            .project-card:hover,
+            .education-card:hover,
+            .glass-card:hover,
+            .highlight-item:hover,
+            .skill-category:hover {
+                transform: none !important;
+                animation: none !important;
+            }
+
+            /* Reduce particle complexity on mobile */
+            #particles-js {
+                opacity: 0.3;
+                will-change: auto;
             }
         }
 
@@ -1771,14 +1793,33 @@
 
     <!-- Theme toggle and navigation scripts -->
     <script>
-        // Loading screen
+        // Loading screen - Fixed to prevent stuck loading
         window.addEventListener('load', function() {
             setTimeout(function() {
-                document.getElementById('loading-screen').classList.add('fade-out');
+                const loadingScreen = document.getElementById('loading-screen');
+                loadingScreen.classList.add('fade-out');
+
+                // Ensure loading screen is completely removed after animation
+                setTimeout(function() {
+                    loadingScreen.style.display = 'none';
+                }, 500);
+
                 // Trigger initial animations after loading
                 observeElements();
-            }, 1500);
+            }, 1000); // Reduced timeout for faster loading
         });
+
+        // Fallback: Hide loading screen after 3 seconds regardless
+        setTimeout(function() {
+            const loadingScreen = document.getElementById('loading-screen');
+            if (loadingScreen && loadingScreen.style.display !== 'none') {
+                loadingScreen.classList.add('fade-out');
+                setTimeout(function() {
+                    loadingScreen.style.display = 'none';
+                }, 500);
+                observeElements();
+            }
+        }, 3000);
 
         // Scroll-triggered animations
         const observerOptions = {
