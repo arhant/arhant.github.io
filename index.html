@@ -1997,7 +1997,7 @@
             section.scrollIntoView({ behavior: 'smooth' });
         }
 
-        // Update active navigation dot on scroll
+        // Update active navigation dot on scroll - Enhanced for mobile
         function updateActiveSection() {
             const sections = ['header', 'experience', 'skills', 'education', 'projects', 'research', 'contact'];
             const navDots = document.querySelectorAll('.nav-dot');
@@ -2023,7 +2023,7 @@
                 }
             });
 
-            // Update mobile nav
+            // Update mobile nav with improved mapping
             const mobileNavMap = {
                 'header': 0,
                 'experience': 1,
@@ -2039,84 +2039,132 @@
             });
 
             if (mobileNavMap[current] !== undefined) {
-                mobileNavItems[mobileNavMap[current]].classList.add('active');
+                const activeIndex = mobileNavMap[current];
+                if (mobileNavItems[activeIndex]) {
+                    mobileNavItems[activeIndex].classList.add('active');
+                }
             }
         }
 
-        window.addEventListener('scroll', updateActiveSection);
+        // Enhanced mobile navigation with proper smooth scrolling
+        function initializeMobileNavigation() {
+            const mobileNavItems = document.querySelectorAll('.mobile-nav-item');
 
-        // Toggle expand for mobile
-        function toggleExpand(id) {
-            const element = document.getElementById(id);
-            const button = element.querySelector('.expand-btn');
+            mobileNavItems.forEach(item => {
+                // Remove existing onclick handlers
+                item.removeAttribute('onclick');
 
-            if (element.classList.contains('expanded')) {
-                element.classList.remove('expanded');
-                button.textContent = 'Show More ↓';
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    // Add visual feedback with enhanced animation
+                    this.style.transform = 'scale(0.9)';
+                    this.style.transition = 'transform 0.1s ease';
+
+                    setTimeout(() => {
+                        this.style.transform = 'scale(1)';
+                    }, 100);
+
+                    // Enhanced haptic feedback for mobile devices
+                    if (navigator.vibrate) {
+                        navigator.vibrate([30, 10, 30]); // Pattern vibration
+                    }
+
+                    // Extract section ID from href and scroll with enhanced smoothness
+                    const href = this.getAttribute('href');
+                    if (href && href.startsWith('#')) {
+                        const sectionId = href.replace('#', '');
+
+                        // Add loading state
+                        this.style.opacity = '0.7';
+
+                        // Enhanced smooth scroll with callback
+                        scrollToSectionWithCallback(sectionId, () => {
+                            // Reset visual state after scroll completes
+                            this.style.opacity = '1';
+                            updateActiveSection();
+                        });
+                    }
+                });
+            });
+        }
+
+        // Enhanced scroll function with callback support
+        function scrollToSectionWithCallback(sectionId, callback) {
+            const section = document.getElementById(sectionId);
+            if (!section) {
+                if (callback) callback();
+                return;
+            }
+
+            // Calculate offset for mobile navigation bar with better precision
+            const isMobile = window.innerWidth <= 768;
+            const mobileNavHeight = isMobile ? document.querySelector('.mobile-nav')?.offsetHeight || 80 : 0;
+            const offset = isMobile ? mobileNavHeight + 20 : 60; // Extra padding for mobile
+
+            const elementPosition = section.offsetTop;
+            const offsetPosition = elementPosition - offset;
+
+            // Enhanced smooth scrolling with better mobile support
+            const scrollOptions = {
+                top: offsetPosition,
+                behavior: 'smooth'
+            };
+
+            // For mobile devices, use a more aggressive smooth scroll
+            if (isMobile) {
+                smoothScrollToPositionMobile(offsetPosition, callback);
             } else {
-                element.classList.add('expanded');
-                button.textContent = 'Show Less ↑';
-            }
-        }
-
-        // Optimize particles for mobile
-        if (window.innerWidth <= 768) {
-            // Update particles on mobile to new count
-            if (window.pJSDom && window.pJSDom[0]) {
-                window.pJSDom[0].pJS.particles.number.value = 100; // Updated to 100
-                window.pJSDom[0].pJS.fn.particlesRefresh();
-            }
-        }
-
-        // Handle touch gestures for mobile - simplified
-        let touchStartX = 0;
-        let touchEndX = 0;
-        let touchStartY = 0;
-        let touchEndY = 0;
-
-        function handleSwipe() {
-            const diffX = touchEndX - touchStartX;
-            const diffY = Math.abs(touchEndY - touchStartY);
-
-            // Only handle horizontal swipes if vertical movement is minimal
-            if (diffY < 50) {
-                if (diffX < -50) {
-                    // Swipe left - next section
-                    const sections = ['header', 'experience', 'skills', 'education', 'projects', 'research', 'contact'];
-                    const currentSection = sections.find(id => {
-                        const el = document.getElementById(id);
-                        return el && el.getBoundingClientRect().top >= -100 && el.getBoundingClientRect().top <= 100;
-                    });
-                    const currentIndex = sections.indexOf(currentSection);
-                    if (currentIndex < sections.length - 1) {
-                        scrollToSection(sections[currentIndex + 1]);
-                    }
-                }
-                if (diffX > 50) {
-                    // Swipe right - previous section
-                    const sections = ['header', 'experience', 'skills', 'education', 'projects', 'research', 'contact'];
-                    const currentSection = sections.find(id => {
-                        const el = document.getElementById(id);
-                        return el && el.getBoundingClientRect().top >= -100 && el.getBoundingClientRect().top <= 100;
-                    });
-                    const currentIndex = sections.indexOf(currentSection);
-                    if (currentIndex > 0) {
-                        scrollToSection(sections[currentIndex - 1]);
-                    }
+                window.scrollTo(scrollOptions);
+                if (callback) {
+                    setTimeout(callback, 800); // Standard scroll duration
                 }
             }
         }
 
-        document.addEventListener('touchstart', e => {
-            touchStartX = e.changedTouches[0].screenX;
-            touchStartY = e.changedTouches[0].screenY;
-        }, { passive: true });
+        // Optimized smooth scroll specifically for mobile devices
+        function smoothScrollToPositionMobile(targetPosition, callback) {
+            const startPosition = window.pageYOffset;
+            const distance = targetPosition - startPosition;
+            const duration = 1000; // Slightly longer for better mobile experience
+            let start = null;
 
-        document.addEventListener('touchend', e => {
-            touchEndX = e.changedTouches[0].screenX;
-            touchEndY = e.changedTouches[0].screenY;
-            handleSwipe();
-        }, { passive: true });
+            function animateScroll(timestamp) {
+                if (!start) start = timestamp;
+                const progress = timestamp - start;
+                const progressPercentage = Math.min(progress / duration, 1);
+
+                // Enhanced easing function for mobile
+                const ease = easeInOutQuart(progressPercentage);
+
+                const currentPosition = startPosition + (distance * ease);
+                window.scrollTo(0, currentPosition);
+
+                if (progress < duration) {
+                    window.requestAnimationFrame(animateScroll);
+                } else {
+                    // Ensure exact final position
+                    window.scrollTo(0, targetPosition);
+                    if (callback) callback();
+                }
+            }
+
+            window.requestAnimationFrame(animateScroll);
+        }
+
+        // Enhanced easing function for smoother mobile scrolling
+        function easeInOutQuart(t) {
+            return t < 0.5 ? 8 * t * t * t * t : 1 - 8 * (--t) * t * t * t;
+        }
+
+        // Override the original scrollToSection function for mobile optimization
+        function scrollToSection(sectionId) {
+            scrollToSectionWithCallback(sectionId);
+        }
+
+        // Initialize mobile navigation
+        document.addEventListener('DOMContentLoaded', initializeMobileNavigation);
     </script>
 </body>
 </html>
