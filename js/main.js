@@ -267,7 +267,34 @@
             }
         });
         backToTop.addEventListener('click', function () {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            // Force warp mode on immediately, then scroll slowly to enjoy the journey
+            document.body.classList.remove('warp-speed-exit');
+            document.body.classList.add('warp-speed');
+
+            var start = window.scrollY || window.pageYOffset;
+            var duration = Math.max(1800, start * 0.35); // ~0.35ms per pixel, min 1.8s
+            var startTime = null;
+
+            function scrollStep(timestamp) {
+                if (!startTime) startTime = timestamp;
+                var elapsed = timestamp - startTime;
+                var progress = Math.min(elapsed / duration, 1);
+                // Ease-out quart — fast start, slow gentle landing
+                var eased = 1 - Math.pow(1 - progress, 4);
+                window.scrollTo(0, start * (1 - eased));
+
+                if (progress < 1) {
+                    requestAnimationFrame(scrollStep);
+                } else {
+                    // Journey complete — fade UI back in
+                    document.body.classList.remove('warp-speed');
+                    document.body.classList.add('warp-speed-exit');
+                    setTimeout(function () {
+                        document.body.classList.remove('warp-speed-exit');
+                    }, 1000);
+                }
+            }
+            requestAnimationFrame(scrollStep);
         });
     }
 
@@ -341,4 +368,53 @@
             }
         });
     }
+
+    // ---- Warp Speed: fast scroll = pure space journey ----
+    // When user scrolls fast, all UI fades out so they can enjoy
+    // flying through space. Content fades back when they stop.
+    (function () {
+        var lastScrollY = window.scrollY || window.pageYOffset;
+        var lastTime = Date.now();
+        var warpActive = false;
+        var stopTimer = null;
+        var body = document.body;
+        var VELOCITY_THRESHOLD = 5000; // px per second — needs a real fast flick
+        var STOP_DELAY = 800; // ms after scroll stops to fade back
+
+        window.addEventListener('scroll', function () {
+            var now = Date.now();
+            var currentY = window.scrollY || window.pageYOffset;
+            var dt = now - lastTime;
+
+            if (dt > 0) {
+                var velocity = Math.abs(currentY - lastScrollY) / dt * 1000;
+
+                if (velocity > VELOCITY_THRESHOLD && !warpActive) {
+                    // Enter warp
+                    warpActive = true;
+                    body.classList.remove('warp-speed-exit');
+                    body.classList.add('warp-speed');
+                }
+            }
+
+            lastScrollY = currentY;
+            lastTime = now;
+
+            // Reset stop timer on every scroll event
+            if (warpActive) {
+                clearTimeout(stopTimer);
+                stopTimer = setTimeout(function () {
+                    // Exit warp — fade content back in
+                    body.classList.remove('warp-speed');
+                    body.classList.add('warp-speed-exit');
+                    warpActive = false;
+
+                    // Clean up exit class after transition completes
+                    setTimeout(function () {
+                        body.classList.remove('warp-speed-exit');
+                    }, 1000);
+                }, STOP_DELAY);
+            }
+        }, { passive: true });
+    })();
 })();

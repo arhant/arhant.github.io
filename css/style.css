@@ -494,18 +494,25 @@ img { max-width: 100%; display: block; }
     transform: translateX(-50%);
     text-align: center;
     animation: fadeIn 1s ease 1s both;
+    background: rgba(7, 7, 26, 0.5);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    padding: 10px 20px 14px;
+    border-radius: 20px;
+    border: 1px solid rgba(123, 115, 255, 0.1);
 }
 
 .scroll-indicator span {
     font-size: 12px;
-    color: var(--text-muted);
+    color: var(--text-secondary);
     letter-spacing: 2px;
     text-transform: uppercase;
+    font-weight: 500;
 }
 
 .scroll-arrow {
-    width: 20px;
-    height: 20px;
+    width: 16px;
+    height: 16px;
     margin: 8px auto 0;
     border-right: 2px solid var(--accent-2);
     border-bottom: 2px solid var(--accent-2);
@@ -1432,6 +1439,28 @@ button:focus-visible,
     outline: 2px solid var(--accent-2);
     outline-offset: 3px;
     border-radius: 4px;
+}
+
+/* ---------- Warp Speed (fast scroll hides content) ---------- */
+.warp-speed .section,
+.warp-speed .hero-content,
+.warp-speed .hero-image,
+.warp-speed .nav,
+.warp-speed .scroll-indicator,
+.warp-speed #back-to-top,
+.warp-speed #scroll-progress {
+    opacity: 0 !important;
+    transition: opacity 0.3s ease !important;
+}
+
+.warp-speed-exit .section,
+.warp-speed-exit .hero-content,
+.warp-speed-exit .hero-image,
+.warp-speed-exit .nav,
+.warp-speed-exit .scroll-indicator,
+.warp-speed-exit #back-to-top,
+.warp-speed-exit #scroll-progress {
+    transition: opacity 0.8s ease 0.1s !important;
 }
 
 /* ---------- Reduced Motion ---------- */
