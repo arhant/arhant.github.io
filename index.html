@@ -1,2170 +1,631 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta name="description" content="Arhant Jain - Tech Lead & Senior Software Engineer specializing in AWS, Python, microservices, and cloud-native systems at Cox Automotive.">
+    <meta name="keywords" content="Arhant Jain, Software Engineer, Tech Lead, AWS, Python, DevOps, Microservices, Cox Automotive, Cloud Architecture">
+    <meta name="author" content="Arhant Jain">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="Arhant Jain - Tech Lead & Senior Software Engineer">
+    <meta property="og:description" content="Building scalable cloud-native systems at Cox Automotive. Expert in AWS, Python, CI/CD, and microservices architecture.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://arhant.github.io">
+    <title>Arhant Jain | Tech Lead & Senior Software Engineer</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="apple-touch-icon" href="favicon.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="format-detection" content="telephone=no">
-    <title>Arhant Jain - Portfolio</title>
-    <link rel="shortcut icon" href="favicon.png" >
 
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
-    <!-- Google tag (gtag.js) -->
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/style.css">
+
+    <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-FQ3639GLP1"></script>
     <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'G-FQ3639GLP1');
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-FQ3639GLP1');
     </script>
-
-    <style>
-        :root {
-            /* Enhanced Color Palette */
-            --primary: #667eea;
-            --primary-dark: #5a6fd8;
-            --primary-light: #a8b5ff;
-            --secondary: #764ba2;
-            --accent: #f093fb;
-            --accent-secondary: #f5576c;
-
-            /* Glassmorphism Colors - More Transparent */
-            --glass-bg: rgba(255, 255, 255, 0.02);
-            --glass-bg-light: rgba(255, 255, 255, 0.04);
-            --glass-border: rgba(255, 255, 255, 0.05);
-            --glass-shadow: rgba(31, 38, 135, 0.1);
-
-            /* Dark Theme Colors - More Transparent */
-            --surface: rgba(20, 25, 40, 0.15);
-            --surface-variant: rgba(30, 35, 50, 0.2);
-            --surface-light: rgba(40, 45, 60, 0.15);
-            --on-surface: #ffffff;
-            --on-surface-variant: #e0e6ff;
-            --on-surface-muted: #b8c4ff;
-
-            /* Gradient Backgrounds */
-            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            --gradient-accent: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-            --gradient-purple: linear-gradient(135deg, #d299c2 0%, #fef9d7 100%);
-            --gradient-blue: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%);
-
-            /* Shadows & Effects */
-            --shadow-small: 0 4px 15px 0 rgba(31, 38, 135, 0.2);
-            --shadow-medium: 0 8px 32px 0 rgba(31, 38, 135, 0.25);
-            --shadow-large: 0 20px 60px 0 rgba(31, 38, 135, 0.3);
-            --shadow-glow: 0 0 30px rgba(102, 126, 234, 0.3);
-
-            /* Typography */
-            --font-family: 'Inter', 'Roboto', system-ui, -apple-system, sans-serif;
-
-            /* Transitions */
-            --transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
-            --transition-slow: all 0.5s cubic-bezier(0.4, 0.0, 0.2, 1);
-        }
-
-        /* Dark Theme Adjustments */
-        [data-theme="dark"] {
-            --surface: rgba(15, 20, 35, 0.2);
-            --surface-variant: rgba(25, 30, 45, 0.25);
-            --glass-bg: rgba(0, 0, 0, 0.05);
-            --glass-bg-light: rgba(0, 0, 0, 0.08);
-            --glass-border: rgba(255, 255, 255, 0.03);
-            --on-surface: #ffffff;
-            --on-surface-variant: #e0e6ff;
-            --gradient-primary: linear-gradient(135deg, #2d1b69 0%, #11998e 100%);
-            --gradient-secondary: linear-gradient(135deg, #8360c3 0%, #2ebf91 100%);
-            --gradient-purple: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --gradient-blue: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-        }
-
-        /* Light Theme - More Transparent */
-        [data-theme="light"] {
-            --surface: rgba(255, 255, 255, 0.2);
-            --surface-variant: rgba(248, 250, 252, 0.25);
-            --surface-light: rgba(241, 245, 249, 0.15);
-            --on-surface: #1e293b;
-            --on-surface-variant: #475569;
-            --on-surface-muted: #64748b;
-            --glass-bg: rgba(255, 255, 255, 0.1);
-            --glass-bg-light: rgba(255, 255, 255, 0.15);
-            --glass-border: rgba(255, 255, 255, 0.2);
-            --glass-shadow: rgba(0, 0, 0, 0.02);
-            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        }
-
-        /* Import Fonts */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        @import url('https://fonts.googleapis.com/icon?family=Material+Icons');
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: var(--font-family);
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            color: var(--on-surface);
-            line-height: 1.6;
-            overflow-x: hidden;
-            min-height: 100vh;
-            transition: var(--transition);
-            position: relative;
-        }
-
-        /* Dark mode body background */
-        [data-theme="dark"] body {
-            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
-        }
-
-        /* Light mode body background */
-        [data-theme="light"] body {
-            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 50%, #90caf9 100%);
-        }
-
-        /* Animated Background Overlay */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background:
-                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
-            z-index: -2;
-            animation: backgroundShift 20s ease-in-out infinite;
-        }
-
-        /* Dark mode overlay */
-        [data-theme="dark"] body::before {
-            background:
-                radial-gradient(circle at 20% 80%, rgba(75, 0, 130, 0.4) 0%, transparent 60%),
-                radial-gradient(circle at 80% 20%, rgba(0, 100, 200, 0.4) 0%, transparent 60%),
-                radial-gradient(circle at 40% 40%, rgba(50, 50, 150, 0.3) 0%, transparent 60%);
-        }
-
-        @keyframes backgroundShift {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.8; }
-        }
-
-        /* Particles Background */
-        #particles-js {
-            position: fixed;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            z-index: -1;
-        }
-
-        /* Container */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-            position: relative;
-            z-index: 1;
-        }
-
-        /* Enhanced Header */
-        header {
-            background: var(--gradient-primary);
-            color: white;
-            text-align: center;
-            padding: 100px 40px;
-            margin: 20px 0 40px;
-            border-radius: 30px;
-            position: relative;
-            overflow: hidden;
-            box-shadow: var(--shadow-large);
-        }
-
-        header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background:
-                radial-gradient(circle at 30% 70%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 70% 30%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
-            z-index: 1;
-        }
-
-        .profile-content {
-            position: relative;
-            z-index: 2;
-        }
-
-        /* FIXED: Profile Image Styling */
-        .profile-image {
-            width: 140px;
-            height: 140px;
-            border-radius: 50%;
-            margin: 0 auto 30px;
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            box-shadow:
-                0 0 0 8px rgba(255, 255, 255, 0.1),
-                var(--shadow-medium);
-            overflow: hidden;
-            position: relative;
-            transition: var(--transition);
-            display: block;
-        }
-
-        .profile-image:hover {
-            transform: scale(1.05);
-            box-shadow:
-                0 0 0 8px rgba(255, 255, 255, 0.2),
-                var(--shadow-large);
-        }
-
-        .profile-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
-
-        /* Typography Enhancements with Flowing Colors */
-        header h1 {
-            font-size: clamp(2.5rem, 5vw, 4rem);
-            font-weight: 600;
-            margin-bottom: 20px;
-            letter-spacing: -1px;
-            background: linear-gradient(45deg, #fff, #a8edea, #fed6e3, #f093fb, #667eea, #fff);
-            background-size: 400% 400%;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            animation: flowingGradient 3s ease-in-out infinite;
-            filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.8));
-        }
-
-        .tagline {
-            font-size: 1.3rem;
-            font-weight: 400;
-            margin-bottom: 30px;
-            opacity: 0.95;
-            min-height: 2em;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .typewriter {
-            border-right: 3px solid rgba(255, 255, 255, 0.8);
-            animation: blink-caret 1s step-end infinite;
-        }
-
-        @keyframes blink-caret {
-            from, to { border-color: transparent }
-            50% { border-color: rgba(255, 255, 255, 0.8); }
-        }
-
-        .profile-description {
-            font-size: 1.1rem;
-            max-width: 700px;
-            margin: 0 auto 40px;
-            opacity: 0.9;
-            line-height: 1.7;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Enhanced Highlights */
-        .highlights {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 20px;
-            margin: 40px 0;
-        }
-
-        /* Enhanced Skills Chips */
-        .skills-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            justify-content: center;
-            margin-top: 30px;
-        }
-
-        /* Skills chips in header */
-        .md-chip {
-            display: inline-flex;
-            align-items: center;
-            padding: 8px 16px;
-            background: var(--glass-bg);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 500;
-            color: white;
-            transition: var(--transition);
-            margin: 4px;
-        }
-
-        .md-chip:hover {
-            background: var(--glass-bg-light);
-            transform: translateY(-2px);
-        }
-
-        .md-chip i {
-            margin-right: 6px;
-            font-size: 16px;
-        }
-
-        /* Section Titles with Flowing Glowing Colors */
-        .section-title {
-            font-size: 2.5rem;
-            font-weight: 600;
-            margin-bottom: 40px;
-            color: var(--on-surface);
-            position: relative;
-            text-align: center;
-            background: linear-gradient(45deg, #667eea, #764ba2, #f093fb, #f5576c, #a8edea, #fed6e3, #667eea);
-            background-size: 400% 400%;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            animation: flowingGradient 4s ease-in-out infinite;
-            filter: drop-shadow(0 0 20px rgba(102, 126, 234, 0.5));
-        }
-
-        /* Flowing Gradient Animation */
-        @keyframes flowingGradient {
-            0% {
-                background-position: 0% 50%;
-            }
-            25% {
-                background-position: 100% 50%;
-            }
-            50% {
-                background-position: 100% 100%;
-            }
-            75% {
-                background-position: 0% 100%;
-            }
-            100% {
-                background-position: 0% 50%;
-            }
-        }
-
-        /* Card Content */
-        .card-content {
-            padding: 30px;
-        }
-
-        .card-content ul {
-            list-style: none;
-            padding: 0;
-        }
-
-        .card-content li {
-            margin-bottom: 15px;
-            padding-left: 25px;
-            position: relative;
-            color: var(--on-surface-variant);
-            line-height: 1.7;
-        }
-
-        .card-content li::before {
-            content: '◆';
-            position: absolute;
-            left: 0;
-            color: var(--primary);
-            font-size: 1rem;
-            top: 2px;
-        }
-
-        /* Job styling */
-        .job-title,
-        .project-title {
-            font-size: 1.4rem;
-            font-weight: 600;
-            margin-bottom: 8px;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-        }
-
-        .company,
-        .project-meta {
-            font-size: 1rem;
-            opacity: 0.9;
-            margin-bottom: 12px;
-        }
-
-        .date-badge {
-            display: inline-block;
-            background: rgba(255, 255, 255, 0.25);
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-        }
-
-        /* Skills Grid Enhancement */
-        .skills-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 25px;
-            padding: 30px;
-        }
-
-        /* Project Cards Special Styling */
-        .project-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
-            gap: 30px;
-            margin-bottom: 50px;
-        }
-
-        .project-header {
-            background: var(--gradient-blue);
-            color: white;
-            padding: 25px;
-        }
-
-        .project-body {
-            padding: 25px;
-            flex-grow: 1;
-        }
-
-        .project-body p {
-            margin-bottom: 16px;
-            color: var(--on-surface-variant);
-            line-height: 1.6;
-        }
-
-        .project-body ul {
-            list-style: none;
-            padding: 0;
-            margin-bottom: 16px;
-        }
-
-        .project-body li {
-            margin-bottom: 12px;
-            padding-left: 20px;
-            position: relative;
-            color: var(--on-surface-variant);
-            line-height: 1.6;
-        }
-
-        .project-body li::before {
-            content: '▸';
-            position: absolute;
-            left: 0;
-            color: var(--primary);
-            font-weight: bold;
-        }
-
-        .project-footer {
-            padding: 25px;
-            border-top: 1px solid var(--glass-border);
-            background: rgba(102, 126, 234, 0.05);
-        }
-
-        .tech-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 20px;
-        }
-
-        .tech-tag {
-            background: var(--primary);
-            color: white;
-            padding: 6px 14px;
-            border-radius: 15px;
-            font-size: 0.8rem;
-            font-weight: 500;
-            transition: var(--transition);
-            border: 1px solid transparent;
-        }
-
-        .tech-tag:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-small);
-            background: var(--primary-dark);
-        }
-
-        .project-links {
-            display: flex;
-            gap: 12px;
-        }
-
-        /* Contact links */
-        .contact-links {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-top: 30px;
-            flex-wrap: wrap;
-        }
-
-        .contact-links .btn {
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-
-        .contact-links .btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        /* Mobile nav items */
-        .mobile-nav-items {
-            display: flex;
-            justify-content: space-around;
-            max-width: 500px;
-            margin: 0 auto;
-        }
-
-        .mobile-nav-item i {
-            font-size: 22px;
-            margin-bottom: 4px;
-            z-index: 1;
-        }
-
-        .mobile-nav-item span {
-            z-index: 1;
-        }
-
-        /* Enhanced Glassmorphism Components */
-        .glass-card {
-            background: rgba(255, 255, 255, 0.005) !important;
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
-            border: 1px solid rgba(255, 255, 255, 0.01);
-            border-radius: 20px;
-            box-shadow: 0 4px 15px 0 rgba(31, 38, 135, 0.05);
-            transition: var(--transition);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .glass-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
-        }
-
-        .glass-card:hover {
-            transform: translateY(-8px) scale(1.02);
-            box-shadow: 0 8px 25px 0 rgba(31, 38, 135, 0.05);
-            background: rgba(255, 255, 255, 0.01) !important;
-        }
-
-        /* Floating Animation for Cards */
-        @keyframes float {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            33% { transform: translateY(-10px) rotate(1deg); }
-            66% { transform: translateY(-5px) rotate(-1deg); }
-        }
-
-        .experience-card,
-        .project-card,
-        .education-card {
-            background: rgba(255, 255, 255, 0.005) !important;
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
-            border: 1px solid rgba(255, 255, 255, 0.01);
-            border-radius: 24px;
-            margin-bottom: 30px;
-            overflow: hidden;
-            transition: var(--transition);
-            box-shadow: 0 4px 15px 0 rgba(31, 38, 135, 0.05);
-            position: relative;
-            animation: float 6s ease-in-out infinite;
-        }
-
-        .experience-card:nth-child(odd) {
-            animation-delay: -2s;
-        }
-
-        .project-card:nth-child(even) {
-            animation-delay: -4s;
-        }
-
-        /* Glowing Border Effect */
-        .experience-card::after,
-        .project-card::after,
-        .education-card::after {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            background: linear-gradient(45deg,
-                var(--primary), var(--accent), var(--primary-light), var(--secondary),
-                var(--primary), var(--accent), var(--primary-light));
-            background-size: 400% 400%;
-            border-radius: 24px;
-            z-index: -1;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            animation: gradientShift 4s ease infinite;
-        }
-
-        @keyframes gradientShift {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-        }
-
-        .experience-card:hover::after,
-        .project-card:hover::after,
-        .education-card:hover::after {
-            opacity: 0.7;
-        }
-
-        .experience-card:hover,
-        .project-card:hover,
-        .education-card:hover {
-            transform: translateY(-12px) scale(1.03);
-            box-shadow: 0 8px 25px 0 rgba(31, 38, 135, 0.05);
-            background: rgba(255, 255, 255, 0.01) !important;
-            animation-play-state: paused;
-        }
-
-        /* Enhanced Card Headers with Gradients */
-        .card-header {
-            background: var(--gradient-primary);
-            color: white;
-            padding: 30px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .card-header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            animation: shimmer 3s infinite;
-        }
-
-        @keyframes shimmer {
-            0% { left: -100%; }
-            100% { left: 100%; }
-        }
-
-        /* Pulse Animation for Highlights */
-        .highlight-item {
-            background: rgba(255, 255, 255, 0.005) !important;
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
-            border: 2px solid transparent;
-            background-image:
-                linear-gradient(rgba(255, 255, 255, 0.005), rgba(255, 255, 255, 0.005)),
-                linear-gradient(135deg, #667eea, #764ba2, #f093fb, #667eea);
-            background-origin: border-box;
-            background-clip: content-box, border-box;
-            border-radius: 20px;
-            padding: 30px 20px;
-            text-align: center;
-            transition: var(--transition);
-            position: relative;
-            overflow: hidden;
-            animation: subtlePulse 4s ease-in-out infinite;
-            box-shadow:
-                0 4px 15px 0 rgba(31, 38, 135, 0.1),
-                inset 0 1px 0 rgba(255, 255, 255, 0.2),
-                0 0 20px rgba(102, 126, 234, 0.15);
-        }
-
-        .highlight-item:hover {
-            transform: translateY(-8px) scale(1.05);
-            background: rgba(255, 255, 255, 0.01) !important;
-            background-image:
-                linear-gradient(rgba(255, 255, 255, 0.01), rgba(255, 255, 255, 0.01)),
-                linear-gradient(135deg, #a8b5ff, #f093fb, #764ba2, #667eea);
-            box-shadow:
-                0 8px 25px 0 rgba(31, 38, 135, 0.15),
-                0 0 30px rgba(102, 126, 234, 0.3),
-                inset 0 1px 0 rgba(255, 255, 255, 0.3);
-            animation-play-state: paused;
-        }
-
-        /* Rotating Border Effect for Skills */
-        .skill-category {
-            background: rgba(255, 255, 255, 0.005) !important;
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
-            border: 1px solid rgba(255, 255, 255, 0.01);
-            border-radius: 20px;
-            padding: 30px;
-            transition: var(--transition);
-            box-shadow: 0 4px 15px 0 rgba(31, 38, 135, 0.05);
-            position: relative;
-            overflow: hidden;
-        }
-
-        @keyframes rotate {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .skill-category:hover::before {
-            opacity: 0.5;
-        }
-
-        .skill-category:hover {
-            transform: translateY(-5px) scale(1.02);
-            box-shadow: 0 8px 25px 0 rgba(31, 38, 135, 0.05);
-            background: rgba(255, 255, 255, 0.01) !important;
-        }
-
-        /* Morphing Buttons */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            padding: 12px 25px;
-            background: var(--gradient-primary);
-            color: white;
-            text-decoration: none;
-            border-radius: 12px;
-            font-weight: 600;
-            transition: var(--transition);
-            box-shadow: var(--shadow-small);
-            border: none;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-            transform-style: preserve-3d;
-        }
-
-        .btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-            transition: left 0.5s ease;
-        }
-
-        .btn:hover::before {
-            left: 100%;
-        }
-
-        .btn:hover {
-            transform: translateY(-3px) rotateX(10deg);
-            box-shadow: var(--shadow-medium);
-        }
-
-        .btn:active {
-            transform: translateY(-1px) rotateX(5deg);
-        }
-
-        /* Theme Toggle Enhanced - Icon Only with High Contrast Colors */
-        .theme-toggle {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: var(--transition);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-            z-index: 1001;
-        }
-
-        .theme-toggle:hover {
-            transform: translateY(-2px) scale(1.1);
-            background: rgba(255, 255, 255, 0.3);
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
-        }
-
-        .theme-toggle.hidden {
-            opacity: 0;
-            transform: translateY(-20px) scale(0.8);
-            pointer-events: none;
-        }
-
-        .theme-toggle .material-icons {
-            font-size: 20px;
-            transition: var(--transition);
-            color: #ffffff;
-            font-weight: bold;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-        }
-
-        /* Dark Theme Toggle Colors - Bright Visible Colors */
-        [data-theme="dark"] .theme-toggle {
-            background: rgba(30, 30, 30, 0.8);
-            border: 2px solid rgba(255, 215, 0, 0.6);
-            box-shadow: 0 4px 20px rgba(255, 215, 0, 0.3);
-        }
-
-        [data-theme="dark"] .theme-toggle:hover {
-            background: rgba(40, 40, 40, 0.9);
-            border: 2px solid rgba(255, 215, 0, 0.8);
-            box-shadow: 0 8px 30px rgba(255, 215, 0, 0.5);
-        }
-
-        [data-theme="dark"] .theme-toggle .material-icons {
-            color: #ffd700;
-            text-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
-        }
-
-        /* Light Theme Toggle Colors - High Contrast */
-        [data-theme="light"] .theme-toggle {
-            background: rgba(255, 255, 255, 0.9);
-            border: 2px solid rgba(44, 62, 80, 0.8);
-            box-shadow: 0 4px 20px rgba(44, 62, 80, 0.3);
-        }
-
-        [data-theme="light"] .theme-toggle:hover {
-            background: rgba(255, 255, 255, 1);
-            border: 2px solid rgba(44, 62, 80, 1);
-            box-shadow: 0 8px 30px rgba(44, 62, 80, 0.5);
-        }
-
-        [data-theme="light"] .theme-toggle .material-icons {
-            color: #2c3e50;
-            text-shadow: 0 0 10px rgba(44, 62, 80, 0.5);
-        }
-
-        .theme-toggle .material-icons.rotating {
-            transform: rotate(360deg);
-        }
-
-        .theme-toggle.ripple {
-            animation: ripple 0.6s ease-out;
-        }
-
-        @keyframes ripple {
-            0% {
-                box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4);
-            }
-            100% {
-                box-shadow: 0 0 0 20px rgba(255, 255, 255, 0);
-            }
-        }
-
-        [data-theme="dark"] .theme-toggle.ripple {
-            animation: rippleDark 0.6s ease-out;
-        }
-
-        @keyframes rippleDark {
-            0% {
-                box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.6);
-            }
-            100% {
-                box-shadow: 0 0 0 20px rgba(255, 215, 0, 0);
-            }
-        }
-
-        [data-theme="light"] .theme-toggle.ripple {
-            animation: rippleLight 0.6s ease-out;
-        }
-
-        @keyframes rippleLight {
-            0% {
-                box-shadow: 0 0 0 0 rgba(44, 62, 80, 0.4);
-            }
-            100% {
-                box-shadow: 0 0 0 20px rgba(44, 62, 80, 0);
-            }
-        }
-
-        /* Wave Effect for Contact Section */
-        .contact-section {
-            background: var(--gradient-purple);
-            color: white;
-            border-radius: 30px;
-            padding: 60px 40px;
-            text-align: center;
-            box-shadow: var(--shadow-large);
-            margin-bottom: 40px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .contact-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background:
-                radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
-            animation: waveFloat 6s ease-in-out infinite;
-        }
-
-        @keyframes waveFloat {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-10px) rotate(2deg); }
-        }
-
-        /* Bouncing Skills Chips */
-        .skill-chip {
-            display: inline-flex;
-            align-items: center;
-            padding: 12px 20px;
-            background: var(--glass-bg);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid var(--glass-border);
-            border-radius: 25px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            transition: var(--transition);
-            position: relative;
-            overflow: hidden;
-            animation: gentleBounce 3s ease-in-out infinite;
-        }
-
-        .skill-chip:hover {
-            transform: translateY(-8px) scale(1.05);
-            background: var(--glass-bg-light);
-            box-shadow: var(--shadow-medium);
-            animation-play-state: paused;
-        }
-
-        /* Enhanced Mobile Navigation */
-        .mobile-nav {
-            display: none;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: var(--glass-bg);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border-top: 1px solid var(--glass-border);
-            padding: 15px 0;
-            z-index: 1000;
-            box-shadow: var(--shadow-medium);
-        }
-
-        .mobile-nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 8px 15px;
-            color: var(--on-surface-variant);
-            text-decoration: none;
-            font-size: 0.8rem;
-            font-weight: 500;
-            transition: var(--transition);
-            border-radius: 12px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .mobile-nav-item::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: var(--primary);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            border-radius: 12px;
-        }
-
-        .mobile-nav-item.active::before,
-        .mobile-nav-item:hover::before {
-            opacity: 0.2;
-        }
-
-        .mobile-nav-item.active {
-            color: var(--primary);
-            transform: translateY(-2px);
-        }
-
-        /* Loading Screen Enhancement */
-        .loading-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--gradient-primary);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            transition: opacity 0.5s ease, visibility 0.5s ease;
-        }
-
-        .loading-screen.fade-out {
-            opacity: 0;
-            visibility: hidden;
-        }
-
-        .loader {
-            width: 80px;
-            height: 80px;
-            position: relative;
-            margin-bottom: 30px;
-        }
-
-        .loader-circle {
-            position: absolute;
-            border: 4px solid rgba(255, 255, 255, 0.2);
-            border-top-color: white;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        .loader-circle:nth-child(1) {
-            width: 80px;
-            height: 80px;
-        }
-
-        .loader-circle:nth-child(2) {
-            width: 60px;
-            height: 60px;
-            top: 10px;
-            left: 10px;
-            animation-duration: 1.2s;
-            animation-direction: reverse;
-        }
-
-        .loader-circle:nth-child(3) {
-            width: 40px;
-            height: 40px;
-            top: 20px;
-            left: 20px;
-            animation-duration: 0.8s;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .loading-text {
-            color: white;
-            font-size: 1.2rem;
-            font-weight: 600;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            animation: pulse 1.5s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-
-        /* Section Spacing */
-        .section {
-            margin-bottom: 80px;
-            padding: 0 20px;
-        }
-
-        /* Animation Classes */
-        .fade-in-up {
-            opacity: 0;
-            transform: translateY(40px);
-            transition: opacity 0.8s ease, transform 0.8s ease;
-        }
-
-        .fade-in-up.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .fade-in-left {
-            opacity: 0;
-            transform: translateX(-40px);
-            transition: opacity 0.8s ease, transform 0.8s ease;
-        }
-
-        .fade-in-left.visible {
-            opacity: 1;
-            transform: translateX(0);
-        }
-
-        .fade-in-right {
-            opacity: 0;
-            transform: translateX(40px);
-            transition: opacity 0.8s ease, transform 0.8s ease;
-        }
-
-        .fade-in-right.visible {
-            opacity: 1;
-            transform: translateX(0);
-        }
-
-        .scale-in {
-            opacity: 0;
-            transform: scale(0.9);
-            transition: opacity 0.8s ease, transform 0.8s ease;
-        }
-
-        .scale-in.visible {
-            opacity: 1;
-            transform: scale(1);
-        }
-
-        /* Stagger Animation Delays */
-        .stagger-1 { transition-delay: 0.1s; }
-        .stagger-2 { transition-delay: 0.2s; }
-        .stagger-3 { transition-delay: 0.3s; }
-        .stagger-4 { transition-delay: 0.4s; }
-
-        /* Counter Animation */
-        .counter {
-            display: inline-block;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .container {
-                padding: 0 15px;
-            }
-
-            .mobile-nav {
-                display: block;
-            }
-
-            header {
-                padding: 60px 25px;
-                margin: 15px 0 30px;
-                border-radius: 20px;
-            }
-
-            .section {
-                margin-bottom: 50px;
-                padding: 0 15px;
-                padding-bottom: 120px;
-            }
-
-            .section-title {
-                font-size: 2rem;
-                margin-bottom: 30px;
-            }
-
-            .highlights {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 15px;
-            }
-
-            .project-grid {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-
-            .skills-grid {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-
-            .contact-links {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .contact-links .btn {
-                width: 100%;
-                max-width: 300px;
-                justify-content: center;
-            }
-
-            /* Reduce particles opacity on mobile */
-            #particles-js {
-                opacity: 0.4;
-            }
-
-            /* Mobile Optimizations - Reduce flickering */
-            /* Disable animations and blur effects on mobile to prevent flickering */
-            .experience-card,
-            .project-card,
-            .education-card,
-            .glass-card,
-            .highlight-item,
-            .skill-category {
-                animation: none !important;
-                backdrop-filter: none !important;
-                -webkit-backdrop-filter: none !important;
-                transform: none !important;
-                will-change: auto !important;
-            }
-
-            /* Simplify transitions on mobile */
-            .experience-card:hover,
-            .project-card:hover,
-            .education-card:hover,
-            .glass-card:hover,
-            .highlight-item:hover,
-            .skill-category:hover {
-                transform: none !important;
-                animation: none !important;
-            }
-
-            /* Reduce particle complexity on mobile */
-            #particles-js {
-                opacity: 0.3;
-                will-change: auto;
-            }
-        }
-
-        /* Handle Safe Areas for iOS */
-        @supports (padding: max(0px)) {
-            .mobile-nav {
-                padding-bottom: max(15px, env(safe-area-inset-bottom));
-            }
-        }
-    </style>
-    <!-- Enhanced Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <!-- Font Awesome for additional icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <!-- Loading screen -->
-    <div class="loading-screen" id="loading-screen">
-        <div class="loader">
-            <div class="loader-circle"></div>
-            <div class="loader-circle"></div>
-            <div class="loader-circle"></div>
+    <!-- Scroll Progress Bar -->
+    <div id="scroll-progress"></div>
+
+    <!-- Custom Cursor Glow (desktop) -->
+    <div id="cursor-glow"></div>
+
+    <!-- Skip to content (accessibility) -->
+    <a href="#about" class="skip-link">Skip to content</a>
+
+    <!-- Loading Screen -->
+    <div id="loader">
+        <div class="loader-content">
+            <div class="loader-ring"></div>
+            <p class="loader-text">Initializing systems<span class="loader-dots"></span></p>
         </div>
-        <div class="loading-text">LOADING</div>
     </div>
 
-    <!-- Particles.js container -->
-    <div id="particles-js"></div>
+    <!-- Three.js Canvas -->
+    <canvas id="space-canvas"></canvas>
 
-    <!-- Material Design FAB for theme toggle -->
-    <button class="theme-toggle" id="theme-toggle">
-        <i class="material-icons" id="theme-icon"></i>
-    </button>
-
-    <!-- Mobile Navigation -->
-    <nav class="mobile-nav">
-        <div class="mobile-nav-items">
-            <a href="#header" class="mobile-nav-item active" onclick="scrollToSection('header')">
-                <i class="material-icons">home</i>
-                <span>Home</span>
-            </a>
-            <a href="#experience" class="mobile-nav-item" onclick="scrollToSection('experience')">
-                <i class="material-icons">work</i>
-                <span>Experience</span>
-            </a>
-            <a href="#skills" class="mobile-nav-item" onclick="scrollToSection('skills')">
-                <i class="material-icons">code</i>
-                <span>Skills</span>
-            </a>
-            <a href="#projects" class="mobile-nav-item" onclick="scrollToSection('projects')">
-                <i class="material-icons">folder</i>
-                <span>Projects</span>
-            </a>
-            <a href="#contact" class="mobile-nav-item" onclick="scrollToSection('contact')">
-                <i class="material-icons">email</i>
-                <span>Contact</span>
-            </a>
+    <!-- Floating Navigation -->
+    <nav id="nav" class="nav">
+        <div class="nav-inner">
+            <a href="#hero" class="nav-logo">AJ</a>
+            <div class="nav-links">
+                <a href="#about" class="nav-link" data-section="about">About</a>
+                <a href="#experience" class="nav-link" data-section="experience">Experience</a>
+                <a href="#skills" class="nav-link" data-section="skills">Skills</a>
+                <a href="#projects" class="nav-link" data-section="projects">Projects</a>
+                <a href="#education" class="nav-link" data-section="education">Education</a>
+                <a href="#contact" class="nav-link" data-section="contact">Contact</a>
+            </div>
+            <button class="nav-toggle" aria-label="Toggle menu">
+                <span></span><span></span><span></span>
+            </button>
         </div>
     </nav>
 
-    <div class="container">
-        <!-- Material Design Header -->
-        <header id="header" class="fade-in-up">
-            <div class="profile-content">
-                <div class="profile-image scale-in">
-                    <img src="arhant-jain.jpg" alt="Arhant Jain" />
-                </div>
-
-                <h1 class="fade-in-up stagger-1">Arhant Jain</h1>
-                <div class="tagline fade-in-up stagger-2">
-                    <span class="typewriter" id="typewriter"></span>
-                </div>
-
-                <p class="profile-description fade-in-up stagger-3">
-                    Experienced software engineer with expertise in designing and deploying scalable, secure, cloud-native backend systems. I specialize in AWS infrastructure, microservices architecture, and DevOps automation with a focus on delivering high-performance solutions.
-                </p>
-
-                <div class="highlights fade-in-up stagger-4">
-                    <div class="highlight-item">
-                        <span class="highlight-number"><span class="counter" data-target="7">0</span>+</span>
-                        <div class="highlight-text">Years Experience</div>
-                    </div>
-                    <div class="highlight-item">
-                        <span class="highlight-number"><span class="counter" data-target="99.99">0</span>%</span>
-                        <div class="highlight-text">API Uptime</div>
-                    </div>
-                    <div class="highlight-item">
-                        <span class="highlight-number"><span class="counter" data-target="20">0</span>+</span>
-                        <div class="highlight-text">New Products Deployed</div>
-                    </div>
-                    <div class="highlight-item">
-                        <span class="highlight-number"><span class="counter" data-target="30">0</span>M+</span>
-                        <div class="highlight-text">Daily API Requests</div>
-                    </div>
-                </div>
-
-                <div class="skills-container">
-                    <span class="md-chip"><i class="fas fa-code"></i> Python</span>
-                    <span class="md-chip"><i class="fab fa-aws"></i> AWS</span>
-                    <span class="md-chip"><i class="material-icons">dns</i> Microservices</span>
-                    <span class="md-chip"><i class="material-icons">cloud</i> DevOps</span>
-                    <span class="md-chip"><i class="material-icons">cloud_upload</i> CloudOps</span>
-                    <span class="md-chip"><i class="material-icons">precision_manufacturing</i> Serverless</span>
-                </div>
-            </div>
-        </header>
-
-        <!-- Experience Section -->
-        <section class="section" id="experience">
-            <h2 class="section-title fade-in-up">Work Experience</h2>
-
-            <!-- Job 1 -->
-            <div class="experience-card fade-in-left">
-                <div class="card-header">
-                    <div>
-                        <h3 class="job-title">Senior Software Engineer (Tech Lead)</h3>
-                        <div class="company">Cox Automotive, New Hyde Park, New York</div>
-                    </div>
-                    <div class="date-badge">July 2018 to Present</div>
-                </div>
-                <div class="card-content">
-                    <ul>
-                        <li>Led & mentored a team of 6 engineers to design high-performing, scalable, secure finance services products. Managed flows for credit apps, contracting, and document signing, integrating with partners like RouteOne, Honda, and Unifi to create a centralized data storage solution generating millions in annual revenue.</li>
-                        <li>Coordinated improvements, innovations, and security enhancements including AWS Well-Architected Framework, automated security patching, compliance upgrades, quarterly security reviews, observability dashboards with CloudWatch and New Relic, and real-time service alerts with automated rollbacks.</li>
-                        <li>Led quarterly PI planning aligned with product roadmaps, delivering fully tested solutions with 99.99% API uptime and response times consistently under SLA thresholds for high-volume AWS-hosted services.</li>
-                        <li>Introduced a new CI/CD pipeline using Terraform, Docker, and GitHub Actions, increasing release efficiency from weekly to daily in lower environments and from monthly to every sprint in production, improving productivity by over 150%.</li>
-                        <li>Designed, prototyped, and implemented Credit App and Leads APIs connecting third-party OEMs and vendors to a common repository, estimated to bring over $16 million in the first year with 800 dealers connected out of ~10,000.</li>
-                        <li>Pioneered AWS Lambda, Serverless Framework, and Terraform (Infrastructure as Code) implementations at Cox Automotive.</li>
-                        <li>Led the development of Deal Data API, creating 5 high-performance RESTful endpoints within 3 weeks and 10+ custom solutions for DynamoDB operations not supported by boto3 client.</li>
-                    </ul>
-                </div>
-            </div>
-
-            <!-- Job 2 -->
-            <div class="experience-card fade-in-right">
-                <div class="card-header">
-                    <div>
-                        <h3 class="job-title">Data Analyst & Lead Instructor</h3>
-                        <div class="company">Center for K12 STEM Education, New York University</div>
-                    </div>
-                    <div class="date-badge">May 2017 to May 2018</div>
-                </div>
-                <div class="card-content">
-                    <ul>
-                        <li>Analyzed application data for over a thousand applicants and developed workflow and scripts to automate the application process using Google Apps Script and Python, increasing efficiency of each phase by 4 times.</li>
-                        <li>Led a team of 5 to assist middle school students in the CrEST program and designed activities using Arduino UNO with basic C++.</li>
-                        <li>Represented NYU with the concept of Smart Cities at the USA Science & Engineering Festival 2018 in Washington DC, with a crowd of over 400,000 people.</li>
-                    </ul>
-                </div>
-            </div>
-        </section>
-
-        <!-- Skills Section -->
-        <section class="section" id="skills">
-            <h2 class="section-title">Skills</h2>
-            <div class="glass-card fade-in-up">
-                <div class="skills-grid">
-                    <div class="skill-category">
-                        <h3><i class="material-icons">code</i> Software Languages</h3>
-                        <ul>
-                            <li>Python (Proficient)</li>
-                            <li>Java (Working knowledge)</li>
-                            <li>C++ (Working knowledge)</li>
-                            <li>SQL (Familiar)</li>
-                        </ul>
-                    </div>
-                    <div class="skill-category">
-                        <h3><i class="material-icons">cloud</i> Cloud & DevOps</h3>
-                        <ul>
-                            <li>Amazon AWS</li>
-                            <li>Docker</li>
-                            <li>Terraform</li>
-                            <li>Serverless Framework</li>
-                            <li>GitHub Actions</li>
-                        </ul>
-                    </div>
-                    <div class="skill-category">
-                        <h3><i class="material-icons">build</i> Development Tools</h3>
-                        <ul>
-                            <li>Django</li>
-                            <li>Jenkins</li>
-                            <li>Postman</li>
-                            <li>SQL Alchemy</li>
-                            <li>GIT</li>
-                            <li>API Connect</li>
-                            <li>CloudFormation</li>
-                        </ul>
-                    </div>
-                    <div class="skill-category">
-                        <h3><i class="material-icons">security</i> Monitoring & Security</h3>
-                        <ul>
-                            <li>New Relic</li>
-                            <li>SPLUNK</li>
-                            <li>WAF</li>
-                        </ul>
-                    </div>
-                    <div class="skill-category">
-                        <h3><i class="material-icons">storage</i> Big Data & Databases</h3>
-                        <ul>
-                            <li>Apache Spark</li>
-                            <li>MySQL</li>
-                            <li>MapReduce</li>
-                            <li>DynamoDB</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Education Section -->
-        <section class="section" id="education">
-            <h2 class="section-title">Education</h2>
-
-            <div class="education-card">
-                <div class="card-header">
-                    <div>
-                        <h3 class="job-title">Master's in Computer Science</h3>
-                        <div class="company">NYU School of Engineering, New York, NY</div>
-                    </div>
-                    <div class="date-badge">Graduated May 2018</div>
-                </div>
-                <div class="card-content">
-                    <p style="color: var(--on-surface-variant);">GPA: 3.41/4.0</p>
-                </div>
-            </div>
-
-            <div class="education-card">
-                <div class="card-header">
-                    <div>
-                        <h3 class="job-title">Bachelor's in Information Technology</h3>
-                        <div class="company">Northern India Engineering College, Delhi</div>
-                    </div>
-                    <div class="date-badge">Graduated June 2016</div>
-                </div>
-                <div class="card-content">
-                    <p style="color: var(--on-surface-variant);">GPA: 3.7/4.0</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Projects Section -->
-        <section class="section" id="projects">
-            <h2 class="section-title">School Projects</h2>
-            <div class="project-grid">
-                <!-- Project 1 -->
-                <div class="project-card">
-                    <div class="project-header">
-                        <h3>360FITNESS</h3>
-                        <div class="project-meta">NYU School of Engineering | Fall 2017</div>
-                    </div>
-                    <div class="project-body">
-                        <p>A comprehensive fitness web application deployed in the cloud with chatbot integration.</p>
-                        <ul>
-                            <li>Developed and deployed a web app in the cloud for complete fitness using AWS EC2, also hosting Let's Chat for chatting.</li>
-                            <li>Implemented AWS Cognito for login & session management, Twilio for SMS notifications & AWS Lex integration for exercise information.</li>
-                            <li>Created location-based gym search using Google Geocoding, Reverse Geocoding & Directions APIs.</li>
-                            <li>Utilized AWS DynamoDB to store user data, calculate BMI & customize meal plans.</li>
-                            <li>Integrated AWS Lex with Facebook Chat for broader accessibility.</li>
-                        </ul>
-                    </div>
-                    <div class="project-footer">
-                        <div class="tech-tags">
-                            <span class="tech-tag">AWS EC2</span>
-                            <span class="tech-tag">AWS Cognito</span>
-                            <span class="tech-tag">AWS Lex</span>
-                            <span class="tech-tag">DynamoDB</span>
-                            <span class="tech-tag">Twilio</span>
-                            <span class="tech-tag">Google Maps API</span>
-                        </div>
-                        <div class="project-links">
-                            <a href="https://youtu.be/1ZcpszaKIbU" target="_blank" class="btn">
-                                <i class="material-icons">play_circle</i> Demo Video
-                            </a>
-                            <a href="https://github.com/arhant/360Fitness" target="_blank" class="btn btn-outline">
-                                <span><i class="fab fa-github"></i> GitHub</span>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Project 2 -->
-                <div class="project-card">
-                    <div class="project-header">
-                        <h3>Tweet Map</h3>
-                        <div class="project-meta">NYU School of Engineering | Fall 2017</div>
-                    </div>
-                    <div class="project-body">
-                        <p>Real-time tweet visualization system deployed on cloud infrastructure.</p>
-                        <ul>
-                            <li>Developed and deployed a cloud-based system using Elasticsearch, Elastic Beanstalk, Django, and Python.</li>
-                            <li>Created a real-time tweet collection system based on hashtag filters.</li>
-                            <li>Implemented visualization of tweets on Google Maps using both marker and heat map approaches.</li>
-                            <li>Built a responsive web interface for exploring tweet data geographically.</li>
-                        </ul>
-                    </div>
-                    <div class="project-footer">
-                        <div class="tech-tags">
-                            <span class="tech-tag">Elasticsearch</span>
-                            <span class="tech-tag">Elastic Beanstalk</span>
-                            <span class="tech-tag">Django</span>
-                            <span class="tech-tag">Python</span>
-                            <span class="tech-tag">Google Maps</span>
-                            <span class="tech-tag">Twitter API</span>
-                        </div>
-                        <div class="project-links">
-                            <a href="https://github.com/arhant/Tweet_Map" target="_blank" class="btn">
-                                <span><i class="fab fa-github"></i> GitHub</span>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Project 3 -->
-                <div class="project-card">
-                    <div class="project-header">
-                        <h3>NYC Crime Analysis</h3>
-                        <div class="project-meta">NYU School of Engineering | Spring 2017</div>
-                    </div>
-                    <div class="project-body">
-                        <p>Big data analysis project focusing on crime patterns in New York City.</p>
-                        <ul>
-                            <li>Analyzed and cleaned NYPD crime record data up to 2016 using big data technologies.</li>
-                            <li>Created detailed visualizations showing crime locations, timing, and frequency patterns.</li>
-                            <li>Developed hypothesis-based analysis to identify vulnerable locations and peak crime hours.</li>
-                            <li>Built a system to reduce crime probability through data-driven insights.</li>
-                        </ul>
-                    </div>
-                    <div class="project-footer">
-                        <div class="tech-tags">
-                            <span class="tech-tag">Big Data</span>
-                            <span class="tech-tag">Data Analysis</span>
-                            <span class="tech-tag">Data Visualization</span>
-                            <span class="tech-tag">Python</span>
-                        </div>
-                        <div class="project-links">
-                            <a href="https://github.com/arhant/NYC-Crime-Analysis" target="_blank" class="btn">
-                                <span><i class="fab fa-github"></i> GitHub</span>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tennis 360 -->
-                <div class="project-card">
-                    <div class="project-header">
-                        <h3>Tennis 360</h3>
-                        <div class="project-meta">NYU School of Engineering | Spring 2017</div>
-                    </div>
-                    <div class="project-body">
-                        <p>Interactive tennis training and analytics platform with motion tracking.</p>
-                        <ul>
-                            <li>Developed a tennis training application using computer vision and motion tracking.</li>
-                            <li>Implemented real-time analysis of player movements and swing mechanics.</li>
-                            <li>Created performance metrics and personalized training recommendations.</li>
-                            <li>Built an interactive interface for coaches and players to review training data.</li>
-                        </ul>
-                    </div>
-                    <div class="project-footer">
-                        <div class="tech-tags">
-                            <span class="tech-tag">Computer Vision</span>
-                            <span class="tech-tag">Motion Tracking</span>
-                            <span class="tech-tag">Data Analysis</span>
-                            <span class="tech-tag">Python</span>
-                            <span class="tech-tag">OpenCV</span>
-                        </div>
-                        <div class="project-links">
-                            <a href="https://github.com/arhant/Tennis360" target="_blank" class="btn">
-                                <span><i class="fab fa-github"></i> GitHub</span>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Gaming Culture -->
-                <div class="project-card">
-                    <div class="project-header">
-                        <h3>Gaming Culture</h3>
-                        <div class="project-meta">NYU School of Engineering | Fall 2016</div>
-                    </div>
-                    <div class="project-body">
-                        <p>Social platform connecting gamers with similar interests and play styles.</p>
-                        <ul>
-                            <li>Created a web platform to connect gamers based on game preferences and play styles.</li>
-                            <li>Implemented matchmaking algorithms to suggest compatible gaming partners.</li>
-                            <li>Developed community features including forums, event scheduling, and team formation.</li>
-                            <li>Integrated with popular gaming platforms for seamless profile connections.</li>
-                        </ul>
-                    </div>
-                    <div class="project-footer">
-                        <div class="tech-tags">
-                            <span class="tech-tag">Web Development</span>
-                            <span class="tech-tag">Social Platform</span>
-                            <span class="tech-tag">Matchmaking Algorithm</span>
-                            <span class="tech-tag">Community Features</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Research Section -->
-        <section class="section" id="research">
-            <h2 class="section-title">Research Projects</h2>
-            <div class="project-grid">
-                <div class="project-card">
-                    <div class="project-header">
-                        <h3>Ethereum Smart Contracts</h3>
-                        <div class="project-meta">Research Project | 2018</div>
-                    </div>
-                    <div class="project-body">
-                        <p>Research on blockchain technology applications for ticket systems.</p>
-                        <ul>
-                            <li>Researched Ethereum Blockchain and Initial Coin Offerings (ICOs).</li>
-                            <li>Developed secure Smart Contracts using Solidity.</li>
-                            <li>Worked on solving ticket duplication, ticket touting, and bot-based ticket purchasing problems.</li>
-                            <li>Created proof-of-concept implementation to demonstrate the proposed solutions.</li>
-                        </ul>
-                    </div>
-                    <div class="project-footer">
-                        <div class="tech-tags">
-                            <span class="tech-tag">Ethereum</span>
-                            <span class="tech-tag">Blockchain</span>
-                            <span class="tech-tag">Solidity</span>
-                            <span class="tech-tag">Smart Contracts</span>
-                        </div>
-                        <div class="project-links">
-                            <a href="https://github.com/arhant/ETH_Contracts" target="_blank" class="btn">
-                                <span><i class="fab fa-github"></i> GitHub</span>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Contact Section -->
-        <section class="section" id="contact">
-            <h2 class="section-title">Be in Touch</h2>
-            <div class="contact-section">
-                <p style="font-size: 1.2rem; margin-bottom: 20px; opacity: 0.9;">
-                    I'm always interested in discussing new opportunities, innovative projects, and technical challenges. Feel free to reach out!
-                </p>
-                <div class="contact-links">
-                    <a href="https://github.com/arhant" target="_blank" class="btn">
-                        <span><i class="fab fa-github"></i> GitHub</span>
-                    </a>
-                    <a href="https://www.linkedin.com/in/arhant-jain" target="_blank" class="btn">
-                        <span><i class="fab fa-linkedin"></i> LinkedIn</span>
-                    </a>
-                    <a href="https://www.instagram.com/arhant_jain/" target="_blank" class="btn">
-                        <span><i class="fab fa-instagram"></i> Instagram</span>
-                    </a>
-                </div>
-            </div>
-        </section>
-
+    <!-- Mobile Menu -->
+    <div class="mobile-menu">
+        <a href="#about" class="mobile-link">About</a>
+        <a href="#experience" class="mobile-link">Experience</a>
+        <a href="#skills" class="mobile-link">Skills</a>
+        <a href="#projects" class="mobile-link">Projects</a>
+        <a href="#education" class="mobile-link">Education</a>
+        <a href="#contact" class="mobile-link">Contact</a>
     </div>
 
-    <!-- Particles.js Script -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/particles.js/2.0.0/particles.min.js"></script>
-    <script>
-        particlesJS('particles-js', {
-            particles: {
-                number: {
-                    value: window.innerWidth <= 768 ? 100 : 150, // Increased from 30/60 to 100/150
-                    density: {
-                        enable: true,
-                        value_area: 800
-                    }
-                },
-                color: {
-                    value: '#0EA5E9'
-                },
-                shape: {
-                    type: ['circle', 'triangle', 'polygon'],
-                    stroke: {
-                        width: 1,
-                        color: '#0EA5E9'
-                    },
-                    polygon: {
-                        nb_sides: 6
-                    }
-                },
-                opacity: {
-                    value: 0.15,
-                    random: true,
-                    anim: {
-                        enable: true,
-                        speed: 0.5,
-                        opacity_min: 0.05,
-                        sync: false
-                    }
-                },
-                size: {
-                    value: 3,
-                    random: true,
-                    anim: {
-                        enable: true,
-                        speed: 1,
-                        size_min: 0.5,
-                        sync: false
-                    }
-                },
-                line_linked: {
-                    enable: true,
-                    distance: 150,
-                    color: '#0EA5E9',
-                    opacity: 0.1,
-                    width: 1
-                },
-                move: {
-                    enable: true,
-                    speed: 1,
-                    direction: 'none',
-                    random: true,
-                    straight: false,
-                    out_mode: 'out',
-                    bounce: false,
-                    attract: {
-                        enable: true,
-                        rotateX: 600,
-                        rotateY: 1200
-                    }
-                }
-            },
-            interactivity: {
-                detect_on: 'canvas',
-                events: {
-                    onhover: {
-                        enable: true,
-                        mode: 'grab'
-                    },
-                    onclick: {
-                        enable: true,
-                        mode: 'push'
-                    },
-                    resize: true
-                },
-                modes: {
-                    grab: {
-                        distance: 140,
-                        line_linked: {
-                            opacity: 0.3
-                        }
-                    },
-                    push: {
-                        particles_nb: 3
-                    }
-                }
-            },
-            retina_detect: true
-        });
-    </script>
+    <!-- ==================== HERO ==================== -->
+    <section id="hero" class="hero">
+        <div class="hero-content">
+            <div class="hero-badge">Available for new opportunities</div>
+            <h1 class="hero-name">
+                <span class="hero-greeting">Hello, I'm</span>
+                Arhant Jain
+            </h1>
+            <div class="hero-title">
+                <span class="typewriter" id="typewriter"></span>
+                <span class="typewriter-cursor">|</span>
+            </div>
+            <p class="hero-summary">
+                Tech Lead at <strong>Cox Automotive</strong> building high-availability
+                microservices on AWS that power financial transactions for thousands of
+                auto dealerships. I design multi-region distributed systems with
+                99.95%+ uptime, lead CI/CD modernization, and mentor a team of 6 engineers.
+            </p>
+            <div class="hero-stats">
+                <div class="stat">
+                    <span class="stat-number" data-target="8">0</span><span class="stat-suffix">+</span>
+                    <span class="stat-label">Years Experience</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number" data-target="99">0</span><span class="stat-suffix">.95%</span>
+                    <span class="stat-label">System Uptime</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number" data-target="6">0</span>
+                    <span class="stat-label">Engineers Led</span>
+                </div>
+            </div>
+            <div class="hero-cta">
+                <a href="#experience" class="btn btn-primary">
+                    <i class="fas fa-rocket"></i> View My Work
+                </a>
+                <a href="#contact" class="btn btn-outline">
+                    <i class="fas fa-satellite-dish"></i> Get In Touch
+                </a>
+            </div>
+        </div>
+        <div class="hero-image">
+            <div class="image-orbit">
+                <div class="orbit-ring"></div>
+                <div class="orbit-ring"></div>
+                <div class="orbit-ring"></div>
+            </div>
+            <img src="arhant-jain.jpg" alt="Arhant Jain" class="profile-img" loading="eager">
+        </div>
+        <div class="scroll-indicator">
+            <span>Scroll to explore</span>
+            <div class="scroll-arrow"></div>
+        </div>
+    </section>
 
-    <!-- Theme toggle and navigation scripts -->
-    <script>
-        // Loading screen - Fixed to prevent stuck loading
-        window.addEventListener('load', function() {
-            setTimeout(function() {
-                const loadingScreen = document.getElementById('loading-screen');
-                loadingScreen.classList.add('fade-out');
+    <!-- ==================== ABOUT ==================== -->
+    <section id="about" class="section about">
+        <div class="container">
+            <h2 class="section-title">
+                <span class="section-number">01.</span> About Me
+            </h2>
+            <div class="about-grid">
+                <div class="about-text">
+                    <p>
+                        I'm a <strong>Tech Lead and Senior Software Engineer</strong> at Cox Automotive,
+                        where I lead a team building backend microservices that process financial
+                        transactions for thousands of auto dealerships nationwide. Our platform handles
+                        credit applications, deal management, and lender integrations at scale.
+                    </p>
+                    <p>
+                        Over 8 years, I've grown from building REST APIs to architecting
+                        <strong>multi-region active-active systems</strong> with sub-4-minute failover,
+                        driving CI/CD modernization across the org, and designing encryption infrastructure
+                        for enterprise partner integrations. I focus on system reliability, observability,
+                        and developer productivity.
+                    </p>
+                    <p>
+                        I hold a <strong>Master's in Computer Science from NYU</strong> and have deep
+                        expertise in Python, AWS serverless architecture, Infrastructure as Code, and
+                        DevOps. I'm passionate about mentoring engineers, reducing operational toil,
+                        and building tools that make teams ship faster and safer.
+                    </p>
+                </div>
+                <div class="about-highlights">
+                    <div class="highlight-card">
+                        <i class="fas fa-cloud"></i>
+                        <h3>Cloud Architecture</h3>
+                        <p>Multi-region AWS deployments with Lambda, API Gateway, DynamoDB, SQS, and Route53 failover</p>
+                    </div>
+                    <div class="highlight-card">
+                        <i class="fas fa-code-branch"></i>
+                        <h3>DevOps & CI/CD</h3>
+                        <p>Migrated 4+ services to GitHub Actions, built automated dependency management tools</p>
+                    </div>
+                    <div class="highlight-card">
+                        <i class="fas fa-users-cog"></i>
+                        <h3>Technical Leadership</h3>
+                        <p>Lead 6 engineers across 3 squads, own sprint planning, code reviews, and architecture</p>
+                    </div>
+                    <div class="highlight-card">
+                        <i class="fas fa-shield-alt"></i>
+                        <h3>Security & Reliability</h3>
+                        <p>99.95%+ uptime, message-level encryption (JWS/JWE), automated security patching</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-                // Ensure loading screen is completely removed after animation
-                setTimeout(function() {
-                    loadingScreen.style.display = 'none';
-                }, 500);
+    <!-- ==================== EXPERIENCE ==================== -->
+    <section id="experience" class="section experience">
+        <div class="container">
+            <h2 class="section-title">
+                <span class="section-number">02.</span> Experience
+            </h2>
 
-                // Trigger initial animations after loading
-                observeElements();
-            }, 1000); // Reduced timeout for faster loading
-        });
+            <!-- Cox Automotive — Header -->
+            <div class="exp-card exp-card-main">
+                <div class="exp-header">
+                    <div class="exp-header-left">
+                        <h3 class="exp-role">Tech Lead & Senior Software Engineer</h3>
+                        <p class="exp-company">
+                            <i class="fas fa-building"></i>
+                            Cox Automotive &mdash; Dealertrack, Finance & Insurance
+                        </p>
+                        <p class="exp-meta">
+                            <i class="fas fa-map-marker-alt"></i> New Hyde Park, NY
+                            <span class="exp-divider">|</span>
+                            <i class="fas fa-calendar"></i> July 2018 &ndash; Present
+                        </p>
+                    </div>
+                    <div class="exp-badge">Current</div>
+                </div>
+                <p class="exp-desc">
+                    Dealertrack processes billions of dollars in auto financing annually &mdash; credit
+                    applications, deal structuring, lender submissions, and compliance workflows for
+                    thousands of dealerships. As Tech Lead, I own a distributed microservice platform
+                    on AWS that powers this pipeline end-to-end.
+                </p>
+                <div class="exp-tech">
+                    <span class="tech-tag">Python</span>
+                    <span class="tech-tag">AWS Lambda</span>
+                    <span class="tech-tag">API Gateway</span>
+                    <span class="tech-tag">DynamoDB</span>
+                    <span class="tech-tag">SQS / SNS</span>
+                    <span class="tech-tag">S3</span>
+                    <span class="tech-tag">CloudFront</span>
+                    <span class="tech-tag">Route53</span>
+                    <span class="tech-tag">Lambda@Edge</span>
+                    <span class="tech-tag">AWS KMS</span>
+                    <span class="tech-tag">Secrets Manager</span>
+                    <span class="tech-tag">Terraform</span>
+                    <span class="tech-tag">GitHub Actions</span>
+                    <span class="tech-tag">Serverless Framework</span>
+                    <span class="tech-tag">Docker</span>
+                    <span class="tech-tag">CloudFormation</span>
+                    <span class="tech-tag">New Relic</span>
+                    <span class="tech-tag">CloudWatch</span>
+                    <span class="tech-tag">WAF</span>
+                    <span class="tech-tag">Okta / OAuth 2.0</span>
+                </div>
+            </div>
 
-        // Fallback: Hide loading screen after 3 seconds regardless
-        setTimeout(function() {
-            const loadingScreen = document.getElementById('loading-screen');
-            if (loadingScreen && loadingScreen.style.display !== 'none') {
-                loadingScreen.classList.add('fade-out');
-                setTimeout(function() {
-                    loadingScreen.style.display = 'none';
-                }, 500);
-                observeElements();
-            }
-        }, 3000);
+            <!-- Distributed Systems -->
+            <div class="exp-card">
+                <h4 class="impact-title">
+                    <i class="fas fa-project-diagram"></i> Distributed Systems & Event-Driven Architecture
+                </h4>
+                <ul class="impact-list">
+                    <li>Designed a <strong>serverless RESTful API layer</strong> (Lambda + API Gateway + DynamoDB) from scratch, serving as the single source of truth for all financial transaction state &mdash; handling concurrent reads/writes at scale with optimistic locking and conditional expressions</li>
+                    <li>Architected an <strong>event-driven credit decisioning pipeline</strong> using SQS-triggered Lambda consumers, a state machine orchestrator, and pub/sub fan-out to coordinate pre-qualification, credit bureau pulls, and fraud detection &mdash; fully decoupled, idempotent, and replayable from any point of failure</li>
+                    <li>Designed the <strong>event framework architecture</strong> for the next-gen platform backbone &mdash; analyzing throughput bottlenecks, dead letter queue patterns, and event schema evolution strategies across the service mesh</li>
+                    <li>Built <strong>producer/consumer patterns</strong> with SQS FIFO queues for ordered financial event processing, ensuring exactly-once delivery semantics for credit bureau response handling</li>
+                </ul>
+            </div>
 
-        // Scroll-triggered animations
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        };
+            <!-- Security & Cryptography -->
+            <div class="exp-card">
+                <h4 class="impact-title">
+                    <i class="fas fa-lock"></i> Security Engineering & Cryptography
+                </h4>
+                <ul class="impact-list">
+                    <li>Built an <strong>in-process message-level encryption (MLE) package</strong> implementing JWS (RS256/RS384/RS512) signature verification and JWE (RSA-OAEP) payload decryption &mdash; with TTL-based key caching (60s private / 300s public), adding <strong>&lt;10ms p99 overhead</strong> per request</li>
+                    <li>Integrated <strong>AWS KMS for private key operations</strong> (key material never leaves AWS) and Secrets Manager for partner public key lifecycle, with per-partner configuration and automated cache invalidation for key rotation</li>
+                    <li>Designed the MLE infrastructure to <strong>unblock a tier-1 enterprise partnership</strong> and scale to 150+ partners with three deployment modes (disabled &rarr; optional &rarr; required) for zero-disruption rollout</li>
+                    <li>Created <strong>LibRefresh</strong> &mdash; an automated supply chain security tool that pins dependencies to n-1 versions with configurable release-age thresholds, scanning and patching <strong>20+ repos</strong> (Python + Node.js) against known CVEs before they reach production</li>
+                    <li>Led <strong>organization-wide secret rotation</strong>: Artifactory API key deprecation, GitHub global secret migration, OAuth provider cutover (Bridge 1 &rarr; Okta), and origin secret propagation across 10+ service repositories &mdash; all with zero downtime</li>
+                </ul>
+            </div>
 
-        const observer = new IntersectionObserver(function(entries) {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
+            <!-- Reliability -->
+            <div class="exp-card">
+                <h4 class="impact-title">
+                    <i class="fas fa-heartbeat"></i> Site Reliability & Multi-Region Infrastructure
+                </h4>
+                <ul class="impact-list">
+                    <li>Key contributor to the <strong>active-active multi-region deployment</strong> &mdash; deploying identical stacks across two AWS regions with Route53 weighted routing and automated health-check failover, cutting RTO from <strong>30 minutes to under 4 minutes</strong></li>
+                    <li>Executed <strong>live cross-region stack migrations</strong> (us-east-1 &rarr; us-east-2) for production Lambda, API Gateway, DynamoDB, and CloudFront distributions &mdash; zero-downtime cutover while serving real financial transactions</li>
+                    <li>Maintain <strong>99.95%+ monthly availability</strong> (21 minutes/month max downtime) with custom health-check Lambda probes, CloudWatch composite alarms, and automated PagerDuty escalation</li>
+                    <li>Led the <strong>observability platform migration</strong> from Splunk to New Relic &mdash; building APM dashboards, alert conditions, and SLI/SLO definitions that reduced MTTD by 40%+</li>
+                    <li>Serve as <strong>on-call escalation lead</strong> &mdash; authored runbooks, post-incident reviews, and drove root-cause fixes for production incidents across quarterly support rotations</li>
+                </ul>
+            </div>
 
-                    // Animate counters
-                    if (entry.target.classList.contains('counter')) {
-                        animateCounter(entry.target);
-                    }
-                }
-            });
-        }, observerOptions);
+            <!-- CI/CD -->
+            <div class="exp-card">
+                <h4 class="impact-title">
+                    <i class="fas fa-infinity"></i> CI/CD & Infrastructure as Code
+                </h4>
+                <ul class="impact-list">
+                    <li>Migrated <strong>4+ production services</strong> from Jenkins to GitHub Actions &mdash; designing reusable composite actions for build/test/deploy with matrix strategies, Terraform plan/apply gates, and automated rollback on health-check failure</li>
+                    <li>Built <strong>multi-region deployment pipelines</strong> that deploy to primary and standby regions in parallel, with automated failover validation and deploy-to-standby safeguards preventing accidental active-stack mutations</li>
+                    <li>Manage <strong>infrastructure as code</strong> with Terraform (Lambda, API Gateway, DynamoDB, SQS, Route53, CloudFront, WAF) and Serverless Framework, with state locking via S3+DynamoDB and drift detection</li>
+                    <li>Drove the <strong>OAuth provider migration</strong> across all external APIs &mdash; re-architecting CloudFront &rarr; API Gateway &rarr; Lambda Edge authorizer flow, remapping partner client IDs, and reloading API scopes with zero partner downtime</li>
+                </ul>
+            </div>
 
-        function observeElements() {
-            // Observe all animated elements
-            document.querySelectorAll('.fade-in-up, .fade-in-left, .fade-in-right, .scale-in, .section').forEach(el => {
-                observer.observe(el);
-            });
+            <!-- Leadership -->
+            <div class="exp-card">
+                <h4 class="impact-title">
+                    <i class="fas fa-users"></i> Technical Leadership
+                </h4>
+                <ul class="impact-list">
+                    <li>Lead <strong>6 engineers across 3 squads</strong> &mdash; own sprint planning, backlog prioritization, story decomposition, and delivery commitments against quarterly engineering roadmap milestones</li>
+                    <li>Author <strong>Design & Engineering Proposals (DEPs)</strong> and conduct Production Readiness Reviews (PRRs) for new features, aligning product, engineering, and enterprise architecture on technical direction</li>
+                    <li>Mentor engineers through <strong>daily code reviews, pair programming sessions, and architecture whiteboarding</strong>, building a team culture of ownership, documentation-first design, and blameless incident response</li>
+                    <li>Spearheading <strong>AI-assisted developer tooling</strong> &mdash; building intelligent code review automation to accelerate PR feedback loops and catch patterns across the codebase at scale</li>
+                </ul>
+            </div>
 
-            // Observe counter elements
-            document.querySelectorAll('.counter').forEach(el => {
-                observer.observe(el);
-            });
-        }
+            <!-- NYU -->
+            <div class="exp-card">
+                <div class="exp-header">
+                    <div class="exp-header-left">
+                        <h3 class="exp-role">Data Analyst & Lead Instructor</h3>
+                        <p class="exp-company">
+                            <i class="fas fa-university"></i>
+                            Center for K-12 STEM Education, New York University
+                        </p>
+                        <p class="exp-meta">
+                            <i class="fas fa-map-marker-alt"></i> New York, NY
+                            <span class="exp-divider">|</span>
+                            <i class="fas fa-calendar"></i> May 2017 &ndash; May 2018
+                        </p>
+                    </div>
+                </div>
+                <p class="exp-desc">
+                    NYU's Center for K-12 STEM Education runs outreach programs bringing engineering
+                    and computer science education to middle and high school students across New York City.
+                </p>
+                <ul class="impact-list">
+                    <li>Built an <strong>automated student application pipeline</strong> using Google Apps Script and Python, replacing a manual spreadsheet process and achieving a <strong>4x efficiency increase</strong> in processing 500+ annual applications</li>
+                    <li>Led a team of <strong>5 instructors</strong> teaching hands-on Arduino programming and C++ to middle school students, designing curriculum that introduced embedded systems and sensor integration</li>
+                    <li>Analyzed program effectiveness data and created reporting dashboards to track student engagement, retention, and learning outcomes</li>
+                    <li>Represented NYU at the <strong>USA Science & Engineering Festival 2018</strong> in Washington, D.C., demonstrating student projects to 350,000+ festival attendees</li>
+                </ul>
+                <div class="exp-tech">
+                    <span class="tech-tag">Python</span>
+                    <span class="tech-tag">Google Apps Script</span>
+                    <span class="tech-tag">Arduino</span>
+                    <span class="tech-tag">C++</span>
+                    <span class="tech-tag">Data Analysis</span>
+                    <span class="tech-tag">Curriculum Design</span>
+                </div>
+            </div>
+        </div>
+    </section>
 
-        // Counter animation
-        function animateCounter(element) {
-            const target = parseFloat(element.getAttribute('data-target'));
-            const duration = 2000;
-            const increment = target / (duration / 16);
-            let current = 0;
+    <!-- ==================== SKILLS ==================== -->
+    <section id="skills" class="section skills">
+        <div class="container">
+            <h2 class="section-title">
+                <span class="section-number">03.</span> Skills & Technologies
+            </h2>
+            <div class="skills-grid">
+                <div class="skill-card" data-tilt>
+                    <div class="skill-icon"><i class="fab fa-python"></i></div>
+                    <h3>Languages</h3>
+                    <div class="skill-items">
+                        <span class="skill-item proficient">Python</span>
+                        <span class="skill-item proficient">SQL</span>
+                        <span class="skill-item">Java</span>
+                        <span class="skill-item">C++</span>
+                        <span class="skill-item">JavaScript</span>
+                        <span class="skill-item">Bash</span>
+                    </div>
+                </div>
+                <div class="skill-card" data-tilt>
+                    <div class="skill-icon"><i class="fab fa-aws"></i></div>
+                    <h3>AWS Cloud</h3>
+                    <div class="skill-items">
+                        <span class="skill-item proficient">Lambda</span>
+                        <span class="skill-item proficient">API Gateway</span>
+                        <span class="skill-item proficient">DynamoDB</span>
+                        <span class="skill-item proficient">SQS / SNS</span>
+                        <span class="skill-item">S3</span>
+                        <span class="skill-item">EC2</span>
+                        <span class="skill-item">CloudWatch</span>
+                        <span class="skill-item">Route53</span>
+                        <span class="skill-item">CloudFormation</span>
+                        <span class="skill-item">Cognito</span>
+                    </div>
+                </div>
+                <div class="skill-card" data-tilt>
+                    <div class="skill-icon"><i class="fas fa-cogs"></i></div>
+                    <h3>DevOps & IaC</h3>
+                    <div class="skill-items">
+                        <span class="skill-item proficient">Terraform</span>
+                        <span class="skill-item proficient">GitHub Actions</span>
+                        <span class="skill-item proficient">Docker</span>
+                        <span class="skill-item">Serverless Framework</span>
+                        <span class="skill-item">Jenkins</span>
+                        <span class="skill-item">GitOps</span>
+                    </div>
+                </div>
+                <div class="skill-card" data-tilt>
+                    <div class="skill-icon"><i class="fas fa-database"></i></div>
+                    <h3>Data & Frameworks</h3>
+                    <div class="skill-items">
+                        <span class="skill-item">Django</span>
+                        <span class="skill-item">SQLAlchemy</span>
+                        <span class="skill-item">MySQL</span>
+                        <span class="skill-item">Apache Spark</span>
+                        <span class="skill-item">Elasticsearch</span>
+                        <span class="skill-item">MapReduce</span>
+                    </div>
+                </div>
+                <div class="skill-card" data-tilt>
+                    <div class="skill-icon"><i class="fas fa-chart-bar"></i></div>
+                    <h3>Monitoring & Security</h3>
+                    <div class="skill-items">
+                        <span class="skill-item proficient">New Relic</span>
+                        <span class="skill-item proficient">Splunk</span>
+                        <span class="skill-item">WAF</span>
+                        <span class="skill-item">HMAC</span>
+                        <span class="skill-item">MLE</span>
+                        <span class="skill-item">API Connect</span>
+                    </div>
+                </div>
+                <div class="skill-card" data-tilt>
+                    <div class="skill-icon"><i class="fas fa-tools"></i></div>
+                    <h3>Tools & Practices</h3>
+                    <div class="skill-items">
+                        <span class="skill-item">Git</span>
+                        <span class="skill-item">Postman</span>
+                        <span class="skill-item">Agile / Scrum</span>
+                        <span class="skill-item">Microservices</span>
+                        <span class="skill-item">REST APIs</span>
+                        <span class="skill-item">Event-Driven</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-            const timer = setInterval(() => {
-                current += increment;
-                if (current >= target) {
-                    current = target;
-                    clearInterval(timer);
-                }
+    <!-- ==================== PROJECTS ==================== -->
+    <section id="projects" class="section projects">
+        <div class="container">
+            <h2 class="section-title">
+                <span class="section-number">04.</span> Projects
+            </h2>
+            <p class="section-subtitle">Academic and personal projects from NYU and beyond</p>
 
-                if (element.getAttribute('data-target').includes('.')) {
-                    element.textContent = current.toFixed(2);
-                } else {
-                    element.textContent = Math.floor(current);
-                }
-            }, 16);
-        }
+            <div class="projects-grid">
+                <div class="project-card">
+                    <div class="project-top">
+                        <i class="fas fa-dumbbell project-icon"></i>
+                        <div class="project-links">
+                            <a href="https://github.com/arhant" target="_blank" rel="noopener" aria-label="GitHub"><i class="fab fa-github"></i></a>
+                            <a href="https://www.youtube.com/watch?v=aJV5kJzVFGo" target="_blank" rel="noopener" aria-label="Demo"><i class="fas fa-external-link-alt"></i></a>
+                        </div>
+                    </div>
+                    <h3>360FITNESS</h3>
+                    <p>Full-stack fitness web app with AI chatbot, SMS notifications, location-based gym search, and meal planning. Built on AWS with serverless architecture.</p>
+                    <div class="project-tech">
+                        <span>AWS EC2</span><span>Cognito</span><span>Lex</span><span>DynamoDB</span><span>Twilio</span><span>Google Maps</span>
+                    </div>
+                </div>
 
-        // Interactive particles - disabled on mobile for performance
-        let mouseX = 0;
-        let mouseY = 0;
+                <div class="project-card">
+                    <div class="project-top">
+                        <i class="fas fa-map-marked-alt project-icon"></i>
+                        <div class="project-links">
+                            <a href="https://github.com/arhant" target="_blank" rel="noopener" aria-label="GitHub"><i class="fab fa-github"></i></a>
+                        </div>
+                    </div>
+                    <h3>Tweet Map</h3>
+                    <p>Real-time tweet visualization system with geographic heatmaps. Streams and indexes tweets using Elasticsearch for instant search and map rendering.</p>
+                    <div class="project-tech">
+                        <span>Elasticsearch</span><span>Django</span><span>Python</span><span>Google Maps</span><span>Twitter API</span>
+                    </div>
+                </div>
 
-        if (window.innerWidth > 768) {
-            document.addEventListener('mousemove', function(e) {
-                mouseX = e.clientX;
-                mouseY = e.clientY;
+                <div class="project-card">
+                    <div class="project-top">
+                        <i class="fas fa-shield-alt project-icon"></i>
+                        <div class="project-links">
+                            <a href="https://github.com/arhant" target="_blank" rel="noopener" aria-label="GitHub"><i class="fab fa-github"></i></a>
+                        </div>
+                    </div>
+                    <h3>NYC Crime Analysis</h3>
+                    <p>Big data analysis of 7M+ NYPD crime records to identify patterns, vulnerable locations, and peak crime hours using distributed computing.</p>
+                    <div class="project-tech">
+                        <span>Python</span><span>Apache Spark</span><span>MapReduce</span><span>Data Viz</span>
+                    </div>
+                </div>
 
-                // Interactive particles effect
-                if (window.pJSDom && window.pJSDom[0]) {
-                    const particles = window.pJSDom[0].pJS.particles.array;
-                    particles.forEach(particle => {
-                        const dx = mouseX - particle.x;
-                        const dy = mouseY - particle.y;
-                        const distance = Math.sqrt(dx * dx + dy * dy);
+                <div class="project-card">
+                    <div class="project-top">
+                        <i class="fas fa-table-tennis-paddle-ball project-icon"></i>
+                        <div class="project-links">
+                            <a href="https://github.com/arhant" target="_blank" rel="noopener" aria-label="GitHub"><i class="fab fa-github"></i></a>
+                        </div>
+                    </div>
+                    <h3>Tennis 360</h3>
+                    <p>Computer vision tennis training platform with real-time motion tracking, swing mechanics analysis, and performance metrics using OpenCV.</p>
+                    <div class="project-tech">
+                        <span>Python</span><span>OpenCV</span><span>Computer Vision</span><span>Motion Tracking</span>
+                    </div>
+                </div>
 
-                        if (distance < 100) {
-                            const force = (100 - distance) / 100;
-                            particle.vx += dx * force * 0.01;
-                            particle.vy += dy * force * 0.01;
-                        }
-                    });
-                }
-            });
-        }
+                <div class="project-card">
+                    <div class="project-top">
+                        <i class="fas fa-link project-icon"></i>
+                        <div class="project-links">
+                            <a href="https://github.com/arhant" target="_blank" rel="noopener" aria-label="GitHub"><i class="fab fa-github"></i></a>
+                        </div>
+                    </div>
+                    <h3>Ethereum Smart Contracts</h3>
+                    <p>Blockchain research for tamper-proof ticketing systems. Solidity smart contracts preventing ticket duplication, touting, and bot purchasing.</p>
+                    <div class="project-tech">
+                        <span>Ethereum</span><span>Solidity</span><span>Blockchain</span><span>Smart Contracts</span>
+                    </div>
+                </div>
 
-        // Parallax scrolling effect - disabled on mobile
-        if (window.innerWidth > 768) {
-            window.addEventListener('scroll', function() {
-                const scrolled = window.pageYOffset;
-                const parallaxElements = document.querySelectorAll('.parallax-bg');
+                <div class="project-card">
+                    <div class="project-top">
+                        <i class="fas fa-gamepad project-icon"></i>
+                        <div class="project-links">
+                            <a href="https://github.com/arhant" target="_blank" rel="noopener" aria-label="GitHub"><i class="fab fa-github"></i></a>
+                        </div>
+                    </div>
+                    <h3>Gaming Culture</h3>
+                    <p>Social platform for gamers with matchmaking algorithm, community forums, event scheduling, and team formation features.</p>
+                    <div class="project-tech">
+                        <span>Web Dev</span><span>Matchmaking</span><span>Social Platform</span><span>Community</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-                parallaxElements.forEach(element => {
-                    const speed = element.getAttribute('data-speed') || 0.5;
-                    const yPos = -(scrolled * speed);
-                    element.style.transform = `translateY(${yPos}px)`;
-                });
-            });
-        }
+    <!-- ==================== EDUCATION ==================== -->
+    <section id="education" class="section education">
+        <div class="container">
+            <h2 class="section-title">
+                <span class="section-number">05.</span> Education
+            </h2>
+            <div class="edu-timeline">
+                <div class="edu-card">
+                    <div class="edu-icon"><i class="fas fa-graduation-cap"></i></div>
+                    <div class="edu-content">
+                        <h3>Master of Science in Computer Science</h3>
+                        <p class="edu-school">NYU Tandon School of Engineering, New York, NY</p>
+                        <p class="edu-meta">
+                            <span><i class="fas fa-calendar"></i> Graduated May 2018</span>
+                            <span><i class="fas fa-star"></i> GPA: 3.41 / 4.0</span>
+                        </p>
+                        <p class="edu-desc">Focused on cloud computing, big data systems, and computer vision. Built projects using AWS, Elasticsearch, Apache Spark, and OpenCV.</p>
+                    </div>
+                </div>
+                <div class="edu-card">
+                    <div class="edu-icon"><i class="fas fa-graduation-cap"></i></div>
+                    <div class="edu-content">
+                        <h3>Bachelor of Technology in Information Technology</h3>
+                        <p class="edu-school">Northern India Engineering College (GGSIPU), New Delhi, India</p>
+                        <p class="edu-meta">
+                            <span><i class="fas fa-calendar"></i> Graduated June 2016</span>
+                            <span><i class="fas fa-star"></i> GPA: 3.7 / 4.0</span>
+                        </p>
+                        <p class="edu-desc">Strong foundation in data structures, algorithms, networking, and software engineering principles.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-        // Update section visibility - optimized
-        window.addEventListener('scroll', updateActiveSection, { passive: true });
+    <!-- ==================== CONTACT ==================== -->
+    <section id="contact" class="section contact">
+        <div class="container">
+            <h2 class="section-title">
+                <span class="section-number">06.</span> Get In Touch
+            </h2>
+            <div class="contact-content">
+                <p class="contact-text">
+                    I'm currently exploring new opportunities where I can leverage my experience
+                    in cloud architecture, technical leadership, and backend engineering.
+                    Whether you have a role in mind or just want to connect, I'd love to hear from you.
+                </p>
+                <div class="contact-links">
+                    <a href="https://www.linkedin.com/in/arhant-jain" target="_blank" rel="noopener" class="contact-card">
+                        <i class="fab fa-linkedin"></i>
+                        <span>LinkedIn</span>
+                    </a>
+                    <a href="mailto:arhant@nyu.edu" class="contact-card" id="email-card" data-email="arhant@nyu.edu">
+                        <i class="fas fa-envelope"></i>
+                        <span>Email</span>
+                        <span class="copy-toast">Copied!</span>
+                    </a>
+                </div>
+                <a href="mailto:arhant@nyu.edu" class="btn btn-primary btn-large">
+                    <i class="fas fa-paper-plane"></i> Say Hello
+                </a>
+            </div>
+        </div>
+    </section>
 
-        // Typewriter effect (enhanced)
-        const titles = [
-            "Senior Software Engineer & Technical Lead",
-            "AWS Cloud, GitOps & DevOps Expert",
-            "BackEnd Developer & System Designer"
-        ];
+    <!-- Back to Top -->
+    <button id="back-to-top" aria-label="Back to top">
+        <i class="fas fa-rocket"></i>
+    </button>
 
-        let titleIndex = 0;
-        let charIndex = 0;
-        let isDeleting = false;
-        let typingSpeed = 100;
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-links">
+            <a href="#about">About</a>
+            <a href="#experience">Experience</a>
+            <a href="#skills">Skills</a>
+            <a href="#projects">Projects</a>
+            <a href="#contact">Contact</a>
+        </div>
+        <p>Designed & Built by Arhant Jain</p>
+        <p class="footer-sub">Powered by curiosity and caffeine</p>
+    </footer>
 
-        function typeWriter() {
-            const currentTitle = titles[titleIndex];
-            const typewriterElement = document.getElementById('typewriter');
-
-            if (!typewriterElement) return;
-
-            if (!isDeleting) {
-                typewriterElement.textContent = currentTitle.substring(0, charIndex + 1);
-                charIndex++;
-
-                if (charIndex === currentTitle.length) {
-                    isDeleting = true;
-                    typingSpeed = 2000; // Pause at the end
-                } else {
-                    typingSpeed = 100;
-                }
-            } else {
-                typewriterElement.textContent = currentTitle.substring(0, charIndex - 1);
-                charIndex--;
-
-                if (charIndex === 0) {
-                    isDeleting = false;
-                    titleIndex = (titleIndex + 1) % titles.length;
-                    typingSpeed = 500; // Pause before typing next
-                } else {
-                    typingSpeed = 50; // Faster backspace
-                }
-            }
-
-            setTimeout(typeWriter, typingSpeed);
-        }
-
-        // Theme toggle functionality
-        function toggleTheme() {
-            const html = document.documentElement;
-            const currentTheme = html.getAttribute('data-theme');
-            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-            html.setAttribute('data-theme', newTheme);
-
-            // Update icon
-            const icon = document.getElementById('theme-icon');
-            icon.className = newTheme === 'light' ? 'fas fa-sun' : 'fas fa-moon';
-
-            // Store preference
-            localStorage.setItem('theme', newTheme);
-        }
-
-        // Load saved theme preference
-        document.addEventListener('DOMContentLoaded', function() {
-            const savedTheme = localStorage.getItem('theme') || 'dark';
-            document.documentElement.setAttribute('data-theme', savedTheme);
-            const icon = document.getElementById('theme-icon');
-            icon.className = savedTheme === 'light' ? 'fas fa-sun' : 'fas fa-moon';
-
-            // Start typewriter effect
-            typeWriter();
-
-            // Add click event to theme toggle
-            document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
-        });
-
-        // Smooth scroll to section
-        function scrollToSection(sectionId) {
-            const section = document.getElementById(sectionId);
-            section.scrollIntoView({ behavior: 'smooth' });
-        }
-
-        // Update active navigation dot on scroll - Enhanced for mobile
-        function updateActiveSection() {
-            const sections = ['header', 'experience', 'skills', 'education', 'projects', 'research', 'contact'];
-            const navDots = document.querySelectorAll('.nav-dot');
-            const mobileNavItems = document.querySelectorAll('.mobile-nav-item');
-
-            let current = '';
-            sections.forEach(sectionId => {
-                const section = document.getElementById(sectionId);
-                if (section) {
-                    const sectionTop = section.offsetTop;
-                    const sectionHeight = section.clientHeight;
-                    if (window.scrollY >= (sectionTop - 200)) {
-                        current = sectionId;
-                    }
-                }
-            });
-
-            // Update desktop nav dots
-            navDots.forEach((dot, index) => {
-                dot.classList.remove('active');
-                if (sections[index] === current) {
-                    dot.classList.add('active');
-                }
-            });
-
-            // Update mobile nav with improved mapping
-            const mobileNavMap = {
-                'header': 0,
-                'experience': 1,
-                'skills': 2,
-                'education': 2, // Group with skills
-                'projects': 3,
-                'research': 3, // Group with projects
-                'contact': 4
-            };
-
-            mobileNavItems.forEach((item, index) => {
-                item.classList.remove('active');
-            });
-
-            if (mobileNavMap[current] !== undefined) {
-                const activeIndex = mobileNavMap[current];
-                if (mobileNavItems[activeIndex]) {
-                    mobileNavItems[activeIndex].classList.add('active');
-                }
-            }
-        }
-
-        // Enhanced mobile navigation with proper smooth scrolling
-        function initializeMobileNavigation() {
-            const mobileNavItems = document.querySelectorAll('.mobile-nav-item');
-
-            mobileNavItems.forEach(item => {
-                // Remove existing onclick handlers
-                item.removeAttribute('onclick');
-
-                item.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-
-                    // Add visual feedback with enhanced animation
-                    this.style.transform = 'scale(0.9)';
-                    this.style.transition = 'transform 0.1s ease';
-
-                    setTimeout(() => {
-                        this.style.transform = 'scale(1)';
-                    }, 100);
-
-                    // Enhanced haptic feedback for mobile devices
-                    if (navigator.vibrate) {
-                        navigator.vibrate([30, 10, 30]); // Pattern vibration
-                    }
-
-                    // Extract section ID from href and scroll with enhanced smoothness
-                    const href = this.getAttribute('href');
-                    if (href && href.startsWith('#')) {
-                        const sectionId = href.replace('#', '');
-
-                        // Add loading state
-                        this.style.opacity = '0.7';
-
-                        // Enhanced smooth scroll with callback
-                        scrollToSectionWithCallback(sectionId, () => {
-                            // Reset visual state after scroll completes
-                            this.style.opacity = '1';
-                            updateActiveSection();
-                        });
-                    }
-                });
-            });
-        }
-
-        // Enhanced scroll function with callback support
-        function scrollToSectionWithCallback(sectionId, callback) {
-            const section = document.getElementById(sectionId);
-            if (!section) {
-                if (callback) callback();
-                return;
-            }
-
-            // Calculate offset for mobile navigation bar with better precision
-            const isMobile = window.innerWidth <= 768;
-            const mobileNavHeight = isMobile ? document.querySelector('.mobile-nav')?.offsetHeight || 80 : 0;
-            const offset = isMobile ? mobileNavHeight + 20 : 60; // Extra padding for mobile
-
-            const elementPosition = section.offsetTop;
-            const offsetPosition = elementPosition - offset;
-
-            // Enhanced smooth scrolling with better mobile support
-            const scrollOptions = {
-                top: offsetPosition,
-                behavior: 'smooth'
-            };
-
-            // For mobile devices, use a more aggressive smooth scroll
-            if (isMobile) {
-                smoothScrollToPositionMobile(offsetPosition, callback);
-            } else {
-                window.scrollTo(scrollOptions);
-                if (callback) {
-                    setTimeout(callback, 800); // Standard scroll duration
-                }
-            }
-        }
-
-        // Optimized smooth scroll specifically for mobile devices
-        function smoothScrollToPositionMobile(targetPosition, callback) {
-            const startPosition = window.pageYOffset;
-            const distance = targetPosition - startPosition;
-            const duration = 1000; // Slightly longer for better mobile experience
-            let start = null;
-
-            function animateScroll(timestamp) {
-                if (!start) start = timestamp;
-                const progress = timestamp - start;
-                const progressPercentage = Math.min(progress / duration, 1);
-
-                // Enhanced easing function for mobile
-                const ease = easeInOutQuart(progressPercentage);
-
-                const currentPosition = startPosition + (distance * ease);
-                window.scrollTo(0, currentPosition);
-
-                if (progress < duration) {
-                    window.requestAnimationFrame(animateScroll);
-                } else {
-                    // Ensure exact final position
-                    window.scrollTo(0, targetPosition);
-                    if (callback) callback();
-                }
-            }
-
-            window.requestAnimationFrame(animateScroll);
-        }
-
-        // Enhanced easing function for smoother mobile scrolling
-        function easeInOutQuart(t) {
-            return t < 0.5 ? 8 * t * t * t * t : 1 - 8 * (--t) * t * t * t;
-        }
-
-        // Override the original scrollToSection function for mobile optimization
-        function scrollToSection(sectionId) {
-            scrollToSectionWithCallback(sectionId);
-        }
-
-        // Initialize mobile navigation
-        document.addEventListener('DOMContentLoaded', initializeMobileNavigation);
-    </script>
+    <!-- Scripts -->
+    <script src="js/space.js"></script>
+    <script src="js/main.js"></script>
 </body>
 </html>
