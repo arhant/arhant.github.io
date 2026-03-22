@@ -1174,6 +1174,8 @@ img { max-width: 100%; display: block; }
     /* Show scroll indicator on mobile — reflow below hero content instead of absolute overlap */
     .scroll-indicator {
         display: flex !important;
+        flex-direction: column;
+        align-items: center;
         position: relative;
         bottom: auto;
         left: auto;
