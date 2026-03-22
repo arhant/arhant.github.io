@@ -1171,8 +1171,17 @@ img { max-width: 100%; display: block; }
     .skills-grid { grid-template-columns: 1fr; }
     .projects-grid { grid-template-columns: 1fr; }
 
-    /* Show scroll indicator on mobile */
-    .scroll-indicator { display: flex !important; font-size: 12px; }
+    /* Show scroll indicator on mobile — reflow below hero content instead of absolute overlap */
+    .scroll-indicator {
+        display: flex !important;
+        position: relative;
+        bottom: auto;
+        left: auto;
+        transform: none;
+        margin: 24px auto 0;
+        font-size: 11px;
+        padding: 8px 16px 10px;
+    }
 }
 
 @media (max-width: 480px) {
