@@ -243,16 +243,16 @@
         group.userData.shell = shell;
 
         // Filaments — Rayleigh-Taylor instability fingers
-        if (!M) {
-            for(var f=0;f<15;f++){
-                var ft=Math.random()*Math.PI*2,fp=Math.acos(2*Math.random()-1);
-                var dx=Math.sin(fp)*Math.cos(ft),dy=Math.sin(fp)*Math.sin(ft),dz=Math.cos(fp);
-                var fPts=25;var fGeo=new THREE.BufferGeometry();var fPos=new Float32Array(fPts*3),fCol=new Float32Array(fPts*3);
-                for(var fi=0;fi<fPts;fi++){var fd=radius*0.5+fi*radius*0.03;fPos[fi*3]=dx*fd+(Math.random()-0.5)*4;fPos[fi*3+1]=dy*fd+(Math.random()-0.5)*4;fPos[fi*3+2]=dz*fd+(Math.random()-0.5)*4;var fft=fi/fPts;fCol[fi*3]=1-fft*0.4;fCol[fi*3+1]=0.4+fft*0.4;fCol[fi*3+2]=0.3+fft*0.7;}
-                fGeo.setAttribute('position', new THREE.BufferAttribute(fPos, 3));
-                fGeo.setAttribute('color', new THREE.BufferAttribute(fCol, 3));
-                group.add(new THREE.Points(fGeo, spriteMatVC(glowCyan, 2, 0.3)));
-            }
+        var filCount = M ? 5 : 15;
+        var filPts = M ? 12 : 25;
+        for(var f=0;f<filCount;f++){
+            var ft=Math.random()*Math.PI*2,fp=Math.acos(2*Math.random()-1);
+            var dx=Math.sin(fp)*Math.cos(ft),dy=Math.sin(fp)*Math.sin(ft),dz=Math.cos(fp);
+            var fGeo=new THREE.BufferGeometry();var fPos=new Float32Array(filPts*3),fCol=new Float32Array(filPts*3);
+            for(var fi=0;fi<filPts;fi++){var fd=radius*0.5+fi*radius*0.03;fPos[fi*3]=dx*fd+(Math.random()-0.5)*4;fPos[fi*3+1]=dy*fd+(Math.random()-0.5)*4;fPos[fi*3+2]=dz*fd+(Math.random()-0.5)*4;var fft=fi/filPts;fCol[fi*3]=1-fft*0.4;fCol[fi*3+1]=0.4+fft*0.4;fCol[fi*3+2]=0.3+fft*0.7;}
+            fGeo.setAttribute('position', new THREE.BufferAttribute(fPos, 3));
+            fGeo.setAttribute('color', new THREE.BufferAttribute(fCol, 3));
+            group.add(new THREE.Points(fGeo, spriteMatVC(glowCyan, M?1.5:2, 0.3)));
         }
         return group;
     }
@@ -688,7 +688,9 @@
 
     // Zone 1 — Hero: star clusters + constellations
     scene.add(makeCluster(-250,-80,-600,M?100:350,55));
-    if(!M){scene.add(makeConstellation(-180,100,-350,[[-30,0],[0,40],[30,10],[60,50],[40,-20]]));scene.add(makeConstellation(220,-60,-550,[[0,0],[40,30],[80,10],[60,-30],[20,-20]]));scene.add(makeCluster(300,150,-750,250,40));}
+    scene.add(makeConstellation(-180,100,-350,[[-30,0],[0,40],[30,10],[60,50],[40,-20]]));
+    if(!M){scene.add(makeConstellation(220,-60,-550,[[0,0],[40,30],[80,10],[60,-30],[20,-20]]));scene.add(makeCluster(300,150,-750,250,40));}
+    else{scene.add(makeCluster(300,150,-750,100,25));}
 
     // Pulsar in hero zone — visible rotating beacon
     var pulsar1 = makePulsar(350, -120, -500, 70);
@@ -703,22 +705,25 @@
      [-30,15,-950,M?150:450,140,0x44aacc,0.05],
      [80,70,-1250,M?120:400,170,0x66dd88,0.04]
     ].forEach(function(n){var c=makeNebula(n[0],n[1],n[2],n[3],n[4],n[5],n[6]);scene.add(c);nebulae.push(c);});
-    if(!M){scene.add(makeDust(-120,25,-1050,700,150,500,0x5544aa,0.04));scene.add(makeDust(100,-40,-1450,600,120,400,0x3388aa,0.03));scene.add(makeDust(-60,70,-1750,500,100,300,0x664488,0.025));}
+    scene.add(makeDust(-120,25,-1050,M?400:700,M?80:150,M?300:500,0x5544aa,M?0.025:0.04));
+    if(!M){scene.add(makeDust(100,-40,-1450,600,120,400,0x3388aa,0.03));scene.add(makeDust(-60,70,-1750,500,100,300,0x664488,0.025));}
     scene.add(makePlanetaryNebula(250,110,-1600,40));
 
     // Zone 3 — Experience: Galaxy corridor
     var galaxy1=makeGalaxy(-180,60,-2250,M?2000:7000,190,3,0x7b73ff,0x38d9ff,Math.PI*0.3);scene.add(galaxy1);
-    if(!M){var galaxy2=makeGalaxy(300,-50,-2700,4000,140,2,0xff7bab,0x9966ff,Math.PI*0.55);scene.add(galaxy2);scene.add(makeGalaxy(-400,180,-3000,1500,55,4,0x44aacc,0x7b73ff,Math.PI*0.48));}
+    var galaxy2=makeGalaxy(300,-50,-2700,M?1500:4000,M?80:140,2,0xff7bab,0x9966ff,Math.PI*0.55);scene.add(galaxy2);
+    if(!M){scene.add(makeGalaxy(-400,180,-3000,1500,55,4,0x44aacc,0x7b73ff,Math.PI*0.48));}
     scene.add(makeNebula(220,140,-2500,M?120:400,160,0x4466cc,0.04));
     // Quasar near galaxies — the brightest object in the scene
     var quasar1 = makeQuasar(400, -150, -2600, M ? 0.6 : 1.0);
     scene.add(quasar1);
     scene.add(makeCluster(-300,-100,-2100,M?100:400,55));scene.add(makeCluster(160,200,-2900,M?80:300,40));
-    if(!M){scene.add(makeConstellation(260,-150,-2400,[[0,0],[25,35],[55,20],[75,55],[50,-10]]));scene.add(makeDust(160,35,-2600,600,180,450,0x332266,0.03));}
+    scene.add(makeConstellation(260,-150,-2400,[[0,0],[25,35],[55,20],[75,55],[50,-10]]));
+    if(!M){scene.add(makeDust(160,35,-2600,600,180,450,0x332266,0.03));}
 
     // Zone 4 — Skills: Supernovae + Black hole
     var supernova1=makeSupernova(100,50,-3350,95);scene.add(supernova1);
-    if(!M){var supernova2=makeSupernova(-200,-30,-3800,70);scene.add(supernova2);}
+    var supernova2=makeSupernova(-200,-30,-3800,M?45:70);scene.add(supernova2);
     var blackhole1=makeBlackHole(-60,20,-3600,1.3);scene.add(blackhole1);
     var astGeo=new THREE.BufferGeometry();var astC=M?500:1500;var astP=new Float32Array(astC*3);
     for(var ai=0;ai<astC;ai++){var aa=Math.random()*Math.PI*2,ar=150+Math.random()*200;astP[ai*3]=Math.cos(aa)*ar;astP[ai*3+1]=(Math.random()-0.5)*20;astP[ai*3+2]=Math.sin(aa)*ar-3500;}
@@ -729,7 +734,7 @@
     // Pulsar near the supernova remnant
     var pulsar2 = makePulsar(-300, -80, -3450, 60);
     scene.add(pulsar2);
-    if(!M){scene.add(makeDust(-160,-15,-3700,600,150,350,0x553344,0.035));}
+    scene.add(makeDust(-160,-15,-3700,M?350:600,M?80:150,M?200:350,0x553344,M?0.02:0.035));
 
     // Zone 5 — Projects: Deep space + planetary nebula
     scene.add(makeNebula(-180,80,-4450,M?180:500,220,0x7b73ff,0.06));
@@ -739,19 +744,21 @@
     var crab = makeCrabNebula(100, 50, -4700, 65);
     scene.add(crab);
     scene.add(makeCluster(260,130,-4350,M?80:280,45));
-    if(!M){scene.add(makeDust(0,0,-4550,900,230,500,0x443388,0.03));scene.add(makeGalaxy(340,140,-4950,1500,70,2,0x38d9ff,0x7b73ff,Math.PI*0.4));scene.add(makeConstellation(-260,90,-4850,[[-20,0],[10,30],[40,15],[70,45],[50,-10]]));}
+    scene.add(makeDust(0,0,-4550,M?500:900,M?120:230,M?300:500,0x443388,M?0.02:0.03));
+    if(!M){scene.add(makeGalaxy(340,140,-4950,1500,70,2,0x38d9ff,0x7b73ff,Math.PI*0.4));scene.add(makeConstellation(-260,90,-4850,[[-20,0],[10,30],[40,15],[70,45],[50,-10]]));}
     scene.add(makeNebula(80,180,-5050,M?100:300,160,0x9966ff,0.035));
 
     // Zone 6 — Education/Contact: Grand finale
     scene.add(makeNebula(0,0,-5350,M?150:400,270,0x38d9ff,0.04));
     scene.add(makeNebula(-220,100,-5650,M?100:300,190,0x7b73ff,0.035));
-    if(!M){var supernova3=makeSupernova(-260,100,-5550,65);scene.add(supernova3);}
+    var supernova3=makeSupernova(-260,100,-5550,M?40:65);scene.add(supernova3);
     var blackhole2=makeBlackHole(130,-15,-5700,1.1);scene.add(blackhole2);
     // Final quasar — grand finale glow
     var quasar2 = makeQuasar(-350, 80, -5850, M ? 0.5 : 0.8);
     scene.add(quasar2);
     scene.add(makeCluster(-80,-60,-5450,M?100:350,60));scene.add(makeCluster(220,180,-5850,M?70:230,40));
-    if(!M){scene.add(makePlanetaryNebula(300,-80,-5650,35));scene.add(makeDust(80,40,-5550,600,190,400,0x335566,0.025));scene.add(makeConstellation(180,70,-5250,[[-20,0],[10,30],[40,15],[70,45],[50,-10],[0,-25],[-20,0]]));}
+    scene.add(makePlanetaryNebula(300,-80,-5650,M?22:35));
+    if(!M){scene.add(makeDust(80,40,-5550,600,190,400,0x335566,0.025));scene.add(makeConstellation(180,70,-5250,[[-20,0],[10,30],[40,15],[70,45],[50,-10],[0,-25],[-20,0]]));}
 
     var maxShips=M?4:9;for(var si=0;si<maxShips;si++)spawnShip([-500,-5500]);
 
@@ -792,10 +799,10 @@
 
         // Galaxies
         if(galaxy1)galaxy1.rotation.y+=0.0004;
-        if(!M&&galaxy2)galaxy2.rotation.y-=0.0003;
+        if(galaxy2)galaxy2.rotation.y-=0.0003;
 
         // Supernovae pulse
-        [supernova1,supernova2,!M&&supernova3].forEach(function(sn,idx){if(!sn||!sn.userData.shell)return;var p=Math.sin(elapsed*0.5+idx*2)*0.1+1;sn.scale.set(p,p,p);sn.userData.shell.material.opacity=0.35+Math.sin(elapsed*0.8+idx)*0.12;sn.rotation.y+=0.0008;});
+        [supernova1,supernova2,supernova3].forEach(function(sn,idx){if(!sn||!sn.userData.shell)return;var p=Math.sin(elapsed*0.5+idx*2)*0.1+1;sn.scale.set(p,p,p);sn.userData.shell.material.opacity=0.35+Math.sin(elapsed*0.8+idx)*0.12;sn.rotation.y+=0.0008;});
 
         // Black holes spin
         if(blackhole1&&blackhole1.userData.disk)blackhole1.userData.disk.rotation.z+=0.005;
