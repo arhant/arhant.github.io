@@ -8,7 +8,7 @@ export const TIERS = {
         bhSteps: 120, asteroids: 3000, galaxyPoints: 60000, prominences: 6,
     },
     medium: {
-        name: 'medium', dpr: 1.25, bloom: true, bloomScale: 0.5, msaa: 0, ca: false,
+        name: 'medium', dpr: 1.0, bloom: true, bloomScale: 0.5, msaa: 0, ca: false,
         skyCube: 384, earthCube: 512, noise: 64, bands: 1024, sphereSeg: 96,
         nearStars: 4000, farStars: 8000, nebulaSteps: 28, nebulaScale: 0.5,
         bhSteps: 64, asteroids: 1200, galaxyPoints: 25000, prominences: 3,
@@ -24,17 +24,21 @@ export const TIERS = {
 export const TIER_ORDER = ['low', 'medium', 'high'];
 export const SOFTWARE_GPU = /SwiftShader|llvmpipe|Software|Basic Render|softpipe/i;
 
+/* First guess from the GPU name. Most visitors have integrated graphics, so only discrete
+   GPUs and higher-end Apple Silicon start on high; the frame probe then corrects the guess. */
 export function guessTier(rendererString, hints = {}) {
     const r = rendererString || '';
     const coarse = matchMedia('(pointer: coarse)').matches;
     if (hints.saveData) return 'low';
-    if (/Mali-[GT]?[4-7]\d|Adreno.*\b[3-5]\d\d\b|PowerVR|HD Graphics [2-5]\d\d\b/i.test(r)) return 'low';
-    if (coarse && innerWidth < 768) return 'low';
-    let tier = 'medium';
-    if (/RTX|GTX 1[06-9]|GTX [2-9]\d|Radeon RX|Radeon Pro|Arc A|Apple M[2-9]/i.test(r)) tier = 'high';
-    if (hints.deviceMemory && hints.deviceMemory <= 4 && tier === 'high') tier = 'medium';
-    if (coarse && tier === 'high') tier = 'medium';
-    return tier;
+    // Phones/tablets and older or entry-level integrated graphics
+    if (coarse) return /Apple M\d|Adreno.*\b[7-9]\d\d\b/i.test(r) && innerWidth >= 1024 ? 'medium' : 'low';
+    if (/Mali|Adreno|PowerVR/i.test(r)) return 'low';
+    if (/Intel.*\b(U?HD|HD) Graphics\b/i.test(r) && !/Iris|Arc/i.test(r)) return 'low';
+    if (hints.deviceMemory && hints.deviceMemory <= 4) return 'low';
+    // Discrete GPUs and higher-end Apple Silicon
+    if (/RTX|GTX 1[06-9]|GTX [2-9]\d|Radeon RX|Radeon Pro|Arc A\d|Apple M\d (Pro|Max|Ultra)|Apple M[3-9]/i.test(r)) return 'high';
+    // Iris Xe, Radeon integrated (APUs), Apple M1/M2 and everything else
+    return 'medium';
 }
 
 const SAVE_KEY = 'space.tier.v1';

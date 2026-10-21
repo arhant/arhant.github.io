@@ -59,7 +59,8 @@ export async function run({ canvas, forced, renderer: rendererString, halfFloat 
         camera.aspect = w / h;
         camera.updateProjectionMatrix();
         let dpr = Math.min(window.devicePixelRatio || 1, tier.dpr);
-        if (tier.name === 'medium' && w * h * dpr * dpr > 2.5e6) dpr = Math.min(dpr, 1);
+        // Very large canvases on the lower tiers: render fewer pixels (the UI stays sharp; it isn't in the canvas)
+        if (tier.name !== 'high' && w * h * dpr * dpr > 2.4e6) dpr = Math.sqrt(2.4e6 / (w * h));
         post.setSize(w, h, dpr * scale);
         renderer.getDrawingBufferSize(frame.res);
         frame.dpr = frame.res.x / w;
@@ -192,6 +193,7 @@ export async function run({ canvas, forced, renderer: rendererString, halfFloat 
         renderFrame(Math.min(elapsed / 1000, 0.05));
         if (probe) probe(elapsed);
         else if (!plunge.active) governor.sample(elapsed, now, expectedInterval(interval));
+        else if (plungeScaled) plungeFrameTime(elapsed, expectedInterval(interval));
     }
 
     function startLoop() {
@@ -218,12 +220,25 @@ export async function run({ canvas, forced, renderer: rendererString, halfFloat 
 
     let fadeTarget = 0;
     // Every pixel runs the full geodesic trace during the plunge: below the high tier, render it at 75%
+    // Every pixel runs the full geodesic trace during the plunge, so resolution is the lever:
+    // start lower on weaker tiers, then keep stepping down while frames run slow (never up mid-fall)
+    const PLUNGE_SCALE = { high: 1, medium: 0.7, low: 0.55 };
     let plungeScaled = false;
+    let plungeSlow = 0;
     function setPlungeScale(on) {
-        if (on === plungeScaled || (on && tierName === 'high')) return;
+        if (on === plungeScaled) return;
         plungeScaled = on;
-        scale = on ? Math.min(scale, 0.75) : governor.scale;
+        plungeSlow = 0;
+        scale = on ? Math.min(governor.scale, PLUNGE_SCALE[tierName] || 0.7) : governor.scale;
         resize();
+    }
+    function plungeFrameTime(elapsed, expected) {
+        plungeSlow = elapsed > expected * 1.35 ? plungeSlow + 1 : Math.max(0, plungeSlow - 0.5);
+        if (plungeSlow > 10 && scale > 0.45) {
+            scale = Math.max(0.45, scale * 0.82);
+            plungeSlow = 0;
+            resize();
+        }
     }
     on(EV.PLUNGE, (e) => {
         if (e.detail && e.detail.active) {
