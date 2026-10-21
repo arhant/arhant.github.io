@@ -61,6 +61,7 @@ function setMotion(mode, source) {
     if (mode === 'lite') {
         if (typewriter) typewriter.stop();
         setWarp(false, 'velocity');
+        stopPlunge('lite');
     } else {
         loadScene();
     }
@@ -173,6 +174,7 @@ function frame(now) {
     if (ship) ship.style.transform = `translateX(${(Journey.page * metrics.trackW - 5).toFixed(1)}px)`;
     hud.classList.toggle('is-scrolled', y > 16);
     if (backBtn) backBtn.classList.toggle('is-visible', y > metrics.vh * 0.8);
+    if (plungeHint) plungeHint.classList.toggle('is-visible', canPlunge());
 
     detectWarp();
 }
@@ -595,11 +597,117 @@ if (paletteBtn) {
     });
 }
 
-/* ---------- 17. 3D scene bridge ---------- */
+/* ---------- 17. Event horizon: keep scrolling at the very bottom to fall in ---------- */
+
+const plungeHint = document.getElementById('plunge-hint');
+const plungeEnd = document.getElementById('plunge-end');
+const plungeR = document.getElementById('plunge-r');
+const plungeV = document.getElementById('plunge-v');
+const plungePhase = document.getElementById('plunge-phase');
+let plunging = false;
+let plungeArm = 0;
+let plungeArmTimer = 0;
+let plungeStartedAt = 0;
+let touchY = null;
+
+const atBottom = () => scrollY >= metrics.maxScroll - 4;
+const canPlunge = () => isFull() && sceneState === 'ready' && !paletteOpen && !plunging && atBottom();
+
+function armPlunge(amount) {
+    if (!canPlunge()) { plungeArm = 0; return; }
+    plungeArm += amount;
+    clearTimeout(plungeArmTimer);
+    plungeArmTimer = setTimeout(() => { plungeArm = 0; }, 900);
+    if (plungeArm > 650) startPlunge();
+}
+
+addEventListener('wheel', (e) => {
+    if (!plunging && e.deltaY > 0) armPlunge(e.deltaY * (e.deltaMode === 1 ? 33 : 1));
+}, { passive: true });
+addEventListener('touchstart', (e) => { touchY = e.touches[0].clientY; }, { passive: true });
+addEventListener('touchmove', (e) => {
+    if (plunging || touchY === null) return;
+    const y = e.touches[0].clientY;
+    if (touchY > y) armPlunge((touchY - y) * 4);
+    touchY = y;
+}, { passive: true });
+
+// While falling the page can't scroll, and any deliberate input brings you back
+const sinceStart = () => performance.now() - plungeStartedAt;
+function blockTouch(e) { if (!plungeEnd.contains(e.target)) e.preventDefault(); }
+function onPlungeWheel(e) {
+    e.preventDefault();
+    if (e.deltaY < 0 && sinceStart() > 600) stopPlunge('abort');
+}
+function onPlungePointer(e) {
+    if (plungeEnd.contains(e.target) || sinceStart() < 600) return;
+    stopPlunge('abort');
+}
+function onPlungeKey(e) {
+    if (!plungeEnd.hidden && ['Tab', 'Enter', ' ', 'Shift'].includes(e.key)) return;
+    e.preventDefault();
+    stopPlunge('abort');
+}
+
+function startPlunge() {
+    plunging = true;
+    plungeArm = 0;
+    plungeStartedAt = performance.now();
+    root.classList.add('is-plunging');
+    if (plungeHint) plungeHint.classList.remove('is-visible');
+    addEventListener('wheel', onPlungeWheel, { passive: false });
+    addEventListener('touchmove', blockTouch, { passive: false });
+    addEventListener('pointerdown', onPlungePointer);
+    addEventListener('keydown', onPlungeKey);
+    emit('space:plunge', { active: true });
+    if (typeof window.gtag === 'function') window.gtag('event', 'event_horizon', { action: 'start' });
+}
+
+function stopPlunge(reason) {
+    if (!plunging) return;
+    plunging = false;
+    root.classList.remove('is-plunging');
+    removeEventListener('wheel', onPlungeWheel);
+    removeEventListener('touchmove', blockTouch);
+    removeEventListener('pointerdown', onPlungePointer);
+    removeEventListener('keydown', onPlungeKey);
+    plungeEnd.classList.remove('is-visible');
+    plungeEnd.hidden = true;
+    emit('space:plunge', { active: false, reason });
+}
+
+function phaseFor(r) {
+    if (r <= 0.12) return 'Tidal forces';
+    if (r <= 1) return 'Inside the event horizon';
+    if (r <= 1.5) return 'Inside the photon sphere';
+    if (r <= 3) return 'Past the last stable orbit';
+    return 'Free fall';
+}
+
+addEventListener('space:plunge-state', (e) => {
+    const { r, beta } = e.detail;
+    plungeR.innerHTML = `r = ${r < 10 ? r.toFixed(2) : r.toFixed(1)} r<sub>s</sub>`;
+    plungeV.textContent = r > 1 ? `v = ${beta.toFixed(2)} c` : 'no way back out';
+    plungePhase.textContent = phaseFor(r);
+});
+
+addEventListener('space:plunge-end', () => {
+    if (!plunging) return;
+    plungeEnd.hidden = false;
+    requestAnimationFrame(() => plungeEnd.classList.add('is-visible'));
+    plungeEnd.querySelector('[data-plunge-exit]').focus({ preventScroll: true });
+    if (typeof window.gtag === 'function') window.gtag('event', 'event_horizon', { action: 'singularity' });
+});
+plungeEnd.querySelector('[data-plunge-exit]').addEventListener('click', () => stopPlunge('exit'));
+
+/* ---------- 18. 3D scene bridge ---------- */
 
 let sceneState = 'idle'; // idle | loading | ready | failed
+let fallbackReason = null;
 
 function loadScene() {
+    // After a performance fallback the scene is still there: space:motion 'full' revives it at the lowest tier
+    if (sceneState === 'failed' && fallbackReason === 'perf') { sceneState = 'loading'; return; }
     if (sceneState !== 'idle' || !isFull()) return;
     sceneState = 'loading';
     const go = () => {
@@ -619,6 +727,7 @@ function loadScene() {
 
 addEventListener('space:ready', (e) => {
     sceneState = 'ready';
+    fallbackReason = null;
     root.classList.add('scene-ready');
     root.classList.remove('scene-failed');
     if (e.detail && e.detail.tier) root.dataset.spaceTier = e.detail.tier;
@@ -634,13 +743,15 @@ addEventListener('space:tier', (e) => {
 
 addEventListener('space:fallback', (e) => {
     sceneState = 'failed';
+    fallbackReason = e.detail && e.detail.reason;
+    stopPlunge('fallback');
     root.classList.remove('scene-ready');
     root.classList.add('scene-failed');
     // A device that can't hold frame rate gets lite mode for this session only (not persisted)
     if (e.detail && e.detail.reason === 'perf') setMotion('lite', 'system');
 });
 
-/* ---------- 18. Boot ---------- */
+/* ---------- 19. Boot ---------- */
 
 measure();
 frame(performance.now());

@@ -75,10 +75,12 @@ export class Governor {
         this.goodSince = 0;
     }
 
-    sample(intervalMs, now) {
+    /* `expected` is the interval the loop is aiming for on this display (idle frames are
+       deliberately 30fps, and a 75Hz screen can't hit exactly 60fps); only slower counts as dropped */
+    sample(intervalMs, now, expected = this.budget) {
         if (now < this.quietUntil) return;
         const samples = this.samples;
-        samples.push(now, intervalMs > this.budget * 1.5 ? 1 : 0);
+        samples.push(now, intervalMs > expected * 1.5 ? 1 : 0);
         while (samples.length && samples[0] < now - 2000) samples.splice(0, 2);
         if (samples.length < 40 || now - samples[0] < 1800) return;
 

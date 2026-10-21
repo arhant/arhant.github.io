@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import { EV, emit, on } from './events.js';
 import { TIERS, TIER_ORDER, guessTier, loadSavedTier, saveTier, Governor } from './quality.js';
 import { CameraRig } from './camera-rig.js';
+import { Plunge } from './plunge.js';
 import { Post } from './post.js';
 import { Readability } from './readability.js';
 import { bakeNoise3D } from './lib/bake.js';
@@ -37,11 +38,16 @@ export async function run({ canvas, forced, renderer: rendererString, halfFloat 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 1, 70000);
     const rig = new CameraRig(camera);
+    const plunge = new Plunge(camera, (type, detail) => {
+        if (type === 'tick') emit(EV.PLUNGE_STATE, detail);
+        else if (type === 'end') emit(EV.PLUNGE_END, {});
+        else if (type === 'done') emit(EV.PLUNGE_DONE, {});
+    });
     const post = new Post(renderer, scene, camera, tier, halfFloat);
     const readability = new Readability();
 
     const frame = {
-        dt: 0, t: 0, s: 0, camera, fade: 0, flare: new THREE.Vector3(),
+        dt: 0, t: 0, s: 0, camera, fade: 0, flare: new THREE.Vector3(), plunge: plunge.params,
         velocity: rig.velocity, speed: 0, warp: 0,
         dpr: 1, res: new THREE.Vector2(1, 1), grade: rig.grade,
     };
@@ -124,11 +130,17 @@ export async function run({ canvas, forced, renderer: rendererString, halfFloat 
     function renderFrame(dt) {
         frame.dt = dt;
         frame.t += dt;
-        const s = rig.update(dt, frame.t, J);
+        // The plunge owns the camera while active; otherwise the section-anchored rig does
+        if (plunge.active) plunge.update(dt, frame, rig, J, frame.t);
+        else {
+            rig.update(dt, frame.t, J);
+            frame.speed = rig.speed;
+        }
+        const s = rig.s;
         frame.s = s;
         frame.warp = rig.warp;
-        frame.fade = damp(frame.fade, fadeTarget, fadeTarget > frame.fade ? 12 : 4, dt);
-        frame.speed = rig.speed;
+        const fadeTo = plunge.active ? 1 : fadeTarget;
+        frame.fade = damp(frame.fade, fadeTo, fadeTo > frame.fade ? 12 : 4, dt);
         frame.flare.z = 0;
 
         for (const p of pieces) {
@@ -162,22 +174,30 @@ export async function run({ canvas, forced, renderer: rendererString, halfFloat 
     let probe = null;
     let mode = document.documentElement.dataset.motion === 'lite' ? 'lite' : 'full';
 
+    let lastRaf = performance.now();
+    let rafInterval = 1000 / 60;
+    // The interval we can actually hit: the first display refresh at or after the target
+    const expectedInterval = (target) => Math.max(target, Math.ceil((target - 2) / rafInterval) * rafInterval);
+
     function tick(now) {
         raf = requestAnimationFrame(tick);
-        const idle = now - lastInput > 8000 && rig.warp < 0.01 && !probe;
+        const raw = now - lastRaf;
+        lastRaf = now;
+        if (raw > 0 && raw < 100) rafInterval += (raw - rafInterval) * 0.1;
+        const idle = now - lastInput > 8000 && rig.warp < 0.01 && !probe && !plunge.active;
         const interval = idle ? 1000 / 30 : 1000 / 60;
         const elapsed = now - last;
         if (elapsed < interval - 2) return;
         last = now;
         renderFrame(Math.min(elapsed / 1000, 0.05));
         if (probe) probe(elapsed);
-        else governor.sample(elapsed, now);
+        else if (!plunge.active) governor.sample(elapsed, now, expectedInterval(interval));
     }
 
     function startLoop() {
-        if (running || document.hidden || mode === 'lite') return;
+        if (running || failed || document.hidden || mode === 'lite') return;
         running = true;
-        last = performance.now();
+        last = lastRaf = performance.now();
         raf = requestAnimationFrame(tick);
         governor.quiet(1000);
     }
@@ -197,6 +217,23 @@ export async function run({ canvas, forced, renderer: rendererString, halfFloat 
     addEventListener('pageshow', startLoop);
 
     let fadeTarget = 0;
+    // Every pixel runs the full geodesic trace during the plunge: below the high tier, render it at 75%
+    let plungeScaled = false;
+    function setPlungeScale(on) {
+        if (on === plungeScaled || (on && tierName === 'high')) return;
+        plungeScaled = on;
+        scale = on ? Math.min(scale, 0.75) : governor.scale;
+        resize();
+    }
+    on(EV.PLUNGE, (e) => {
+        if (e.detail && e.detail.active) {
+            plunge.start();
+            setPlungeScale(true);
+        } else {
+            plunge.abort();
+        }
+    });
+    on(EV.PLUNGE_DONE, () => setPlungeScale(false));
     on(EV.WARP, (e) => {
         const active = !!(e.detail && e.detail.active);
         rig.setWarp(active);
@@ -206,14 +243,29 @@ export async function run({ canvas, forced, renderer: rendererString, halfFloat 
     on(EV.FOCUS, (e) => rig.setFocus(e.detail && e.detail.id));
     on(EV.MOTION, (e) => {
         mode = e.detail && e.detail.mode === 'lite' ? 'lite' : 'full';
-        if (mode === 'lite') stopLoop();
-        else startLoop();
+        if (mode === 'lite') {
+            stopLoop();
+            if (plunge.active) plunge.reset();
+            return;
+        }
+        // Coming back after the governor gave up: retry at the lowest tier instead of staying dead
+        if (failed && failReason === 'perf') {
+            failed = false;
+            failReason = null;
+            applyTier('low');
+            governor.tier = 'low';
+            governor.quiet(4000);
+            emit(EV.READY, { tier: 'low' });
+        }
+        startLoop();
     });
 
     let failed = false;
+    let failReason = null;
     function fail(reason) {
         if (failed) return;
         failed = true;
+        failReason = reason;
         stopLoop();
         emit(EV.FALLBACK, { reason });
     }
@@ -246,9 +298,7 @@ export async function run({ canvas, forced, renderer: rendererString, halfFloat 
         await nextFrame();
         for (let attempt = 0; attempt < 2; attempt++) {
             const median = await runProbe();
-            const capped30 = median > 30 && median < 36;
-            if (capped30) governor.budget = 1000 / 30;
-            if (forced || capped30 || median <= 20) break;
+            if (forced || median <= expectedInterval(1000 / 60) * 1.25) break;
             const idx = TIER_ORDER.indexOf(tierName);
             if (idx === 0) break;
             applyTier(TIER_ORDER[idx - 1]);

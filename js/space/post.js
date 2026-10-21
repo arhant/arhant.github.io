@@ -48,6 +48,8 @@ export class Post {
                 uRects: { value: rects },
                 uRectParams: { value: rectParams },
                 uFlare: { value: new THREE.Vector3() },
+                uTidal: { value: 0 },
+                uBlackout: { value: 0 },
                 uRectCount: { value: 0 },
                 uLumaCap: { value: 0.22 },
                 uMaskDim: { value: 0.6 },
@@ -113,9 +115,11 @@ export class Post {
         u.uVignette.value = frame.grade.vignette;
         u.uWarp.value = frame.warp;
         u.uFlare.value.copy(frame.flare);
+        u.uTidal.value = frame.plunge.tidal;
+        u.uBlackout.value = frame.plunge.blackout;
         // Content fades out during a velocity warp, so stop dimming the scene behind it
         u.uMaskStrength.value = 1 - frame.fade;
-        if (this.bloom) this.bloom.strength = frame.grade.bloom;
+        if (this.bloom) this.bloom.strength = frame.grade.bloom * (1 - 0.45 * frame.plunge.beta);
         this.composer.render(frame.dt);
     }
 

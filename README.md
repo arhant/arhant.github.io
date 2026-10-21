@@ -37,6 +37,11 @@ Magellanic-style dwarf galaxies, plus the occasional meteor.
   usable.
 - **`?quality=high|medium|low`** forces a tier, which is useful for testing.
 - **Warp:** scrolling fast streaks the stars and dims the content. Under reduced motion this is disabled.
+- **Event horizon:** keep scrolling at the very bottom of the page and the camera free-falls into the black hole on
+  autopilot. The observer is a "raindrop" falling from rest at infinity (speed sqrt(rs/r) relative to static
+  observers). The tracer applies the matching aberration and Doppler shift, so the shadow, the photon ring and the
+  outside universe change the way they would for a real infall, including past the horizon. Any click, key press,
+  upward scroll or touch flies you back out.
 - **Command palette:** `Ctrl K` (or `⌘K`).
 
 ## Structure
@@ -50,6 +55,7 @@ Magellanic-style dwarf galaxies, plus the occasional meteor.
 │   ├── boot.js                feature checks, tier guess, fallback (no static imports)
 │   ├── app.js                 renderer, lifecycle, probe/governor, set-piece manager, frame loop
 │   ├── camera-rig.js          section-anchored camera, warp, parallax
+│   ├── plunge.js              event-horizon dive: free-fall schedule, auto-exposure, hand-back to the rig
 │   ├── path-data.js           set-piece origins, camera keyframes, per-section grade
 │   ├── post.js                composer: render → bloom → final pass
 │   ├── readability.js         rects of [data-readable] blocks for the final pass

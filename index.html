@@ -761,6 +761,29 @@
     </div>
     <p class="sr-only" id="live-status" role="status" aria-live="polite"></p>
 
+    <!-- Event-horizon plunge (full motion only): keep scrolling at the very bottom to fall in -->
+    <p class="plunge-hint" id="plunge-hint" aria-hidden="true">Keep scrolling to cross the event horizon</p>
+    <div class="plunge-hud" id="plunge-hud" aria-hidden="true">
+        <span class="plunge-phase" id="plunge-phase">Free fall</span>
+        <span class="plunge-r" id="plunge-r">r = 19.4 r<sub>s</sub></span>
+        <span class="plunge-v" id="plunge-v">v = 0.23 c</span>
+        <span class="plunge-exit">Click, tap or press Esc to return</span>
+    </div>
+    <div class="plunge-end" id="plunge-end" role="dialog" aria-labelledby="plunge-end-title" hidden>
+        <div class="plunge-end-inner">
+            <p class="mono-label"><span class="sec-num">r &rarr; 0</span> // Singularity</p>
+            <h2 id="plunge-end-title">You crossed the event horizon.</h2>
+            <p>Past the horizon every path leads inward, and nothing gets back out. Messages to me still do.</p>
+            <div class="contact-actions">
+                <button type="button" class="btn btn-primary" data-plunge-exit>Fly back out</button>
+                <a class="btn btn-ghost" href="mailto:arhant@nyu.edu" data-copy-email data-track="copy_email">
+                    <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-envelope"/></svg>
+                    <span>arhant@nyu.edu</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
     <footer class="footer">
         <nav aria-label="Footer">
             <ul class="footer-links" role="list">

@@ -21,6 +21,8 @@ uniform vec3 uBg;
 uniform vec4 uRects[${MAX_RECTS}];
 uniform vec2 uRectParams[${MAX_RECTS}];
 uniform vec3 uFlare;
+uniform float uTidal;
+uniform float uBlackout;
 uniform int uRectCount;
 uniform float uLumaCap;
 uniform float uMaskDim;
@@ -60,15 +62,22 @@ float sdRoundBox(vec2 p, vec2 b, float r) {
 
 void main() {
     vec2 uv = vUv;
+    // Tidal stretching near the singularity: squeezed sideways, pulled out along the fall
+    if (uTidal > 0.001) {
+        vec2 c = uv - 0.5;
+        c *= vec2(1.0 / (1.0 + uTidal * 1.4), 1.0 / (1.0 + uTidal * 0.15));
+        uv = 0.5 + c;
+    }
     vec2 fromC = uv - 0.5;
     vec3 col;
+    float warpAmt = max(uWarp, uTidal * 1.8);
 
-    if (uWarp > 0.01) {
+    if (warpAmt > 0.01) {
         col = vec3(0.0);
-        vec2 ca = fromC * 0.006 * uWarp;
+        vec2 ca = fromC * 0.006 * warpAmt;
         for (int i = 0; i < 8; i++) {
             float k = float(i) / 7.0;
-            vec2 o = 0.5 + fromC * (1.0 - k * 0.045 * uWarp);
+            vec2 o = 0.5 + fromC * (1.0 - k * 0.045 * warpAmt);
             col.r += texture2D(tDiffuse, o + ca).r;
             col.g += texture2D(tDiffuse, o).g;
             col.b += texture2D(tDiffuse, o - ca).b;
@@ -141,6 +150,7 @@ void main() {
 
     float n = hash12(fc + fract(uTime * 0.731) * 251.0) - 0.5;
     col += n * (uGrain + 1.0 / 255.0);
+    col *= 1.0 - uBlackout;
     gl_FragColor = vec4(col, 1.0);
 }
 `;

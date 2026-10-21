@@ -3,7 +3,15 @@
    Milky Way cube map and picking up every crossing of the accretion disk, so
    the lensed back side of the disk and the photon ring come for free.
    The disk has a Novikov-Thorne-like temperature profile, Keplerian shear and
-   partial relativistic Doppler beaming. */
+   partial relativistic Doppler beaming.
+
+   During the plunge the camera is a free-falling "raindrop" observer with speed
+   beta = sqrt(rs / r) relative to local static observers. In Painleve-Gullstrand
+   coordinates the backward ray's spatial direction is then (viewDir + beta * r_hat),
+   and light arriving from viewDir is shifted by f = 1 / (1 + beta * viewDir.r_hat)
+   (brightness ~ f^3). Inside the horizon (beta > 1) rays still trace back out to
+   the sky, so the outside universe stays visible; only rays that fall back to the
+   singularity, or directions no light can arrive from, are black. */
 import * as THREE from 'three';
 import { HASH, RAY } from '../shaders/common.glsl.js';
 import { BLACKBODY } from '../shaders/blackbody.glsl.js';
@@ -36,6 +44,8 @@ uniform float uOuter;
 uniform float uDoppler;
 uniform float uTpeak;
 uniform float uDiskIntensity;
+uniform float uBetaMix;
+uniform float uExposure;
 varying vec3 vPosW;
 ${HASH}
 ${RAY}
@@ -51,7 +61,7 @@ vec3 procStars(vec3 d) {
     return mix(vec3(1.0, 0.8, 0.6), vec3(0.7, 0.82, 1.0), hash13(i + 7.0)) * s;
 }
 
-vec3 disk(vec3 q, float rr, vec3 v, out float alpha) {
+vec3 disk(vec3 q, float rr, vec3 v, float detail, out float alpha) {
     float x = rr / 3.0;
     float prof = pow(x, -0.75) * pow(max(1.0 - sqrt(1.0 / x), 0.0), 0.25) / 0.488;
     float T = prof * uTpeak;
@@ -61,7 +71,8 @@ vec3 disk(vec3 q, float rr, vec3 v, out float alpha) {
     vec3 sp = vec3(cos(a) * rr, sin(a) * rr, rr * 0.6) * 0.075;
     float n1 = texture(uNoise, sp).r;
     float n2 = texture(uNoise, sp * vec3(3.0, 3.0, 9.0) + 0.3).a;
-    float streak = 0.3 + 1.2 * pow(n1, 1.6) + 0.55 * n2;
+    // Seen from deep inside, the disk's fine radial structure is compressed into aliasing stripes: smooth it
+    float streak = mix(1.0, 0.3 + 1.2 * pow(n1, 1.6) + 0.55 * n2, detail);
 
     vec3 tang = normalize(vec3(-q.z, 0.0, q.x));
     float beta = min(sqrt(0.5 / max(rr - 1.0, 0.5)), 0.7);
@@ -73,8 +84,17 @@ vec3 disk(vec3 q, float rr, vec3 v, out float alpha) {
 
     vec3 c = blackbody(T * gEff * grav) * pow(gEff, 3.0) * pow(prof, 3.0) * streak * uDiskIntensity;
     float edge = smoothstep(2.6, 3.3, rr) * (1.0 - smoothstep(uOuter * 0.55, uOuter, rr));
-    alpha = clamp(0.92 * edge * (0.55 + 0.45 * n1), 0.0, 1.0);
+    alpha = clamp(0.92 * edge * mix(0.8, 0.55 + 0.45 * n1, detail), 0.0, 1.0);
     return c * edge;
+}
+
+// Frequency shift f: brightness ~ f^3, hue toward blue (f > 1) or red (f < 1)
+vec3 shiftLight(vec3 c, float f) {
+    float I = min(f * f * f, 12.0);
+    vec3 tint = f > 1.0
+        ? mix(vec3(1.0), vec3(0.62, 0.8, 1.35), clamp((f - 1.0) * 0.35, 0.0, 0.8))
+        : mix(vec3(1.0), vec3(1.4, 0.68, 0.45), clamp((1.0 - f) * 1.2, 0.0, 0.9));
+    return c * I * tint;
 }
 
 void main() {
@@ -82,13 +102,27 @@ void main() {
     vec3 ro = uToLocal * (cameraPosition - uCenter) / uRs;
     vec3 rd = normalize(uToLocal * rdW);
 
+    // Free-falling observer (uBetaMix = 0 is a static observer, the normal view)
+    float rCam = length(ro);
+    vec3 rhat = ro / max(rCam, 1e-4);
+    float beta = uBetaMix * inversesqrt(max(rCam, 1e-3));
+    float denom = 1.0 + beta * dot(rd, rhat);
+    if (denom <= 0.002) {
+        // Inside the horizon, no light can arrive from these directions
+        gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+        return;
+    }
+    float fObs = 1.0 / denom;
+    vec3 dir = normalize(rd + beta * rhat);
+    float rCapture = rCam > 1.0 ? 1.0 : 0.05;
+
     vec3 p = ro;
     if (dot(ro, ro) > uProxy * uProxy) {
-        vec2 tp = raySphere(ro, rd, vec3(0.0), uProxy);
+        vec2 tp = raySphere(ro, dir, vec3(0.0), uProxy);
         if (tp.x < 0.0) discard;
-        p = ro + rd * tp.x;
+        p = ro + dir * tp.x;
     }
-    vec3 v = rd;
+    vec3 v = dir;
     vec3 hv = cross(p, v);
     float h2 = dot(hv, hv);
     float b = sqrt(h2);
@@ -96,32 +130,44 @@ void main() {
     vec3 col = vec3(0.0);
     float a = 0.0;
     bool captured = false;
-    for (int i = 0; i < 160; i++) {
+    int images = 0; // higher-order disk images are sub-pixel thin; past the third they only alias
+    bool escaped = false;
+    float detail = smoothstep(0.8, 3.0, rCam);
+    // Leapfrog (kick-drift-kick, second order) with the acceleration cached between steps;
+    // steps shrink near the photon sphere (r = 1.5), where orbit errors would otherwise band the image
+    float r2 = dot(p, p);
+    vec3 acc = -1.5 * h2 * p / (r2 * r2 * sqrt(r2));
+    int maxImages = rCam < 2.0 ? 1 : 3;
+    for (int i = 0; i < 220; i++) {
         if (i >= uSteps) break;
-        float r2 = dot(p, p);
-        float r = sqrt(r2);
-        float dt = clamp(uStepScale * r, 0.02, 1.6);
+        float r = sqrt(dot(p, p));
+        float dt = clamp(uStepScale * r * (0.5 + 0.5 * smoothstep(0.0, 1.0, abs(r - 1.5))) * (1.0 + r * 0.06), 0.006, 2.4);
         vec3 pp = p;
-        v += -1.5 * h2 * p / (r2 * r2 * r) * dt;
-        p += v * dt;
-        if (dot(p, p) < 1.0) { captured = true; break; }
+        vec3 vh = v + acc * (0.5 * dt);
+        p += vh * dt;
+        r2 = dot(p, p);
+        acc = -1.5 * h2 * p / (r2 * r2 * sqrt(r2));
+        v = vh + acc * (0.5 * dt);
+        if (dot(p, p) < rCapture * rCapture) { captured = true; break; }
         if (pp.y * p.y < 0.0) {
             vec3 q = mix(pp, p, pp.y / (pp.y - p.y));
             float rr = length(q.xz);
-            if (rr > 2.6 && rr < uOuter) {
+            if (rr > 2.6 && rr < uOuter && images < maxImages) {
+                images++;
                 float da;
-                vec3 dc = disk(q, rr, v, da);
-                col += (1.0 - a) * dc * da;
+                vec3 dc = disk(q, rr, v, detail, da);
+                col += (1.0 - a) * shiftLight(dc, fObs) * da;
                 a += (1.0 - a) * da;
             }
         }
         if (a > 0.98) break;
-        if (r > uProxy + 0.5 && dot(p, v) > 0.0) break;
+        if (r > uProxy + 0.5 && dot(p, v) > 0.0) { escaped = true; break; }
     }
     if (!captured) {
         vec3 dirW = normalize(transpose(uToLocal) * normalize(v));
-        col += (1.0 - a) * (textureCube(uSky, dirW).rgb + procStars(dirW));
+        col += (1.0 - a) * shiftLight(textureCube(uSky, dirW).rgb + procStars(dirW), fObs);
     }
+    col *= uExposure;
     float edge = 1.0 - smoothstep(0.7 * uProxy, 0.96 * uProxy, b);
     gl_FragColor = vec4(col * edge, edge);
     #include <tonemapping_fragment>
@@ -153,6 +199,8 @@ export async function create(ctx) {
         uDoppler: { value: 0.45 },
         uTpeak: { value: 4800 },
         uDiskIntensity: { value: 2.4 },
+        uBetaMix: { value: 0 },
+        uExposure: { value: 1 },
     };
     // Premultiplied output: rim fades so the regular sky shows through seamlessly
     const material = new THREE.ShaderMaterial({
@@ -166,16 +214,24 @@ export async function create(ctx) {
         blendSrc: THREE.OneFactor,
         blendDst: THREE.OneMinusSrcAlphaFactor,
     });
+    let baseSteps = T.bhSteps;
     const proxy = new THREE.Mesh(new THREE.SphereGeometry(PROXY * RS, 64, 32), material);
     proxy.renderOrder = 12;
     group.add(proxy);
 
     return {
         group,
-        update(f) { uniforms.uTime.value = f.t; },
+        update(f) {
+            uniforms.uTime.value = f.t;
+            uniforms.uBetaMix.value = f.plunge.beta;
+            uniforms.uExposure.value = f.plunge.exposure;
+            // Rays from deep inside need more steps to climb back out
+            const steps = f.plunge.active ? Math.min(220, Math.round(baseSteps * 1.8)) : baseSteps;
+            uniforms.uSteps.value = steps;
+            uniforms.uStepScale.value = 7.2 / steps;
+        },
         setTier(tier) {
-            uniforms.uSteps.value = tier.bhSteps;
-            uniforms.uStepScale.value = 7.2 / tier.bhSteps;
+            baseSteps = tier.bhSteps;
         },
         dispose() {
             proxy.geometry.dispose();
