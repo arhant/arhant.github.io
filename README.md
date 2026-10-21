@@ -1,54 +1,99 @@
 # arhant.github.io
 
-Personal portfolio — [arhant.github.io](https://arhant.github.io/)
+Personal portfolio: [arhant.github.io](https://arhant.github.io/)
 
 ## What it is
-Space-themed portfolio for Arhant Jain — Tech Lead & Sr Software Engineer. Scrolling flies you through a physics-based 3D space scene. Content floats as translucent glass cards over the journey.
+A space-themed portfolio for Arhant Jain, Senior Software Engineer and Tech Lead. Scrolling flies a camera through a
+cinematic, procedurally rendered 3D scene. Each section has its own set-piece, and the content sits on top in
+mission-control style panels.
 
 ## Tech
-- Vanilla HTML/CSS/JS — no frameworks
-- Three.js with sprite textures (no squares, only soft glow particles)
-- Physics-based rendering: blackbody star colors, logarithmic spiral arms, Sedov-Taylor shockwaves, Keplerian accretion disks
-- Hosted on GitHub Pages
+- Vanilla HTML/CSS/JS with no build step, hosted on GitHub Pages
+- Three.js r170, vendored in `js/vendor/three/` and loaded through an import map
+- Everything in the scene is procedural: baked on the GPU at load or shaded live, with no image assets
+- HDR rendering with bloom, ACES tone mapping and a final pass that dims the scene behind text for readability
 
-## Space Journey
-Scroll = fly through space. Each section passes through a different region:
+## Space journey
+The camera follows a spline anchored to each section's position on the page, so the scene always lines up with the
+content.
 
-| Zone | Section | What you see |
-|------|---------|-------------|
-| 1 | Hero | Open star field, pulsars, constellations |
-| 2 | About | Emission nebulae, dust lanes, planetary nebula |
-| 3 | Experience | Spiral galaxies, quasar, star clusters |
-| 4 | Skills | Supernovae, black hole with accretion disk, asteroid belt |
-| 5 | Projects | Crab Nebula, deep nebulae, distant galaxy |
-| 6 | Contact | Grand finale — black hole, quasar, supernova |
+| Section | Set-piece | Highlights |
+|---|---|---|
+| Hero | Earth at sunrise | Analytic Rayleigh/Mie atmosphere, ocean glint, city lights, clouds, the Moon |
+| About | Emission nebula | Ray-marched volume, dust, a tunnel carved along the flight path |
+| Experience | Ringed gas giant | Differential band rotation, ring↔planet shadows, backlit rings, instanced moonlets |
+| Skills | Blue-white star | Granulation, sunspots, limb darkening, corona streamers, prominences |
+| Case Studies | Spiral galaxy | Log-spiral arms and dust lanes, star points, Doppler-beamed jets |
+| Contact | Black hole | Schwarzschild ray tracing that lenses the Milky Way; accretion disk with Doppler beaming |
 
-### Objects
-- **Stars** — blackbody-colored by temperature (3000K red dwarfs to 30000K blue giants)
-- **Spiral galaxies** — logarithmic spiral arms, core-to-edge color gradient
-- **Black holes** — accretion disk (blackbody gradient), ISCO photon ring, Einstein ring, relativistic jets, dark event horizon
-- **Supernovae** — Sedov-Taylor shockwave shell, Rayleigh-Taylor filaments, hot ejecta
-- **Pulsars** — rotating neutron star with lighthouse beams that pulse as they sweep
-- **Quasars** — hyper-luminous core, broad/narrow emission lines, enormous jets
-- **Crab Nebula** — synchrotron glow, 22 H-alpha filaments, O III emission, central pulsar
-- **Planetary nebulae** — toroidal ring + bipolar lobes + white dwarf
-- **Spaceships** — white head + cyan-to-blue plasma exhaust trail
-- **Shooting stars** — blackbody-colored streaks
-
-### Easter egg
-Scroll fast → all UI fades out → pure space journey with widened FOV and brighter stars. Stop scrolling → content fades back in.
+### Motion and quality
+- **Lite mode** (the toggle in the nav, or `prefers-reduced-motion` / Save-Data): no 3D at all; Three.js is never
+  downloaded. A static CSS starfield is shown instead.
+- **Quality tiers** (high, medium, low) are picked from the GPU and then confirmed by a short frame-time probe. If
+  frames keep dropping, a runtime governor lowers the resolution, then the tier, and finally falls back to the static
+  backdrop.
+- **Software rendering, no WebGL2, or a blocked script** all fall back to the static backdrop, and the page stays fully
+  usable.
+- **`?quality=high|medium|low`** forces a tier, which is useful for testing.
+- **Warp:** scrolling fast streaks the stars and dims the content. Under reduced motion this is disabled.
+- **Command palette:** `Ctrl K` (or `⌘K`).
 
 ## Structure
 ```
-├── index.html
-├── css/style.css
-├── js/main.js       (nav, animations, interactions)
-├── js/space.js      (Three.js physics-based space scene)
-├── arhant-jain.jpg
-└── favicon.png
+├── index.html                 all content (static HTML), inline SVG icon sprite, import map
+├── 404.html                   "Lost in space"
+├── css/style.css              tokens, layout, components, motion (all animation gated on data-motion="full")
+├── js/main.js                 UI controller; publishes window.Journey + space:* events
+├── js/palette.js              command palette (lazy)
+├── js/space/
+│   ├── boot.js                feature checks, tier guess, fallback (no static imports)
+│   ├── app.js                 renderer, lifecycle, probe/governor, set-piece manager, frame loop
+│   ├── camera-rig.js          section-anchored camera, warp, parallax
+│   ├── path-data.js           set-piece origins, camera keyframes, per-section grade
+│   ├── post.js                composer: render → bloom → final pass
+│   ├── readability.js         rects of [data-readable] blocks for the final pass
+│   ├── quality.js             tiers + governor
+│   ├── setpieces/             sky, stars, earth, nebula, gas-giant, star, galaxy, black-hole
+│   ├── shaders/               shared GLSL (noise, blackbody, final pass)
+│   └── lib/                   GPU bakes, colour, math, glow sprite
+├── js/vendor/three/           Three.js r170 + post-processing addons (MIT)
+├── img/                       avatar in AVIF/WebP/JPEG at 320/480 px
+└── .github/workflows/deploy.yml
 ```
 
+The UI and the scene talk through `window` CustomEvents:
+
+| Direction | Events |
+|---|---|
+| UI → scene | `space:section`, `space:warp`, `space:motion`, `space:focus` |
+| Scene → UI | `space:ready`, `space:tier`, `space:fallback` |
+
 ## Run locally
+ES modules and import maps need a real HTTP server; opening the file directly won't work.
 ```
-python3 -m http.server
+python -m http.server 8000
 ```
+Then open http://localhost:8000. Google Analytics stays off locally.
+
+## Deploy
+Pushing to `main` (or `master`) runs `.github/workflows/deploy.yml`. The workflow writes the Google Analytics ID into
+`index.html` and publishes the site to GitHub Pages.
+
+One-time setup:
+1. **Settings → Secrets and variables → Actions → New repository secret:** `GA_MEASUREMENT_ID` = your GA4 measurement
+   ID (`G-…`).
+2. **Settings → Pages → Build and deployment → Source:** **GitHub Actions**.
+
+Without the secret, the site still deploys; it just has no analytics.
+
+## Editing content
+- All copy lives in `index.html`. Sections are the `<section data-scene="…">` elements inside `<main>`.
+- Hero numbers are `data-count` readouts. The final value is written in the HTML; JavaScript only animates up to it.
+- Archive project links currently point to the GitHub profile. Replace them with repo URLs (look for the `TODO` in
+  `index.html`).
+
+## Credits
+- [Three.js](https://threejs.org/) (MIT)
+- Icons: [Font Awesome Free](https://fontawesome.com/) 6.5.1 (CC BY 4.0)
+- 3D simplex noise: Stefan Gustavson and Ashima Arts (MIT)
+- Hash without sine: Dave Hoskins (MIT)

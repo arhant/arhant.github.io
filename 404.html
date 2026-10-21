@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Lost in space | Arhant Jain</title>
+    <meta name="robots" content="noindex">
+    <meta name="theme-color" content="#07071a">
+    <meta name="color-scheme" content="dark">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/favicon.png" sizes="32x32" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&amp;family=JetBrains+Mono:wght@400..700&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .lost { min-height: 100svh; display: grid; place-items: center; padding: 24px var(--gutter); }
+        .lost .panel { max-width: 600px; text-align: center; padding: clamp(32px, 6vw, 56px); }
+        .lost h1 { margin-top: 10px; font-size: clamp(2.2rem, 7vw, 3.4rem); letter-spacing: -0.03em; }
+        .lost p.lead { margin: 14px auto 28px; max-width: 42ch; color: var(--text-2); font-size: 1.05rem; }
+        .lost .code {
+            display: block;
+            margin-bottom: 4px;
+            font: 700 clamp(4rem, 16vw, 7rem)/1 var(--mono);
+            letter-spacing: -0.04em;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .lost .actions { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+    </style>
+</head>
+<body>
+    <div class="backdrop" aria-hidden="true">
+        <div class="backdrop-band"></div>
+        <div class="backdrop-stars backdrop-stars--near"></div>
+        <div class="backdrop-stars backdrop-stars--far"></div>
+    </div>
+    <main class="lost">
+        <div class="panel">
+            <span class="code" aria-hidden="true">404</span>
+            <p class="mono-label"><span class="sec-num">ERR</span> // Signal lost</p>
+            <h1>Lost in space</h1>
+            <p class="lead">This page drifted out of range. Head back to launch, or plot a course to one of the sections below.</p>
+            <div class="actions">
+                <a class="btn btn-primary" href="/">
+                    <svg class="icon" viewBox="0 0 512 512" aria-hidden="true" focusable="false"><path d="M156.6 384.9L125.7 354c-8.5-8.5-11.5-20.8-7.7-32.2c3-8.9 7-20.5 11.8-33.8L24 288c-8.6 0-16.6-4.6-20.9-12.1s-4.2-16.7 .2-24.1l52.5-88.5c13-21.9 36.5-35.3 61.9-35.3l82.3 0c2.4-4 4.8-7.7 7.2-11.3C289.1-4.1 411.1-8.1 483.9 5.3c11.6 2.1 20.6 11.2 22.8 22.8c13.4 72.9 9.3 194.8-111.4 276.7c-3.5 2.4-7.3 4.8-11.3 7.2v82.3c0 25.4-13.4 49-35.3 61.9l-88.5 52.5c-7.4 4.4-16.6 4.5-24.1 .2s-12.1-12.2-12.1-20.9V380.8c-14.1 4.9-26.4 8.9-35.7 11.9c-11.2 3.6-23.4 .5-31.8-7.8zM384 168a40 40 0 1 0 0-80 40 40 0 1 0 0 80z"/></svg>
+                    Return to launch
+                </a>
+                <a class="btn btn-ghost" href="/#projects">Case studies</a>
+                <a class="btn btn-ghost" href="/#contact">Contact</a>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
