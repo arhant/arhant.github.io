@@ -75,3 +75,53 @@ export const FOCUS = {
     'ml-blue-green': [-800, 0, -700],
     'ml-credit-app': [0, -900, 0],
 };
+
+/* ---------- Framing helpers (plain math; used to place props inside a shot) ---------- */
+
+const rad = (d) => (d * Math.PI) / 180;
+const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+const norm = (a) => { const l = Math.hypot(a[0], a[1], a[2]) || 1; return [a[0] / l, a[1] / l, a[2] / l]; };
+
+// Euler XYZ, matching THREE.Euler's default order (R = Rx·Ry·Rz)
+function rotate(v, e) {
+    if (!e) return v.slice();
+    let [x, y, z] = v;
+    const [a, b, c] = e;
+    [x, y] = [x * Math.cos(c) - y * Math.sin(c), x * Math.sin(c) + y * Math.cos(c)];
+    [x, z] = [x * Math.cos(b) + z * Math.sin(b), -x * Math.sin(b) + z * Math.cos(b)];
+    [y, z] = [y * Math.cos(a) - z * Math.sin(a), y * Math.sin(a) + z * Math.cos(a)];
+    return [x, y, z];
+}
+
+function keyFrameAt(s) {
+    const k = KEYS.find((key) => key.s === s);
+    if (!k) throw new Error(`No keyframe at s=${s}`);
+    const o = ORIGINS[k.rel];
+    const toWorld = (v) => { const r = rotate(v, FRAMES[k.rel]); return [r[0] + o[0], r[1] + o[1], r[2] + o[2]]; };
+    const pos = toWorld(k.pos);
+    const fwd = norm(sub(toWorld(k.look), pos));
+    const right = norm(cross(fwd, [0, 1, 0]));
+    const up = cross(right, fwd);
+    return { pos, fwd, right, up };
+}
+
+/* Unit direction seen from keyframe `s`: yaw > 0 is right of centre, pitch > 0 is up (degrees) */
+export function viewDir(s, yawDeg, pitchDeg) {
+    const { fwd, right, up } = keyFrameAt(s);
+    const cy = Math.cos(rad(yawDeg)), sy = Math.sin(rad(yawDeg));
+    const cp = Math.cos(rad(pitchDeg)), sp = Math.sin(rad(pitchDeg));
+    return norm([0, 1, 2].map((i) => fwd[i] * cp * cy + right[i] * cp * sy + up[i] * sp));
+}
+
+/* World position `dist` away from keyframe `s`'s camera, in direction viewDir(s, yaw, pitch) */
+export function viewPoint(s, yawDeg, pitchDeg, dist) {
+    const { pos } = keyFrameAt(s);
+    const d = viewDir(s, yawDeg, pitchDeg);
+    return [pos[0] + d[0] * dist, pos[1] + d[1] * dist, pos[2] + d[2] * dist];
+}
+
+/* Camera basis at keyframe `s` (for orienting props relative to the shot) */
+export function viewBasis(s) {
+    return keyFrameAt(s);
+}

@@ -1,11 +1,15 @@
 /* HERO: an orbital sunrise. Earth's limb arcs through the lower right with the
    sun just behind it; scrolling lifts the camera and the sun breaks the horizon.
    Surface, clouds and city lights are baked into cube maps once; the
-   atmosphere is an analytic single-scattering shell (Rayleigh + Mie). */
+   atmosphere is an analytic single-scattering shell (Rayleigh + Mie).
+   Also: aurora curtains over the night side, a space station skimming the
+   glowing limb (shadowed by the planet when it passes into night), and the
+   lens flare as the sun clears the horizon. */
 import * as THREE from 'three';
 import { bakeCube } from '../lib/bake.js';
 import { SIMPLEX, RAY } from '../shaders/common.glsl.js';
-import { ORIGINS, SUNS } from '../path-data.js';
+import { ORIGINS, SUNS, viewPoint } from '../path-data.js';
+import { createGlow } from '../lib/glow.js';
 
 const R = 100;
 const CENTER = new THREE.Vector3(95, -100, -170);
@@ -53,7 +57,9 @@ void main() {
     vec3 w = vec3(fbm3(d * 2.0 + 3.0, 3), fbm3(d * 2.0 + 13.0, 3), fbm3(d * 2.0 + 29.0, 3));
     float c = fbm3(d * 2.6 + w * 0.9, 6);
     float lat = d.y;
-    float belts = 0.15 * exp(-pow(lat / 0.12, 2.0)) + 0.18 * exp(-pow((abs(lat) - 0.6) / 0.15, 2.0));
+    float bl = lat / 0.12;
+    float bm = (abs(lat) - 0.6) / 0.15;
+    float belts = 0.15 * exp(-bl * bl) + 0.18 * exp(-bm * bm);
     float cloud = smoothstep(0.02, 0.5, c + belts - 0.04);
     cloud *= 0.7 + 0.3 * (fbm3(d * 18.0, 3) * 0.5 + 0.5);
 
@@ -223,6 +229,124 @@ void main() {
 }
 `;
 
+const AURORA_FRAG = /* glsl */ `
+uniform sampler3D uNoise;
+uniform float uTime;
+uniform vec3 uSunDir;
+uniform float uIntensity;
+varying vec3 vObj;
+varying vec3 vNormalW;
+varying vec3 vPosW;
+void main() {
+    vec3 n = normalize(vObj);
+    float lat = abs(n.y);
+    float lon = atan(n.z, n.x);
+    float wob = texture(uNoise, vec3(lon * 0.6, uTime * 0.01, 0.2)).r - 0.5;
+    float ov = (lat - 0.74 - wob * 0.05) / 0.035;
+    float oval = exp(-ov * ov);
+    float folds = texture(uNoise, vec3(lon * 0.8, uTime * 0.015, lat * 2.0)).a;
+    float rays = 0.8 + 0.2 * sin(lon * 70.0 + folds * 10.0 + uTime * 0.4);
+    vec3 N = normalize(vNormalW);
+    float night = 1.0 - smoothstep(-0.15, 0.08, dot(N, uSunDir));
+    vec3 V = normalize(cameraPosition - vPosW);
+    float limb = 1.0 / (0.18 + max(dot(N, V), 0.0));
+    float I = oval * folds * folds * rays * night * limb * uIntensity;
+    vec3 col = mix(vec3(0.12, 1.0, 0.45), vec3(0.9, 0.25, 0.55), smoothstep(0.75, 0.8, lat + wob * 0.04));
+    gl_FragColor = vec4(col * I, 1.0);
+    #include <tonemapping_fragment>
+    #include <colorspace_fragment>
+}
+`;
+
+const STATION_VERT = /* glsl */ `
+varying vec3 vNormalW;
+varying vec3 vPosW;
+varying vec2 vUv;
+void main() {
+    vUv = uv;
+    vec4 wp = modelMatrix * vec4(position, 1.0);
+    vPosW = wp.xyz;
+    vNormalW = normalize(mat3(modelMatrix) * normal);
+    gl_Position = projectionMatrix * viewMatrix * wp;
+}
+`;
+
+const STATION_FRAG = /* glsl */ `
+uniform vec3 uColor;
+uniform float uPanel;
+uniform vec3 uSunDir;
+uniform vec3 uSunColor;
+uniform vec3 uCenter;
+uniform float uR;
+uniform vec3 uFill;
+varying vec3 vNormalW;
+varying vec3 vPosW;
+varying vec2 vUv;
+void main() {
+    vec3 N = normalize(vNormalW);
+    if (!gl_FrontFacing) N = -N;
+    vec3 V = normalize(cameraPosition - vPosW);
+    vec3 L = uSunDir;
+    // Planet shadow: does the ray toward the sun hit the planet?
+    vec3 oc = vPosW - uCenter;
+    float b = dot(oc, L);
+    float d2 = dot(oc, oc) - b * b;
+    float lit = b < 0.0 ? smoothstep(uR * uR * 0.97, uR * uR * 1.03, d2) : 1.0;
+    vec3 base = uColor;
+    float shine = 24.0;
+    if (uPanel > 0.5) {
+        vec2 g = abs(fract(vUv * vec2(5.0, 18.0)) - 0.5);
+        float grid = smoothstep(0.44, 0.5, max(g.x, g.y));
+        base = mix(vec3(0.03, 0.05, 0.12), vec3(0.32, 0.27, 0.18), grid);
+        shine = 80.0;
+    }
+    float diff = max(dot(N, L), 0.0);
+    vec3 H = normalize(L + V);
+    float spec = pow(max(dot(N, H), 0.0), shine) * (uPanel > 0.5 ? 2.0 : 0.6);
+    float rim = pow(1.0 - max(dot(N, V), 0.0), 2.0);
+    float fill = max(dot(N, normalize(uFill)), 0.0) * 0.55 + 0.12;
+    vec3 col = (base * diff + vec3(1.0, 0.92, 0.8) * spec) * uSunColor * lit
+             + base * fill * vec3(0.75, 0.8, 1.0)
+             + vec3(1.0, 0.6, 0.3) * rim * 0.12;
+    gl_FragColor = vec4(col, 1.0);
+    #include <tonemapping_fragment>
+    #include <colorspace_fragment>
+}
+`;
+
+/* A small ISS-like station: truss, solar array wings, pressurised modules, radiators */
+function buildStation(uniformsBase) {
+    const station = new THREE.Group();
+    const mat = (color, panel = 0) => new THREE.ShaderMaterial({
+        uniforms: { ...uniformsBase, uColor: { value: new THREE.Vector3(...color) }, uPanel: { value: panel } },
+        vertexShader: STATION_VERT,
+        fragmentShader: STATION_FRAG,
+        side: THREE.DoubleSide,
+    });
+    const metal = mat([0.55, 0.55, 0.58]);
+    const white = mat([0.8, 0.8, 0.78]);
+    const panels = mat([0, 0, 0], 1);
+    const add = (geo, m, x, y, z, rx = 0, ry = 0, rz = 0) => {
+        const mesh = new THREE.Mesh(geo, m);
+        mesh.position.set(x, y, z);
+        mesh.rotation.set(rx, ry, rz);
+        mesh.renderOrder = 10;
+        station.add(mesh);
+    };
+    add(new THREE.BoxGeometry(8, 0.22, 0.22), metal, 0, 0, 0);
+    const wing = new THREE.PlaneGeometry(0.75, 2.6);
+    for (const x of [-3.6, -2.7, 2.7, 3.6]) {
+        add(wing, panels, x, 1.5, 0);
+        add(wing, panels, x, -1.5, 0);
+    }
+    add(new THREE.CylinderGeometry(0.32, 0.32, 3.2, 16), white, 0, 0, 0.1, Math.PI / 2, 0, 0);
+    add(new THREE.CylinderGeometry(0.28, 0.28, 1.6, 16), white, 0.7, 0, 1.2, 0, 0, Math.PI / 2);
+    const radiator = new THREE.PlaneGeometry(0.5, 1.6);
+    add(radiator, white, -1.2, 0, -1.1, Math.PI / 2, 0, 0);
+    add(radiator, white, 1.2, 0, -1.1, Math.PI / 2, 0, 0);
+    return station;
+}
+
 export async function create(ctx) {
     const { renderer, T, noise } = ctx;
     const origin = new THREE.Vector3(...ORIGINS.earth);
@@ -317,8 +441,46 @@ export async function create(ctx) {
     sun.scale.setScalar(sunRadius * SUN_SCALE * 2);
     ctx.scene.add(sun);
 
+    // Aurora: a thin emissive shell fixed to the tilted axis (not the spin)
+    const auroraUniforms = {
+        uNoise: { value: noise }, uTime: { value: 0 }, uSunDir: { value: sunDir }, uIntensity: { value: 0.42 },
+    };
+    const aurora = new THREE.Mesh(
+        new THREE.SphereGeometry(R * 1.014, seg, seg / 2),
+        new THREE.ShaderMaterial({
+            uniforms: auroraUniforms,
+            vertexShader: SURFACE_VERT,
+            fragmentShader: AURORA_FRAG,
+            transparent: true,
+            depthWrite: false,
+            blending: THREE.AdditiveBlending,
+        }),
+    );
+    aurora.renderOrder = 19;
+    tilt.add(aurora);
+
+    // Space station against the dark sky above the limb; a soft fill light keeps it readable
+    // while the sun (behind the planet) only catches its edges
+    const stationHome = new THREE.Vector3(...viewPoint(0.0, 22, 13, 100)).sub(origin);
+    const station = buildStation({
+        uSunDir: { value: sunDir },
+        uSunColor: { value: sunColor },
+        uCenter: { value: CENTER.clone().add(origin) },
+        uR: { value: R },
+        uFill: { value: new THREE.Vector3(-0.4, 0.5, 0.8) },
+    });
+    group.add(station);
+    const navLights = [
+        { glow: createGlow({ color: [1, 0.15, 0.1], core: 0.9, halo: 0.6, size: 1.4 }), pos: [-4, 0, 0], phase: 0 },
+        { glow: createGlow({ color: [0.2, 1, 0.3], core: 0.9, halo: 0.6, size: 1.4 }), pos: [4, 0, 0], phase: 0.5 },
+    ];
+    navLights.forEach((l) => { l.glow.position.set(...l.pos); station.add(l.glow); });
+
     const inv = new THREE.Matrix4();
     const tmp = new THREE.Vector3();
+    const toC = new THREE.Vector3();
+    const sunNdc = new THREE.Vector3();
+    const camFwd = new THREE.Vector3();
 
     return {
         group,
@@ -332,6 +494,35 @@ export async function create(ctx) {
             surfUniforms.uSunObj.value.copy(sunDir).transformDirection(inv);
             sun.position.copy(f.camera.position).addScaledVector(sunDir, SUN_DIST);
             sun.quaternion.copy(f.camera.quaternion);
+            auroraUniforms.uTime.value = f.t;
+
+            // Station: slow drift and tumble around its spot
+            station.position.copy(stationHome);
+            station.position.x += Math.sin(f.t * 0.05) * 3;
+            station.position.y += Math.sin(f.t * 0.037) * 1.2;
+            station.rotation.set(0.5 + Math.sin(f.t * 0.03) * 0.08, -0.35 + Math.sin(f.t * 0.02) * 0.25, 0.3);
+
+            // The hero's sun and flare belong to the hero: fade them as the camera leaves
+            const heroOnly = 1 - THREE.MathUtils.smoothstep(f.s, 0.55, 0.85);
+            sunUniforms.uCore.value = 30 * heroOnly;
+            sunUniforms.uColor.value.set(1.0, 0.93, 0.82).multiplyScalar(heroOnly);
+            const blink = (f.t % 1.4) / 1.4;
+            navLights.forEach((l) => { l.glow.visible = Math.abs(blink - l.phase) < 0.08; });
+
+            // Lens flare once the sun clears the limb
+            toC.copy(tilt.getWorldPosition(tmp)).sub(f.camera.position);
+            const dist = toC.length();
+            toC.divideScalar(dist);
+            const angR = Math.asin(Math.min(1, (R * 1.01) / dist));
+            const ang = Math.acos(Math.min(1, Math.max(-1, toC.dot(sunDir))));
+            const clear = THREE.MathUtils.smoothstep(ang - angR, -0.004, 0.03);
+            f.camera.getWorldDirection(camFwd);
+            if (clear > 0 && camFwd.dot(sunDir) > 0.2) {
+                sunNdc.copy(f.camera.position).addScaledVector(sunDir, 1000).project(f.camera);
+                const edge = Math.max(Math.abs(sunNdc.x), Math.abs(sunNdc.y));
+                const onScreen = 1 - THREE.MathUtils.smoothstep(edge, 0.95, 1.35);
+                f.flare.set(sunNdc.x * 0.5 + 0.5, sunNdc.y * 0.5 + 0.5, clear * onScreen * 0.85 * heroOnly);
+            }
         },
         setVisible(v) { sun.visible = v; },
         setTier() {},

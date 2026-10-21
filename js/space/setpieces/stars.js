@@ -118,7 +118,8 @@ export function createStars(ctx) {
             uniforms.uRes.value.copy(f.res);
             uniforms.uSize.value = 1.6 * f.dpr;
             const speed = clamp(f.speed / 2500, 0, 1);
-            uniforms.uBright.value = 0.18 + 1.1 * speed + 0.8 * f.warp;
+            // Capped under the bloom threshold: bloomed points render as square halos
+            uniforms.uBright.value = Math.min(0.9, 0.16 + 0.6 * speed + 0.35 * f.warp);
         },
         setTier(tier) {
             geo.instanceCount = Math.min(n, tier.nearStars);

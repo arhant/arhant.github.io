@@ -15,15 +15,16 @@ mission-control style panels.
 
 ## Space journey
 The camera follows a spline anchored to each section's position on the page, so the scene always lines up with the
-content.
+content. The sky is shared by every section: a baked Milky Way with distant galaxies, globular clusters and two
+Magellanic-style dwarf galaxies, plus the occasional meteor.
 
 | Section | Set-piece | Highlights |
 |---|---|---|
-| Hero | Earth at sunrise | Analytic Rayleigh/Mie atmosphere, ocean glint, city lights, clouds, the Moon |
-| About | Emission nebula | Ray-marched volume, dust, a tunnel carved along the flight path |
-| Experience | Ringed gas giant | Differential band rotation, ring↔planet shadows, backlit rings, instanced moonlets |
-| Skills | Blue-white star | Granulation, sunspots, limb darkening, corona streamers, prominences |
-| Case Studies | Spiral galaxy | Log-spiral arms and dust lanes, star points, Doppler-beamed jets |
+| Hero | Earth at sunrise | Analytic Rayleigh/Mie atmosphere, ocean glint, city lights, clouds, aurora, the Moon, a space station, lens flare |
+| About | Emission nebula + comet | Ray-marched volume and dust; comet with a straight ion tail and a curved dust tail |
+| Experience | Ringed gas giant | Differential band rotation, ring↔planet shadows, backlit rings, instanced moonlets, a hazy moon and an icy moon |
+| Skills | Blue-white star | Granulation, sunspots, limb darkening, corona streamers, prominences, a red-dwarf companion, a transiting planet |
+| Case Studies | Spiral galaxy | Log-spiral arms and dust lanes, star points, Doppler-beamed jets, globular clusters, dwarf satellites, a ring nebula |
 | Contact | Black hole | Schwarzschild ray tracing that lenses the Milky Way; accretion disk with Doppler beaming |
 
 ### Motion and quality

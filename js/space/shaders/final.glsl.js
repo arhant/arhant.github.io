@@ -19,6 +19,8 @@ uniform float uCA;
 uniform vec3 uShadowTint;
 uniform vec3 uBg;
 uniform vec4 uRects[${MAX_RECTS}];
+uniform vec2 uRectParams[${MAX_RECTS}];
+uniform vec3 uFlare;
 uniform int uRectCount;
 uniform float uLumaCap;
 uniform float uMaskDim;
@@ -79,6 +81,26 @@ void main() {
         col = texture2D(tDiffuse, uv).rgb;
     }
 
+    // Lens flare from the hero sun: anamorphic streak, glare and ghosts mirrored through the centre
+    if (uFlare.z > 0.001) {
+        vec2 asp = vec2(uRes.x / uRes.y, 1.0);
+        vec2 sp = uFlare.xy;
+        vec2 dp = (uv - sp) * asp;
+        float streak = exp(-abs(dp.y) * 260.0) * exp(-abs(dp.x) * 1.8) * 0.9;
+        float glare = exp(-length(dp) * 9.0) * 0.3;
+        vec2 axis = vec2(0.5) - sp;
+        vec3 ghosts = vec3(0.0);
+        for (int i = 0; i < 4; i++) {
+            float fi = float(i);
+            vec2 gp = sp + axis * (0.7 + fi * 0.42);
+            float rr = length((uv - gp) * asp);
+            float size = 0.018 + 0.022 * fi;
+            float disc = smoothstep(size, size * 0.82, rr) * (0.5 + 0.5 * smoothstep(size * 0.4, size, rr));
+            ghosts += mix(vec3(0.35, 0.65, 1.0), vec3(1.0, 0.55, 0.35), fi / 3.0) * disc * 0.06;
+        }
+        col += (vec3(1.0, 0.86, 0.68) * (streak + glare) + ghosts) * uFlare.z;
+    }
+
     col = acesFilmic(col * uExposure);
 
     // Grade: cool the shadows slightly
@@ -91,8 +113,18 @@ void main() {
     for (int i = 0; i < ${MAX_RECTS}; i++) {
         if (i >= uRectCount) break;
         vec4 r = uRects[i];
-        float d = sdRoundBox(fc - r.xy, r.zw, 18.0 * uDpr);
-        m = max(m, 1.0 - smoothstep(-30.0 * uDpr, 90.0 * uDpr, d));
+        vec2 pw = uRectParams[i];
+        float mi;
+        if (pw.x > 0.5) {
+            // Free-standing text: wide, soft falloff that reads as shade, not a box
+            float d = sdRoundBox(fc - r.xy, r.zw, min(r.z, r.w) * 0.9);
+            mi = (1.0 - smoothstep(-80.0 * uDpr, 170.0 * uDpr, d)) * 0.7;
+        } else {
+            // Panels: stays under the panel itself, so nothing shows around it
+            float d = sdRoundBox(fc - r.xy, r.zw, 20.0 * uDpr);
+            mi = 1.0 - smoothstep(-8.0 * uDpr, 1.0 * uDpr, d);
+        }
+        m = max(m, mi * pw.y);
     }
     m *= uMaskStrength;
     float L = dot(col, vec3(0.2126, 0.7152, 0.0722));

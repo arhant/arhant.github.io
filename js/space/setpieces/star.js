@@ -1,8 +1,11 @@
 /* SKILLS: a 9000 K blue-white star seen up close. Worley granulation, sunspots
    and limb darkening on the photosphere; a corona of outward-flowing
-   streamers; and tube prominences on staggered eruption cycles. */
+   streamers; and tube prominences on staggered eruption cycles. A red-dwarf
+   companion sits in the background, and a planet transits across the disc. */
 import * as THREE from 'three';
-import { ORIGINS } from '../path-data.js';
+import { ORIGINS, viewPoint, viewBasis } from '../path-data.js';
+import { RAY } from '../shaders/common.glsl.js';
+import { createGlow } from '../lib/glow.js';
 import { tempToColor } from '../lib/color.js';
 import { mulberry32 } from '../lib/math.js';
 
@@ -83,7 +86,8 @@ void main() {
     float rays2 = texture(uNoise, vec3(dir * 2.3 + 0.5, flow * 1.7)).r;
     float streak = pow(rays, 2.0) * 1.4 + rays2 * 0.5;
     float c = base * (0.3 + streak) * smoothstep(uExtent, uExtent * 0.5, r);
-    c += exp(-pow((r - 1.0) / 0.03, 2.0)) * 0.5;
+    float cr = (r - 1.0) / 0.03;
+    c += exp(-cr * cr) * 0.5;
     gl_FragColor = vec4(uColor * c * uIntensity, 1.0);
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
@@ -120,6 +124,30 @@ void main() {
     float ends = smoothstep(0.0, 0.1, along) * smoothstep(1.0, 0.9, along);
     float a = core * (0.2 + 0.8 * n * n) * uLife * ends * 0.3;
     gl_FragColor = vec4(uColor * a, 1.0);
+    #include <tonemapping_fragment>
+    #include <colorspace_fragment>
+}
+`;
+
+const PLANET_FRAG = /* glsl */ `
+uniform vec3 uStarPos;
+uniform vec3 uStarColor;
+varying vec3 vObj;
+varying vec3 vNormalW;
+varying vec3 vPosW;
+${RAY}
+void main() {
+    vec3 N = normalize(vNormalW);
+    vec3 V = normalize(cameraPosition - vPosW);
+    vec3 L = normalize(uStarPos - vPosW);
+    float NdL = dot(N, L);
+    float bands = 0.85 + 0.15 * sin(vObj.y * 18.0 + vObj.x * 3.0);
+    vec3 alb = vec3(0.32, 0.36, 0.42) * bands;
+    vec3 col = alb * max(NdL, 0.0) * uStarColor * 1.2;
+    // Thin atmosphere: a bright rim when backlit during the transit
+    float rim = pow(1.0 - max(dot(N, V), 0.0), 4.0);
+    col += vec3(0.45, 0.7, 1.0) * rim * (0.15 + hgPhase(dot(-V, L), 0.7) * 3.0);
+    gl_FragColor = vec4(col, 1.0);
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
 }
@@ -196,9 +224,40 @@ export async function create(ctx) {
         proms.push({ mesh, uniforms, period: 8 + rand() * 6, offset: rand() * 10 });
     }
 
+    // Red-dwarf companion (cooler, smaller, quieter surface), framed up and right in the Skills entry shot
+    const dwarfColor = new THREE.Vector3(...tempToColor(3300));
+    const dwarfUniforms = {
+        uNoise: { value: noise }, uTime: { value: 0 }, uColor: { value: dwarfColor }, uIntensity: { value: 1.5 },
+    };
+    const dwarf = new THREE.Mesh(
+        new THREE.SphereGeometry(20, 48, 24),
+        new THREE.ShaderMaterial({ uniforms: dwarfUniforms, vertexShader: SURF_VERT, fragmentShader: SURF_FRAG }),
+    );
+    dwarf.position.fromArray(viewPoint(3.0, 22, 16, 1500)).sub(origin);
+    dwarf.renderOrder = 10;
+    group.add(dwarf);
+    const dwarfGlow = createGlow({ color: [1.0, 0.45, 0.25], core: 0, halo: 1.1, size: 240 });
+    dwarfGlow.position.copy(dwarf.position);
+    group.add(dwarfGlow);
+
+    // Transiting planet: its orbit plane contains the line to the Skills camera, so it crosses the disc
+    const cam = new THREE.Vector3(...viewBasis(3.5).pos).sub(origin).normalize();
+    const orbitV = new THREE.Vector3().crossVectors(cam, new THREE.Vector3(0, 1, 0)).normalize();
+    const orbitU = cam.clone().applyAxisAngle(orbitV, 0.12);
+    const planetUniforms = { uStarPos: { value: origin.clone() }, uStarColor: { value: color } };
+    const planet = new THREE.Mesh(
+        new THREE.SphereGeometry(7, 48, 24),
+        new THREE.ShaderMaterial({ uniforms: planetUniforms, vertexShader: SURF_VERT, fragmentShader: PLANET_FRAG }),
+    );
+    planet.renderOrder = 11;
+    group.add(planet);
+
     return {
         group,
         update(f) {
+            dwarfUniforms.uTime.value = f.t * 0.6;
+            const th = f.t * 0.11;
+            planet.position.copy(orbitU).multiplyScalar(Math.cos(th) * 175).addScaledVector(orbitV, Math.sin(th) * 175);
             surfUniforms.uTime.value = f.t;
             coronaUniforms.uTime.value = f.t;
             for (const p of proms) {

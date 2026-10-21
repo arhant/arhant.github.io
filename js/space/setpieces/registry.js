@@ -3,6 +3,7 @@
 export const REGISTRY = [
     { id: 'earth', range: [-1, 1.7], load: () => import('./earth.js') },
     { id: 'nebula', range: [0.55, 2.3], load: () => import('./nebula.js') },
+    { id: 'comet', range: [0.45, 1.75], load: () => import('./comet.js') },
     { id: 'gas-giant', range: [1.55, 3.35], load: () => import('./gas-giant.js') },
     { id: 'star', range: [2.6, 4.2], load: () => import('./star.js') },
     { id: 'galaxy', range: [3.45, 5.45], load: () => import('./galaxy.js') },

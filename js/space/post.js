@@ -31,7 +31,8 @@ export class Post {
         if (tier.bloom) this.addBloom(tier);
 
         const rects = [];
-        for (let i = 0; i < MAX_RECTS; i++) rects.push(new THREE.Vector4());
+        const rectParams = [];
+        for (let i = 0; i < MAX_RECTS; i++) { rects.push(new THREE.Vector4()); rectParams.push(new THREE.Vector2()); }
         this.final = new ShaderPass({
             uniforms: {
                 tDiffuse: { value: null },
@@ -45,6 +46,8 @@ export class Post {
                 uShadowTint: { value: new THREE.Vector3(0.92, 0.97, 1.08) },
                 uBg: { value: new THREE.Vector3(7 / 255, 7 / 255, 26 / 255) },
                 uRects: { value: rects },
+                uRectParams: { value: rectParams },
+                uFlare: { value: new THREE.Vector3() },
                 uRectCount: { value: 0 },
                 uLumaCap: { value: 0.22 },
                 uMaskDim: { value: 0.6 },
@@ -64,6 +67,13 @@ export class Post {
         const setSize = bloom.setSize.bind(bloom);
         const k = tier.bloomScale;
         bloom.setSize = (w, h) => setSize(Math.max(1, Math.round(w * k)), Math.max(1, Math.round(h * k)));
+        // A single NaN pixel would be smeared by the blur pyramid into large black blocks; drop it here
+        const hp = bloom.materialHighPassFilter;
+        hp.fragmentShader = hp.fragmentShader.replace(
+            'vec4 texel = texture2D( tDiffuse, vUv );',
+            'vec4 texel = clamp( texture2D( tDiffuse, vUv ), vec4( 0.0 ), vec4( 6.0e4 ) );',
+        );
+        hp.needsUpdate = true;
         this.composer.insertPass(bloom, 1);
         this.bloom = bloom;
     }
@@ -102,6 +112,7 @@ export class Post {
         u.uExposure.value = frame.grade.exposure * (1 + 0.15 * frame.warp);
         u.uVignette.value = frame.grade.vignette;
         u.uWarp.value = frame.warp;
+        u.uFlare.value.copy(frame.flare);
         // Content fades out during a velocity warp, so stop dimming the scene behind it
         u.uMaskStrength.value = 1 - frame.fade;
         if (this.bloom) this.bloom.strength = frame.grade.bloom;

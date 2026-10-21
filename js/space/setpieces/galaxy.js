@@ -1,9 +1,11 @@
 /* MISSION LOG: a barred-less two-arm spiral galaxy. A polar-coordinate disk
    impostor (log-spiral arms, dust lanes on the inner arm edges, HII knots,
    bulge) plus star points generated with the same spiral math for parallax,
-   and relativistic jets from the nucleus with Doppler beaming. */
+   and relativistic jets from the nucleus with Doppler beaming. Its halo holds
+   globular clusters and two dwarf satellite galaxies, and a ring-shaped
+   planetary nebula floats in the foreground. */
 import * as THREE from 'three';
-import { ORIGINS } from '../path-data.js';
+import { ORIGINS, viewPoint } from '../path-data.js';
 import { tempToColor } from '../lib/color.js';
 import { mulberry32, gaussian } from '../lib/math.js';
 import { createGlow } from '../lib/glow.js';
@@ -107,6 +109,41 @@ void main() {
 }
 `;
 
+const RING_VERT = /* glsl */ `
+uniform float uSize;
+varying vec2 vUv;
+void main() {
+    vUv = uv;
+    vec4 mv = modelViewMatrix * vec4(0.0, 0.0, 0.0, 1.0);
+    mv.xy += position.xy * uSize;
+    gl_Position = projectionMatrix * mv;
+}
+`;
+
+const RING_FRAG = /* glsl */ `
+uniform sampler3D uNoise;
+uniform float uIntensity;
+varying vec2 vUv;
+void main() {
+    vec2 p = vUv * 2.0 - 1.0;
+    p.y *= 1.25;
+    float r = length(p);
+    float n = texture(uNoise, vec3(p * 1.6, 0.4)).r;
+    float sh = (r - 0.55 - (n - 0.5) * 0.1) / 0.11;
+    float shell = exp(-sh * sh);
+    float inner = exp(-r * r * 5.0) * 0.45;
+    float hr = (r - 0.86) / 0.1;
+    float halo = exp(-hr * hr) * 0.12;
+    vec3 col = vec3(1.0, 0.36, 0.46) * shell * (0.65 + 0.7 * n)
+             + vec3(0.3, 0.85, 0.92) * inner
+             + vec3(1.0, 0.42, 0.5) * halo
+             + vec3(0.9, 0.95, 1.0) * exp(-r * r * 900.0) * 0.9;
+    gl_FragColor = vec4(col * uIntensity * smoothstep(1.0, 0.92, r), 1.0);
+    #include <tonemapping_fragment>
+    #include <colorspace_fragment>
+}
+`;
+
 export async function create(ctx) {
     const { T, noise } = ctx;
     const rand = mulberry32(2718);
@@ -176,6 +213,62 @@ export async function create(ctx) {
     points.renderOrder = 19;
     points.frustumCulled = false;
     disk.add(points);
+
+    // Halo: globular clusters and two dwarf satellite galaxies (static, outside the rotating disk)
+    const halo = [];
+    const haloCol = [];
+    const haloMag = [];
+    const pushStar = (x, y, z, temp, m) => {
+        halo.push(x * RG, y * RG, z * RG);
+        tempToColor(temp, c);
+        haloCol.push(c[0], c[1], c[2]);
+        haloMag.push(m);
+    };
+    for (let k = 0; k < 10; k++) {
+        const u = rand() * 2 - 1;
+        const a = rand() * Math.PI * 2;
+        const rr = 0.75 + rand() * 0.7;
+        const s = Math.sqrt(1 - u * u);
+        const cx = rr * s * Math.cos(a), cy = rr * u * 0.8, cz = rr * s * Math.sin(a);
+        for (let i = 0; i < 260; i++) {
+            const d = Math.abs(gaussian(rand)) * 0.012;
+            const uu = rand() * 2 - 1;
+            const aa = rand() * Math.PI * 2;
+            const ss = Math.sqrt(1 - uu * uu);
+            pushStar(cx + d * ss * Math.cos(aa), cy + d * uu, cz + d * ss * Math.sin(aa), 3800 + rand() * 1800, 0.35 + rand() * 0.6);
+        }
+    }
+    for (const [cx, cy, cz, spread] of [[1.45, 0.35, -0.7, 0.09], [-1.25, -0.42, 0.95, 0.06]]) {
+        for (let i = 0; i < 1800; i++) {
+            const clump = rand() < 0.3 ? 0.4 : 1;
+            pushStar(cx + gaussian(rand) * spread * clump, cy + gaussian(rand) * spread * 0.6 * clump,
+                cz + gaussian(rand) * spread * clump, rand() < 0.5 ? 9000 + rand() * 9000 : 4200 + rand() * 2000, 0.25 + rand() * 0.5);
+        }
+    }
+    const haloGeo = new THREE.BufferGeometry();
+    haloGeo.setAttribute('position', new THREE.Float32BufferAttribute(halo, 3));
+    haloGeo.setAttribute('aColor', new THREE.Float32BufferAttribute(haloCol, 3));
+    haloGeo.setAttribute('aMag', new THREE.Float32BufferAttribute(haloMag, 1));
+    const haloPoints = new THREE.Points(haloGeo, points.material);
+    haloPoints.renderOrder = 19;
+    haloPoints.frustumCulled = false;
+    group.add(haloPoints);
+
+    // Ring nebula in the foreground of the Case Studies entry shot
+    group.updateMatrixWorld();
+    const ringUniforms = { uNoise: { value: noise }, uIntensity: { value: 0.9 }, uSize: { value: 300 } };
+    const ring = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.ShaderMaterial({
+        uniforms: ringUniforms,
+        vertexShader: RING_VERT,
+        fragmentShader: RING_FRAG,
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+    }));
+    ring.position.copy(group.worldToLocal(new THREE.Vector3(...viewPoint(4.0, 25, 13, 3400))));
+    ring.renderOrder = 21;
+    ring.frustumCulled = false;
+    group.add(ring);
 
     // Jets along the disk normal; the approaching one is Doppler-boosted
     const H = RG * 1.1;

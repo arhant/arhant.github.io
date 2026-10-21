@@ -67,7 +67,7 @@ void main() {
         if (env > 0.0) {
             vec4 n = texture(uNoise, lp * 0.5 + vec3(0.0, 0.0, uTime * 0.003));
             vec4 n2 = texture(uNoise, lp * 1.45 + vec3(0.31, uTime * 0.002, 0.0));
-            float tunnel = smoothstep(uTunnel * 0.3, uTunnel, segDist(p, uPathA, uPathB));
+            float tunnel = mix(0.3, 1.0, smoothstep(uTunnel * 0.3, uTunnel, segDist(p, uPathA, uPathB)));
             float n3 = texture(uNoise, lp * 3.7 + vec3(0.7, 0.2, uTime * 0.004)).a;
             float dens = max(n.r * 0.5 + n2.a * 0.62 + n3 * 0.22 - 0.66, 0.0) * 1.25 * env * tunnel;
             float dust = smoothstep(0.55, 0.85, n2.g) * env * tunnel;

@@ -2,11 +2,12 @@
    differential rotation applied at runtime), analytic shadows in both
    directions (rings on the planet, planet on the rings), rings that glow by
    forward scattering when backlit, and a belt of instanced moonlets whose
-   Keplerian orbits are computed in the vertex shader. */
+   Keplerian orbits are computed in the vertex shader. Two moons: a hazy,
+   Titan-like world and a bright icy one with "tiger stripe" fractures. */
 import * as THREE from 'three';
 import { bake2D } from '../lib/bake.js';
 import { SIMPLEX, RAY } from '../shaders/common.glsl.js';
-import { ORIGINS, FRAMES, SUNS } from '../path-data.js';
+import { ORIGINS, FRAMES, SUNS, viewPoint } from '../path-data.js';
 import { mulberry32, gaussian } from '../lib/math.js';
 
 const R = 220;
@@ -215,6 +216,57 @@ void main() {
 }
 `;
 
+const MOON_VERT = /* glsl */ `
+varying vec3 vObj;
+varying vec3 vNormalW;
+varying vec3 vPosW;
+void main() {
+    vObj = normalize(position);
+    vec4 wp = modelMatrix * vec4(position, 1.0);
+    vPosW = wp.xyz;
+    vNormalW = normalize(mat3(modelMatrix) * normal);
+    gl_Position = projectionMatrix * viewMatrix * wp;
+}
+`;
+
+const MOON_FRAG = /* glsl */ `
+uniform sampler3D uNoise;
+uniform vec3 uSunW;
+uniform vec3 uSunColor;
+uniform vec3 uAlbedo;
+uniform vec3 uHaze;
+uniform float uHazeAmt;
+uniform float uIce;
+varying vec3 vObj;
+varying vec3 vNormalW;
+varying vec3 vPosW;
+${RAY}
+void main() {
+    vec3 n = vObj;
+    vec3 N = normalize(vNormalW);
+    vec3 V = normalize(cameraPosition - vPosW);
+    float NdL = dot(N, uSunW);
+    vec3 alb = uAlbedo;
+    if (uIce > 0.5) {
+        float craters = smoothstep(0.18, 0.42, texture(uNoise, n * 1.7).b);
+        float stripes = smoothstep(0.78, 0.92, texture(uNoise, vec3(n.x * 3.0, n.y * 0.7, n.z * 3.0)).a)
+                      * smoothstep(-0.15, -0.6, n.y);
+        alb *= 0.82 + 0.22 * craters;
+        alb = mix(alb, vec3(0.42, 0.58, 0.74), stripes * 0.75);
+    } else {
+        float bands = texture(uNoise, vec3(n.y * 2.2, 0.31, 0.6)).r;
+        alb *= 0.85 + 0.25 * bands;
+    }
+    vec3 col = alb * max(NdL, 0.0) * uSunColor;
+    float rim = pow(1.0 - max(dot(N, V), 0.0), 3.0);
+    float mu = dot(-V, uSunW);
+    col += uHaze * uHazeAmt * rim * (smoothstep(-0.3, 0.4, NdL) + hgPhase(mu, 0.6) * 2.0) * uSunColor;
+    gl_FragColor = vec4(col, 1.0);
+    #include <tonemapping_fragment>
+    #include <colorspace_fragment>
+}
+`;
+
 function ringProfile(rand) {
     const N = 1024;
     const data = new Uint8Array(N * 4);
@@ -383,6 +435,32 @@ export async function create(ctx) {
         rocks.push({ mesh, base });
     }
 
+    // Moons, framed right of the Experience heading in the approach shot
+    const moonDefs = [
+        { at: [16, 9, 1250], r: 34, albedo: [0.56, 0.37, 0.17], haze: [1.0, 0.62, 0.28], hazeAmt: 0.85, ice: 0 },
+        { at: [27, -8, 1500], r: 15, albedo: [0.82, 0.85, 0.9], haze: [0.6, 0.8, 1.0], hazeAmt: 0.12, ice: 1 },
+    ];
+    const moonGeo = new THREE.SphereGeometry(1, 64, 32);
+    for (const m of moonDefs) {
+        const mesh = new THREE.Mesh(moonGeo, new THREE.ShaderMaterial({
+            uniforms: {
+                uNoise: { value: ctx.noise },
+                uSunW: { value: sunW },
+                uSunColor: { value: sunColor },
+                uAlbedo: { value: new THREE.Vector3(...m.albedo) },
+                uHaze: { value: new THREE.Vector3(...m.haze) },
+                uHazeAmt: { value: m.hazeAmt },
+                uIce: { value: m.ice },
+            },
+            vertexShader: MOON_VERT,
+            fragmentShader: MOON_FRAG,
+        }));
+        mesh.scale.setScalar(m.r);
+        mesh.position.copy(group.worldToLocal(new THREE.Vector3(...viewPoint(2.0, ...m.at))));
+        mesh.renderOrder = 10;
+        group.add(mesh);
+    }
+
     return {
         group,
         update(f) {
@@ -400,6 +478,7 @@ export async function create(ctx) {
             ringGeo.dispose();
             rings.material.dispose();
             rockMat.dispose();
+            moonGeo.dispose();
             rocks.forEach((r) => { r.mesh.geometry.dispose(); r.base.dispose(); });
         },
     };

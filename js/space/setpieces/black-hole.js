@@ -47,7 +47,7 @@ vec3 procStars(vec3 d) {
     float h = hash13(i);
     if (h < 0.982) return vec3(0.0);
     vec3 c = hash33(i + 3.1) * 0.8 + 0.1;
-    float s = smoothstep(0.14, 0.0, length(fract(p) - c)) * pow((h - 0.982) / 0.018, 3.0) * 2.4;
+    float s = smoothstep(0.14, 0.0, length(fract(p) - c)) * pow((h - 0.982) / 0.018, 3.0) * 0.9;
     return mix(vec3(1.0, 0.8, 0.6), vec3(0.7, 0.82, 1.0), hash13(i + 7.0)) * s;
 }
 

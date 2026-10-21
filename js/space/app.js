@@ -41,7 +41,7 @@ export async function run({ canvas, forced, renderer: rendererString, halfFloat 
     const readability = new Readability();
 
     const frame = {
-        dt: 0, t: 0, s: 0, camera, fade: 0,
+        dt: 0, t: 0, s: 0, camera, fade: 0, flare: new THREE.Vector3(),
         velocity: rig.velocity, speed: 0, warp: 0,
         dpr: 1, res: new THREE.Vector2(1, 1), grade: rig.grade,
     };
@@ -129,6 +129,7 @@ export async function run({ canvas, forced, renderer: rendererString, halfFloat 
         frame.warp = rig.warp;
         frame.fade = damp(frame.fade, fadeTarget, fadeTarget > frame.fade ? 12 : 4, dt);
         frame.speed = rig.speed;
+        frame.flare.z = 0;
 
         for (const p of pieces) {
             const d = distance(p, s);
@@ -139,7 +140,7 @@ export async function run({ canvas, forced, renderer: rendererString, halfFloat 
         ctx.sky.update(frame);
         stars.update(frame);
         for (const p of pieces) if (p.visible && p.obj.beforeRender) p.obj.beforeRender(renderer, camera, frame);
-        readability.update(post.uniforms, frame.dpr);
+        readability.update(post.uniforms, frame.dpr, frame.dt);
         post.render(frame);
     }
 
@@ -265,6 +266,7 @@ export async function run({ canvas, forced, renderer: rendererString, halfFloat 
         pause: stopLoop,
         resume: startLoop,
         warp: (active) => rig.setWarp(active),
+        setTime: (t) => { frame.t = t; },
         getState: () => ({
             running, tier: tierName, scale, s: rig.s,
             pieces: pieces.map((p) => `${p.id}:${p.state}${p.visible ? '*' : ''}`),
