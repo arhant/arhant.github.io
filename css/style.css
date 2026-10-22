@@ -1189,9 +1189,11 @@
     .role--compact .tags { margin-top: 16px; }
 
     /* ---------- Skills: onboard systems ---------- */
-    .systems-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-4); }
-    .system { padding: var(--space-6); overflow: hidden; }
-    .system--wide { grid-column: span 2; }
+    /* Six tracks: a card spans 2 (a third), --half spans 3, --wide spans 4, so every row fills */
+    .systems-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: var(--space-4); }
+    .system { grid-column: span 2; padding: var(--space-6); overflow: hidden; }
+    .system--half { grid-column: span 3; }
+    .system--wide { grid-column: span 4; }
     .system::after {
         /* Decorative constellation glyph */
         content: '';
@@ -1751,7 +1753,9 @@
         .about-text { grid-column: 1 / -1; }
         .focus-grid { grid-column: 2; grid-template-columns: repeat(2, minmax(0, 1fr)); }
         .systems-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-        .system--wide { grid-column: auto; }
+        .system, .system--half, .system--wide { grid-column: auto; }
+        /* Seven cards in two columns: the last one takes the full row instead of leaving a gap */
+        .system:last-child { grid-column: 1 / -1; }
         .case--featured {
             grid-template-columns: minmax(0, 1fr);
             grid-template-rows: none;
