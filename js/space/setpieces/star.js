@@ -1,11 +1,11 @@
-/* SKILLS: a 9000 K blue-white star seen up close. Worley granulation, sunspots
+/* SKILLS: an 11000 K blue-white star seen up close. Worley granulation, sunspots
    and limb darkening on the photosphere; a corona of outward-flowing
    streamers; and tube prominences on staggered eruption cycles. A red-dwarf
    companion sits in the background, and a planet transits across the disc. */
 import * as THREE from 'three';
 import { ORIGINS, viewPoint, viewBasis } from '../path-data.js';
 import { RAY } from '../shaders/common.glsl.js';
-import { createGlow } from '../lib/glow.js';
+import { createGlow, fadeGlow } from '../lib/glow.js';
 import { tempToColor } from '../lib/color.js';
 import { mulberry32 } from '../lib/math.js';
 
@@ -132,6 +132,7 @@ void main() {
 const PLANET_FRAG = /* glsl */ `
 uniform vec3 uStarPos;
 uniform vec3 uStarColor;
+uniform float uPresence;
 varying vec3 vObj;
 varying vec3 vNormalW;
 varying vec3 vPosW;
@@ -147,7 +148,7 @@ void main() {
     // Thin atmosphere: a bright rim when backlit during the transit
     float rim = pow(1.0 - max(dot(N, V), 0.0), 4.0);
     col += vec3(0.45, 0.7, 1.0) * rim * (0.15 + hgPhase(dot(-V, L), 0.7) * 3.0);
-    gl_FragColor = vec4(col, 1.0);
+    gl_FragColor = vec4(col * uPresence, 1.0);
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
 }
@@ -161,8 +162,13 @@ export async function create(ctx) {
     group.position.copy(origin);
     const color = new THREE.Vector3(...tempToColor(TEMP));
 
+    // Authored intensities; update() scales them by presence every frame
+    const SURF_I = 1.7;
+    const DWARF_I = 1.5;
+    const CORONA_I = 0.55;
+    const PROM_COLOR = new THREE.Vector3(3.2, 0.9, 0.75);
     const surfUniforms = {
-        uNoise: { value: noise }, uTime: { value: 0 }, uColor: { value: color }, uIntensity: { value: 1.7 },
+        uNoise: { value: noise }, uTime: { value: 0 }, uColor: { value: color }, uIntensity: { value: SURF_I },
     };
     const surface = new THREE.Mesh(
         new THREE.SphereGeometry(R, T.sphereSeg, T.sphereSeg / 2),
@@ -174,7 +180,7 @@ export async function create(ctx) {
     const EXTENT = 5;
     const coronaUniforms = {
         uNoise: { value: noise }, uTime: { value: 0 }, uColor: { value: color },
-        uIntensity: { value: 0.55 }, uExtent: { value: EXTENT }, uSize: { value: R * EXTENT * 2 },
+        uIntensity: { value: CORONA_I }, uExtent: { value: EXTENT }, uSize: { value: R * EXTENT * 2 },
     };
     const corona = new THREE.Mesh(
         new THREE.PlaneGeometry(1, 1),
@@ -207,7 +213,7 @@ export async function create(ctx) {
         const geo = new THREE.TubeGeometry(curve, 64, 2.6 + rand() * 2.4, 10, false);
         const uniforms = {
             uNoise: { value: noise }, uTime: { value: 0 }, uSeed: { value: rand() },
-            uLife: { value: 0 }, uColor: { value: new THREE.Vector3(3.2, 0.9, 0.75) },
+            uLife: { value: 0 }, uColor: { value: PROM_COLOR.clone() },
         };
         const mesh = new THREE.Mesh(geo, new THREE.ShaderMaterial({
             uniforms,
@@ -219,7 +225,7 @@ export async function create(ctx) {
             blending: THREE.AdditiveBlending,
         }));
         mesh.renderOrder = 20;
-        mesh.visible = i < Math.min(3, T.prominences);
+        mesh.visible = i < T.prominences;
         group.add(mesh);
         proms.push({ mesh, uniforms, period: 8 + rand() * 6, offset: rand() * 10 });
     }
@@ -227,7 +233,7 @@ export async function create(ctx) {
     // Red-dwarf companion (cooler, smaller, quieter surface), framed up and right in the Skills entry shot
     const dwarfColor = new THREE.Vector3(...tempToColor(3300));
     const dwarfUniforms = {
-        uNoise: { value: noise }, uTime: { value: 0 }, uColor: { value: dwarfColor }, uIntensity: { value: 1.5 },
+        uNoise: { value: noise }, uTime: { value: 0 }, uColor: { value: dwarfColor }, uIntensity: { value: DWARF_I },
     };
     const dwarf = new THREE.Mesh(
         new THREE.SphereGeometry(20, 48, 24),
@@ -244,7 +250,7 @@ export async function create(ctx) {
     const cam = new THREE.Vector3(...viewBasis(3.5).pos).sub(origin).normalize();
     const orbitV = new THREE.Vector3().crossVectors(cam, new THREE.Vector3(0, 1, 0)).normalize();
     const orbitU = cam.clone().applyAxisAngle(orbitV, 0.12);
-    const planetUniforms = { uStarPos: { value: origin.clone() }, uStarColor: { value: color } };
+    const planetUniforms = { uStarPos: { value: origin.clone() }, uStarColor: { value: color }, uPresence: { value: 1 } };
     const planet = new THREE.Mesh(
         new THREE.SphereGeometry(7, 48, 24),
         new THREE.ShaderMaterial({ uniforms: planetUniforms, vertexShader: SURF_VERT, fragmentShader: PLANET_FRAG }),
@@ -254,7 +260,12 @@ export async function create(ctx) {
 
     return {
         group,
-        update(f) {
+        update(f, presence = 1) {
+            surfUniforms.uIntensity.value = SURF_I * presence;
+            dwarfUniforms.uIntensity.value = DWARF_I * presence;
+            coronaUniforms.uIntensity.value = CORONA_I * presence;
+            planetUniforms.uPresence.value = presence;
+            fadeGlow(dwarfGlow, presence);
             dwarfUniforms.uTime.value = f.t * 0.6;
             const th = f.t * 0.11;
             planet.position.copy(orbitU).multiplyScalar(Math.cos(th) * 175).addScaledVector(orbitV, Math.sin(th) * 175);
@@ -265,10 +276,11 @@ export async function create(ctx) {
                 const phase = ((f.t + p.offset) % p.period) / p.period;
                 p.uniforms.uLife.value = Math.pow(Math.sin(Math.PI * phase), 0.7);
                 p.uniforms.uTime.value = f.t;
+                p.uniforms.uColor.value.copy(PROM_COLOR).multiplyScalar(presence);
             }
         },
         setTier(tier) {
-            proms.forEach((p, i) => { p.mesh.visible = i < Math.min(3, tier.prominences); });
+            proms.forEach((p, i) => { p.mesh.visible = i < tier.prominences; });
         },
         dispose() {
             group.traverse((o) => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });

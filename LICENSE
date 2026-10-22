@@ -20,12 +20,18 @@ their own licenses, reproduced or referenced in THIRD-PARTY-NOTICES.md:
 
 - Three.js r170 (js/vendor/three/): MIT License, Copyright 2010-2024 Three.js
   Authors. Full text in js/vendor/three/LICENSE.
-- Font Awesome Free 6.5.1 icons (the inline SVG sprite in index.html):
-  CC BY 4.0, Fonticons, Inc. https://fontawesome.com/license/free
+- web-vitals 4.2.4 (js/vendor/web-vitals/): Apache License 2.0, Copyright 2020
+  Google LLC. Full text in js/vendor/web-vitals/LICENSE.
+- Lucide 0.460.0 line icons (the SVG sprites in index.html and img/icons.svg):
+  ISC License, Lucide Contributors; portions from Feather, MIT License,
+  Cole Bemis. Full texts in THIRD-PARTY-NOTICES.md.
+- Font Awesome Free 6.5.1 brand icons (the GitHub, LinkedIn and YouTube marks
+  in the same sprites): CC BY 4.0, Fonticons, Inc.
+  https://fontawesome.com/license/free
+- Inter, Space Grotesk and JetBrains Mono fonts (fonts/): SIL Open Font
+  License 1.1, The Inter Project Authors, The Space Grotesk Project Authors
+  and The JetBrains Mono Project Authors. Full text in fonts/OFL.txt.
 - 3D simplex noise (js/space/shaders/common.glsl.js): MIT License,
   Ashima Arts and Stefan Gustavson.
 - "Hash without Sine" functions (js/space/shaders/common.glsl.js): MIT License,
   David Hoskins.
-
-The Inter, JetBrains Mono and Space Grotesk fonts are loaded from Google Fonts
-under the SIL Open Font License 1.1 and are not part of this repository.

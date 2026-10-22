@@ -3,7 +3,7 @@
    the orbit. Both tails are ribbons billboarded around their own axis. */
 import * as THREE from 'three';
 import { viewPoint, viewBasis } from '../path-data.js';
-import { createGlow } from '../lib/glow.js';
+import { createGlow, fadeGlow } from '../lib/glow.js';
 
 const TAIL_VERT = /* glsl */ `
 uniform vec3 uHead;
@@ -102,8 +102,10 @@ export async function create(ctx) {
         group.add(mesh);
         return uniforms;
     };
-    const ion = makeTail(ION_FRAG, { length: 620, width: [8, 46], curve: 0.02, color: [0.35, 0.62, 1.0], intensity: 0.85 });
-    const dust = makeTail(DUST_FRAG, { length: 470, width: [16, 190], curve: 0.32, color: [1.0, 0.9, 0.72], intensity: 0.6 });
+    const ION_I = 0.85;
+    const DUST_I = 0.6;
+    const ion = makeTail(ION_FRAG, { length: 620, width: [8, 46], curve: 0.02, color: [0.35, 0.62, 1.0], intensity: ION_I });
+    const dust = makeTail(DUST_FRAG, { length: 470, width: [16, 190], curve: 0.32, color: [1.0, 0.9, 0.72], intensity: DUST_I });
 
     const coma = createGlow({ color: [0.75, 0.92, 1.0], core: 2.2, halo: 1.4, size: 70 });
     coma.position.copy(head);
@@ -111,9 +113,12 @@ export async function create(ctx) {
 
     return {
         group,
-        update(f) {
+        update(f, presence = 1) {
             ion.uTime.value = f.t;
             dust.uTime.value = f.t;
+            ion.uIntensity.value = ION_I * presence;
+            dust.uIntensity.value = DUST_I * presence;
+            fadeGlow(coma, presence);
         },
         setTier() {},
         dispose() {

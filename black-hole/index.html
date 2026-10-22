@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>What you'd see falling into a black hole | Arhant Jain</title>
+    <meta name="description" content="A plain-language guide to the black hole on this site: the shadow, the photon ring, lensing, Doppler beaming, and what a falling observer would really see.">
+    <meta name="author" content="Arhant Jain">
+    <link rel="canonical" href="https://arhant.github.io/black-hole/">
+    <meta name="theme-color" content="#07071a">
+    <meta name="color-scheme" content="dark">
+
+    <!-- Open Graph / social -->
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Arhant Jain">
+    <meta property="og:locale" content="en_US">
+    <meta property="og:url" content="https://arhant.github.io/black-hole/">
+    <meta property="og:title" content="What you'd see falling into a black hole">
+    <meta property="og:description" content="The shadow, the photon ring, lensing, Doppler beaming, and what a falling observer would really see, checked against the site's own renderer.">
+    <meta property="og:image" content="https://arhant.github.io/img/scene/black-hole-og.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="A black hole rendered in real time: a dark shadow ringed by light, with a glowing accretion disk bent around it">
+    <meta property="article:author" content="https://arhant.github.io/">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image:alt" content="A black hole rendered in real time: a dark shadow ringed by light, with a glowing accretion disk bent around it">
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/favicon.png" sizes="32x32" type="image/png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+    <!-- Motion mode is decided before first paint (same rule and storage key as the homepage) -->
+    <script>
+        (function (d) {
+            var m = null;
+            var save = navigator.connection && navigator.connection.saveData;
+            try { m = localStorage.getItem('motion'); } catch (e) {}
+            if (m !== 'full' && m !== 'lite') {
+                var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+                m = (reduce || save) ? 'lite' : 'full';
+            }
+            d.documentElement.classList.add('js');
+            if (save) d.documentElement.classList.add('save-data');
+            d.documentElement.dataset.motion = m;
+        })(document);
+    </script>
+
+    <!-- Self-hosted fonts: preload the two faces above the fold (JetBrains Mono loads on demand) -->
+    <link rel="preload" href="/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/fonts/space-grotesk-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/page.css">
+    <!-- Classic and in <head> on purpose: its pagereveal listener must exist before first render -->
+    <script src="/js/page.js"></script>
+
+    <!-- Warm the homepage when a link to it is hovered or pressed (prefetch only, never prerender) -->
+    <script type="speculationrules">
+        {
+            "prefetch": [
+                { "where": { "href_matches": "/" }, "eagerness": "moderate" }
+            ]
+        }
+    </script>
+
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@graph": [
+                {
+                    "@type": "Article",
+                    "headline": "What you'd see falling into a black hole",
+                    "description": "A plain-language guide to the black hole on Arhant Jain's site: the shadow, the photon ring, lensing, Doppler beaming, and what a falling observer would really see.",
+                    "url": "https://arhant.github.io/black-hole/",
+                    "mainEntityOfPage": "https://arhant.github.io/black-hole/",
+                    "image": "https://arhant.github.io/img/scene/black-hole-og.jpg",
+                    "datePublished": "2026-10-22",
+                    "dateModified": "2026-10-22",
+                    "inLanguage": "en",
+                    "author": { "@type": "Person", "name": "Arhant Jain", "url": "https://arhant.github.io/" },
+                    "citation": [
+                        "https://jila.colorado.edu/~ajsh/insidebh/schw.html",
+                        "https://doi.org/10.1088/0264-9381/32/6/065001",
+                        "https://doi.org/10.3847/2041-8213/ab0ec7"
+                    ]
+                },
+                {
+                    "@type": "BreadcrumbList",
+                    "itemListElement": [
+                        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://arhant.github.io/" },
+                        { "@type": "ListItem", "position": 2, "name": "Black hole explainer" }
+                    ]
+                }
+            ]
+        }
+    </script>
+
+    <!-- Google Analytics: the deploy workflow replaces the placeholder with the
+         GA_MEASUREMENT_ID repository secret. Left unreplaced (local dev), GA stays off. -->
+    <script>
+        (function () {
+            var id = '__GA_MEASUREMENT_ID__';
+            if (!/^G-[A-Z0-9]+$/.test(id)) return;
+            var s = document.createElement('script');
+            s.async = true;
+            s.src = 'https://www.googletagmanager.com/gtag/js?id=' + id;
+            document.head.appendChild(s);
+            window.dataLayer = window.dataLayer || [];
+            window.gtag = function () { window.dataLayer.push(arguments); };
+            window.gtag('js', new Date());
+            window.gtag('config', id);
+        })();
+    </script>
+</head>
+<body class="subpage">
+    <a href="#main" class="skip-link">Skip to content</a>
+
+    <!-- Static space backdrop: reading pages never load the 3D scene -->
+    <div class="backdrop" aria-hidden="true">
+        <div class="backdrop-band"></div>
+        <div class="backdrop-stars backdrop-stars--near"></div>
+        <div class="backdrop-stars backdrop-stars--far"></div>
+    </div>
+
+    <!-- ==================== HUD (simplified) ==================== -->
+    <header class="hud">
+        <nav class="nav" aria-label="Primary">
+            <div class="nav-inner">
+                <a href="/" class="nav-home"><span class="nav-logo" aria-hidden="true">AJ</span><span class="nav-home-name">Arhant Jain</span></a>
+                <ul class="nav-links" role="list">
+                    <li><a href="/#projects">Case Studies</a></li>
+                    <li><a href="/#contact">Contact</a></li>
+                </ul>
+                <div class="nav-actions">
+                    <button type="button" class="hud-btn" id="motion-toggle" aria-pressed="false" hidden>
+                        <svg class="icon" aria-hidden="true" focusable="false"><use href="/img/icons.svg#i-gauge"/></svg>
+                        <span class="hud-btn-label">Lite mode</span>
+                    </button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main id="main" class="page-main" tabindex="-1">
+        <article class="article article--wide" aria-labelledby="page-title">
+            <header class="article-head">
+                <nav class="crumbs" aria-label="Breadcrumb">
+                    <ol role="list">
+                        <li><a href="/">Home</a></li>
+                        <li><span aria-current="page">Black hole explainer</span></li>
+                    </ol>
+                </nav>
+                <p class="case-code">Explainer · The black hole at the bottom of this site</p>
+                <h1 id="page-title" class="page-title">What you'd see falling into a black hole</h1>
+                <p class="article-dek">The Contact section of this site ends at a black hole you can fall into. Here is what the renderer shows, and how much of it real physics agrees with.</p>
+            </header>
+
+            <figure class="hero-figure">
+                <picture>
+                    <source type="image/webp" srcset="/img/scene/black-hole-wide.webp">
+                    <source type="image/avif" srcset="/img/scene/black-hole-wide.avif">
+                    <img src="/img/scene/black-hole-wide.jpg" width="2520" height="1080" decoding="async" fetchpriority="high"
+                         alt="The black hole rendered by this site: a dark shadow ringed by light, with a glowing accretion disk whose far side is bent into view above and below the hole, against the Milky Way.">
+                </picture>
+                <figcaption>A still from the site's real-time renderer: a non-spinning black hole, with exposure set for the screen rather than for measurement.</figcaption>
+            </figure>
+
+            <div class="plunge-cta">
+                <a class="btn btn-primary" href="/#contact">
+                    <svg class="icon" aria-hidden="true" focusable="false"><use href="/img/icons.svg#i-orbit"/></svg>
+                    Take the plunge
+                </a>
+                <p class="plunge-cta-note">Opens the Contact section. In the 3D version, choose “Cross the event horizon” there: about 25 seconds of animation, and Escape brings you back.</p>
+            </div>
+
+            <div class="sheet prose">
+                <section aria-labelledby="site-title">
+                    <h2 id="site-title">The black hole on this site</h2>
+                    <p>It is a <strong>Schwarzschild black hole</strong>: one that does not spin, the simplest kind general relativity allows. Sizes on this page are given in units of its Schwarzschild radius, R<sub>s</sub>, the radius of its event horizon.</p>
+                    <p>The renderer traces the paths light takes through the curved space around the hole, backwards from the camera. The Milky Way behind the hole and the hole's own accretion disk are bent the way gravity would bend them, so the effects below are not painted on: they come out of the light paths.</p>
+
+                    <figure class="radii" aria-labelledby="radii-caption">
+                        <svg class="diagram" viewBox="0 0 240 240" role="img" aria-labelledby="radii-svg-title radii-svg-desc">
+                            <title id="radii-svg-title">Key radii around a non-spinning black hole, to scale</title>
+                            <desc id="radii-svg-desc">Four concentric circles: the event horizon at 1 Schwarzschild radius, the photon sphere at 1.5, the edge of the shadow seen from far away at about 2.6, and the inner edge of the accretion disk at 3.</desc>
+                            <circle class="radii-ring radii-ring--isco" cx="120" cy="120" r="108"/>
+                            <circle class="radii-ring radii-ring--shadow" cx="120" cy="120" r="93.5"/>
+                            <circle class="radii-ring radii-ring--photon" cx="120" cy="120" r="54"/>
+                            <circle class="radii-ring radii-ring--horizon" cx="120" cy="120" r="36"/>
+                        </svg>
+                        <figcaption id="radii-caption" class="sr-only">Key radii, to scale</figcaption>
+                        <dl class="legend">
+                            <div class="legend--horizon"><dt>Event horizon</dt><dd><span class="val">1 R<sub>s</sub></span> · the point of no return</dd></div>
+                            <div class="legend--photon"><dt>Photon sphere</dt><dd><span class="val">1.5 R<sub>s</sub></span> · where light can travel in a circle</dd></div>
+                            <div class="legend--shadow"><dt>Shadow edge</dt><dd><span class="val">about 2.6 R<sub>s</sub></span> · how big the dark disc looks from far away</dd></div>
+                            <div class="legend--isco"><dt>Disk inner edge</dt><dd><span class="val">3 R<sub>s</sub></span> · the innermost stable circular orbit</dd></div>
+                        </dl>
+                    </figure>
+                </section>
+
+                <section aria-labelledby="shadow-title">
+                    <h2 id="shadow-title">The shadow is bigger than the hole</h2>
+                    <p>The dark disc in the middle is not the event horizon. Any ray of light aimed to pass the centre closer than about 2.6&nbsp;R<sub>s</sub> (<math><mfrac><msqrt><mn>27</mn></msqrt><mn>2</mn></mfrac></math>&nbsp;R<sub>s</sub>, to be exact) is pulled in, so from far away the hole casts a shadow about 2.6 times the size of its horizon.</p>
+                    <p>The Event Horizon Telescope's 2019 image of M87*, a black hole about 6.5 billion times the mass of the Sun, shows a dark centre inside a ring of light, consistent with what general relativity predicts.</p>
+                </section>
+
+                <section aria-labelledby="ring-title">
+                    <h2 id="ring-title">The photon ring</h2>
+                    <p>At 1.5&nbsp;R<sub>s</sub> is the <strong>photon sphere</strong>, where gravity bends light into a circle. Light that skims it can loop part of the way, or more than once, around the hole before escaping, and those rays pile up into a thin, bright ring that hugs the edge of the shadow.</p>
+                </section>
+
+                <section aria-labelledby="lensing-title">
+                    <h2 id="lensing-title">Lensing wraps the disk over the top</h2>
+                    <p>The accretion disk is a flat ring of hot gas orbiting in the hole's equatorial plane. Light from the part of the disk directly behind the hole is bent over the top of the shadow and under the bottom, so you see the far side of the disk as arcs above and below the hole, even though it is hidden behind it. Seen nearly edge-on, as on this site, the disk seems to wrap around the hole.</p>
+                </section>
+
+                <section aria-labelledby="doppler-title">
+                    <h2 id="doppler-title">One side is brighter</h2>
+                    <p>At its inner edge the gas orbits at about half the speed of light. Light from the side moving toward you is shifted to higher frequencies and beamed forward, so that side looks brighter and bluer; the receding side looks dimmer and redder. This is <strong>Doppler beaming</strong>.</p>
+                    <p>For <cite>Interstellar</cite>, the filmmakers chose to leave the Doppler shifts out so the image would read clearly for a general audience; James, von Tunzelmann, Franklin and Thorne (2015) explain that choice. This site keeps the effect, at partial strength.</p>
+                </section>
+
+                <section aria-labelledby="falling-title">
+                    <h2 id="falling-title">Falling in</h2>
+                    <p>Whether you would survive the trip depends on the hole's size. Tides, the difference between gravity's pull on your head and on your feet, are fierce near a black hole a few times the mass of the Sun: they would pull you apart before you reached the horizon. Near a supermassive black hole they are gentle at the horizon, and you would cross it <strong>without feeling anything special</strong>. They grow as you fall further in; Hamilton estimates that, for a hole big enough to let you in intact, they become fatal only about a tenth of a second before the singularity.</p>
+                    <p>The site's plunge follows a “raindrop”: an observer who falls straight in, starting from rest far away. At distance <var>r</var>, the raindrop moves at <math><mi>β</mi><mo>=</mo><msqrt><mrow><msub><mi>R</mi><mi>s</mi></msub><mo>/</mo><mi>r</mi></mrow></msqrt></math> times the speed of light relative to an observer hovering at that distance, reaching the speed of light at the horizon. Two effects of that motion change the view:</p>
+                    <ul class="list" role="list">
+                        <li><strong>Aberration.</strong> Just as rain seems to come at you from ahead when you run, your motion shifts the directions light seems to arrive from toward the way you are heading.</li>
+                        <li><strong>Doppler shift.</strong> Light from directly overhead, from the universe you are leaving, arrives with its frequency multiplied by <math><mfrac><mn>1</mn><mrow><mn>1</mn><mo>+</mo><mi>β</mi></mrow></mfrac></math>. At the horizon, where <math><mi>β</mi></math> reaches 1, it arrives at half its original frequency: redder and dimmer. Light from other directions shifts by other amounts, and the renderer applies the matching shift in every direction.</li>
+                    </ul>
+                </section>
+
+                <section aria-labelledby="horizon-title">
+                    <h2 id="horizon-title">Nothing marks the horizon</h2>
+                    <p>There is no surface at the event horizon and nothing to see as you cross it. Locally it is just more empty space: in Hamilton's simulated journey you cannot tell when you pass through it, and the view of the outside universe does not disappear. What changes is where you can go. Past the horizon every path leads inward, whatever you do, and no signal you send can get back out.</p>
+                </section>
+
+                <section aria-labelledby="singularity-title">
+                    <h2 id="singularity-title">The singularity is a moment, not a place</h2>
+                    <p>Inside the horizon, the direction toward the centre behaves like the direction of time. The singularity is not a point in front of you that you could steer around; it lies in your future, as surely as tomorrow does.</p>
+                    <p>For a non-spinning hole as massive as M87*, a raindrop would take hours of its own time to get from the horizon to the singularity. The site compresses the whole fall into about 25 seconds and ends it there.</p>
+                </section>
+
+                <section aria-labelledby="simplify-title">
+                    <h2 id="simplify-title">Where the site simplifies</h2>
+                    <ul class="list" role="list">
+                        <li><strong>No spin.</strong> Real black holes are expected to spin. Spin makes the shadow slightly lopsided and moves the disk's inner edge; the site uses the simpler non-spinning case.</li>
+                        <li><strong>Artistic exposure.</strong> Brightness is tuned for a screen, and during the plunge an automatic exposure adapts the way an eye or a camera would. The colours are not a measurement.</li>
+                        <li><strong>Partial beaming.</strong> The disk's Doppler brightening is applied at partial strength, so its dim side stays readable.</li>
+                        <li><strong>A stylised disk.</strong> The disk follows a standard thin-disk temperature profile, but its texture is procedural noise, not a simulation of real gas.</li>
+                        <li><strong>Paced, not timed.</strong> The plunge lasts about 25 seconds for watching; it is not timed like a real fall.</li>
+                        <li><strong>The sky.</strong> The background is a baked, Milky Way-like sky, not a map of real stars.</li>
+                    </ul>
+                </section>
+
+                <section aria-labelledby="sources-title">
+                    <h2 id="sources-title">Sources</h2>
+                    <ol class="sources" role="list">
+                        <li>
+                            Andrew J. S. Hamilton, <a href="https://jila.colorado.edu/~ajsh/insidebh/schw.html">Journey into a Schwarzschild black hole</a>, part of <a href="https://jila.colorado.edu/~ajsh/insidebh/">Inside black holes</a>.
+                            <span class="src-meta">JILA, University of Colorado Boulder</span>
+                        </li>
+                        <li>
+                            Oliver James, Eugénie von Tunzelmann, Paul Franklin and Kip S. Thorne, <a href="https://doi.org/10.1088/0264-9381/32/6/065001">Gravitational lensing by spinning black holes in astrophysics, and in the movie <cite>Interstellar</cite></a>. Also on <a href="https://arxiv.org/abs/1502.03808">arXiv</a>.
+                            <span class="src-meta">Classical and Quantum Gravity 32, 065001 (2015)</span>
+                        </li>
+                        <li>
+                            The Event Horizon Telescope Collaboration, <a href="https://doi.org/10.3847/2041-8213/ab0ec7">First M87 Event Horizon Telescope Results. I. The Shadow of the Supermassive Black Hole</a>.
+                            <span class="src-meta">The Astrophysical Journal Letters 875, L1 (2019)</span>
+                        </li>
+                    </ol>
+                </section>
+            </div>
+
+            <aside class="panel page-cta" aria-labelledby="cta-title">
+                <h2 id="cta-title">See it for yourself</h2>
+                <p>The plunge waits at the bottom of the homepage. This page is part of Arhant Jain's portfolio; the 3D scene is hand-built with Three.js.</p>
+                <div class="contact-actions">
+                    <a class="btn btn-primary" href="/#contact">
+                        <svg class="icon" aria-hidden="true" focusable="false"><use href="/img/icons.svg#i-orbit"/></svg>
+                        Take the plunge
+                    </a>
+                    <a class="btn btn-ghost" href="/#projects">Case studies</a>
+                    <a class="btn btn-ghost" href="mailto:arhant@nyu.edu" data-copy-email data-track="copy_email">
+                        <svg class="icon" aria-hidden="true" focusable="false"><use href="/img/icons.svg#i-envelope"/></svg>
+                        <span>arhant@nyu.edu</span>
+                    </a>
+                </div>
+            </aside>
+        </article>
+    </main>
+
+    <!-- Copy confirmation: the toast is visual only; screen readers hear the live region -->
+    <div class="toast" id="toast" aria-hidden="true">
+        <svg class="icon" aria-hidden="true" focusable="false"><use href="/img/icons.svg#i-check"/></svg>
+        <span class="toast-msg"></span>
+        <span class="toast-detail"></span>
+    </div>
+    <p class="sr-only" id="live-status" role="status" aria-live="polite"></p>
+
+    <footer class="footer">
+        <nav aria-label="Footer">
+            <ul class="footer-links" role="list">
+                <li><a href="/">Home</a></li>
+                <li><a href="/#projects">Case Studies</a></li>
+                <li><a href="/black-hole/" aria-current="page">Black hole explainer</a></li>
+                <li><a href="/#contact">Contact</a></li>
+            </ul>
+        </nav>
+        <p>© 2026 Arhant Jain. All rights reserved.</p>
+    </footer>
+</body>
+</html>

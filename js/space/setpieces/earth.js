@@ -1,12 +1,16 @@
 /* HERO: an orbital sunrise. Earth's limb arcs through the lower right with the
    sun just behind it; scrolling lifts the camera and the sun breaks the horizon.
-   Surface, clouds and city lights are baked into cube maps once; the
-   atmosphere is an analytic single-scattering shell (Rayleigh + Mie).
+   Surface, clouds and city lights are baked into cube maps once. The
+   atmosphere is a single-scattering shell (Rayleigh, Mie and ozone) marched in
+   a few steps on medium/high, with the sunlight reaching each sample attenuated
+   analytically; the same transmittance reddens the terminator. Its shell is
+   ~3.5x thicker than Earth's so the limb reads at this distance. The low tier
+   keeps a cheaper one-sample approximation.
    Also: aurora curtains over the night side, a space station skimming the
    glowing limb (shadowed by the planet when it passes into night), and the
    lens flare as the sun clears the horizon. */
 import * as THREE from 'three';
-import { bakeCube } from '../lib/bake.js';
+import { bakeCubeAsync } from '../lib/bake.js';
 import { SIMPLEX, RAY } from '../shaders/common.glsl.js';
 import { ORIGINS, SUNS, viewPoint } from '../path-data.js';
 import { createGlow } from '../lib/glow.js';
@@ -44,7 +48,8 @@ void main() {
     vec3 ocean = mix(vec3(0.004, 0.016, 0.045), vec3(0.010, 0.050, 0.085), smoothstep(-0.10, 0.0, coast));
     vec3 col = mix(ocean, landCol, land);
     col = mix(col, vec3(0.80, 0.84, 0.90), ice);
-    gl_FragColor = vec4(col, (1.0 - land) * (1.0 - ice));
+    // Stored sqrt-encoded: 8-bit linear has too few levels for the dark oceans and bands them
+    gl_FragColor = vec4(sqrt(col), (1.0 - land) * (1.0 - ice));
 }
 `;
 
@@ -73,6 +78,58 @@ void main() {
 }
 `;
 
+/* Shared by the shell and the surface. World units: the planet radius is 100. */
+const ATMOSPHERE = /* glsl */ `
+uniform float uRp;
+uniform float uRa;
+uniform vec3 uBetaR;    // Rayleigh scattering, per world unit
+uniform float uBetaM;   // Mie scattering (extinction is 1.1x)
+uniform vec3 uBetaO;    // ozone absorption
+uniform vec2 uH;        // Rayleigh and Mie scale heights
+uniform vec2 uOzone;    // ozone layer: centre altitude, half-width (tent profile)
+
+// Air mass (optical depth over the vertical column above r) of an exponential layer with scale
+// height H, along a ray from radius r with zenith cosine mu, over length d. Analytic, after
+// Bruneton & Neyret 2008, "Precomputed Atmospheric Scattering" (BSD-3); ground ignored.
+float airMass(float H, float r, float mu, float d) {
+    float a = sqrt((0.5 / H) * r);
+    vec2 a01 = a * vec2(mu, mu + d / r);
+    vec2 a01s = sign(a01);
+    vec2 a01sq = a01 * a01;
+    float x = a01s.y > a01s.x ? exp(a01sq.x) : 0.0;
+    vec2 y = a01s / (2.3193 * abs(a01) + sqrt(1.52 * a01sq + 4.0)) * vec2(1.0, exp(-d / H * (d / (2.0 * r) + mu)));
+    return max(sqrt(6.2831 * r / H) * (x + dot(y, vec2(1.0, -1.0))), 0.0);
+}
+
+// Ozone column above altitude h
+float ozoneAbove(float h) {
+    float lo = uOzone.x - uOzone.y;
+    float hi = uOzone.x + uOzone.y;
+    if (h <= lo) return uOzone.y;
+    if (h >= hi) return 0.0;
+    return h < uOzone.x ? uOzone.y - 0.5 * (h - lo) * (h - lo) / uOzone.y : 0.5 * (hi - h) * (hi - h) / uOzone.y;
+}
+
+// Optical depth toward the sun from radius r (sun at zenith cosine mu, local Rayleigh and Mie
+// densities rhoR, rhoM), and in .a whether the planet leaves the sun in view there (softened over
+// a fraction of a degree). Mie and ozone ride on the Rayleigh air mass, scaled by their own column.
+vec4 sunPath(float r, float mu, float rhoR, float rhoM) {
+    r = clamp(r, uRp, uRa);
+    float dTop = -r * mu + sqrt(max(r * r * (mu * mu - 1.0) + uRa * uRa, 0.0));
+    float am = airMass(uH.x, r, mu, dTop);
+    float muH = -sqrt(max(1.0 - (uRp / r) * (uRp / r), 0.0));
+    vec3 od = am * (uBetaR * (uH.x * rhoR) + (1.1 * uBetaM * uH.y) * rhoM + uBetaO * ozoneAbove(r - uRp));
+    return vec4(od, smoothstep(muH - 0.01, muH + 0.01, mu));
+}
+
+// Fraction of sunlight reaching radius r with the sun at zenith cosine mu
+vec3 sunTransmittance(float r, float mu) {
+    float h = clamp(r - uRp, 0.0, uRa - uRp);
+    vec4 sp = sunPath(r, mu, exp(-h / uH.x), exp(-h / uH.y));
+    return exp(-sp.rgb) * sp.a;
+}
+`;
+
 const SURFACE_VERT = /* glsl */ `
 varying vec3 vObj;
 varying vec3 vNormalW;
@@ -94,9 +151,13 @@ uniform vec3 uSunObj;
 uniform vec3 uSunColor;
 uniform float uCloudRot;
 uniform float uCity;
+uniform int uSteps;       // 0 on the low tier: hand-tuned sunlight tint instead of transmittance
+uniform vec3 uZenithT;    // transmittance with the sun overhead (keeps midday white)
+uniform float uGlint;
 varying vec3 vObj;
 varying vec3 vNormalW;
 varying vec3 vPosW;
+${ATMOSPHERE}
 
 vec3 rotY(vec3 v, float a) {
     float c = cos(a), s = sin(a);
@@ -108,24 +169,44 @@ void main() {
     vec3 V = normalize(cameraPosition - vPosW);
     vec3 L = uSunDir;
     vec4 alb = textureCube(uAlbedo, vObj);
+    alb.rgb *= alb.rgb;
     float ocean = alb.a;
     float NdL = dot(N, L);
     float NdV = max(dot(N, V), 0.0);
     float day = smoothstep(-0.1, 0.25, NdL);
     float diff = max((NdL + 0.06) / 1.06, 0.0);
-    vec3 tint = mix(vec3(1.0, 0.5, 0.3), vec3(1.0), smoothstep(0.0, 0.3, NdL));
+    vec3 tint;
+    vec3 cloudTint;
+    float cloudDiff;
+    if (uSteps > 0) {
+        // Sunlight reddened by the air it crosses; cloud tops sit higher, so they catch the
+        // dawn a little past the ground's terminator
+        tint = sunTransmittance(uRp + 0.05, NdL) / uZenithT;
+        cloudTint = sunTransmittance(uRp + 0.6, NdL + 0.08) / uZenithT;
+        cloudDiff = max((NdL + 0.12) / 1.12, 0.0);
+    } else {
+        tint = mix(vec3(1.0, 0.5, 0.3), vec3(1.0), smoothstep(0.0, 0.3, NdL));
+        cloudTint = tint;
+        cloudDiff = diff;
+    }
 
     float city = textureCube(uAux, vObj).r;
     float cloud = textureCube(uAux, rotY(vObj, uCloudRot)).g;
     float shadow = textureCube(uAux, rotY(normalize(vObj + uSunObj * 0.012), uCloudRot)).g;
 
     vec3 surf = alb.rgb * diff * tint * (1.0 - 0.55 * shadow * day);
+    // Sun glint on wind-roughened water: a Cox-Munk (Beckmann) lobe with mean square slope
+    // 0.003 + 0.00512 * 7 m/s, in the sunlight that reaches the sea (orange at sunrise)
     vec3 H = normalize(L + V);
-    float spec = pow(max(dot(N, H), 0.0), 220.0) * ocean * (1.0 - cloud);
+    float c2 = max(dot(N, H), 1e-3);
+    c2 *= c2;
+    float lobe = exp((c2 - 1.0) / (c2 * 0.0388)) / (3.14159 * 0.0388 * c2 * c2);
     float fres = 0.02 + 0.98 * pow(1.0 - NdV, 5.0);
-    surf += vec3(1.0, 0.9, 0.75) * spec * 8.0 * day + vec3(0.02, 0.05, 0.09) * fres * ocean * day * 0.6;
+    float fresH = 0.02 + 0.98 * pow(1.0 - max(dot(V, H), 0.0), 5.0);
+    float glint = lobe * fresH / (4.0 * max(NdV, 0.2)) * smoothstep(0.0, 0.04, NdL) * ocean * (1.0 - cloud);
+    surf += vec3(1.0, 0.9, 0.75) * tint * glint * uGlint * day + vec3(0.02, 0.05, 0.09) * fres * ocean * day * 0.6;
 
-    vec3 col = mix(surf, vec3(0.95) * diff * tint, cloud * 0.92) * uSunColor;
+    vec3 col = mix(surf, vec3(0.95) * cloudDiff * cloudTint, cloud * 0.92) * uSunColor;
     float night = 1.0 - smoothstep(-0.18, 0.04, NdL);
     col += vec3(1.0, 0.62, 0.32) * city * night * (1.0 - cloud * 0.85) * uCity;
     col += vec3(0.18, 0.35, 0.8) * pow(1.0 - NdV, 3.0) * smoothstep(-0.25, 0.3, NdL) * 0.5;
@@ -146,13 +227,14 @@ void main() {
 
 const ATMO_FRAG = /* glsl */ `
 uniform vec3 uCenter;
-uniform float uRp;
-uniform float uRa;
 uniform vec3 uSunDir;
 uniform vec3 uSunColor;
 uniform float uIntensity;
+uniform int uSteps;       // 0: the original one-sample approximation (low tier)
+uniform float uScatter;
 varying vec3 vPosW;
 ${RAY}
+${ATMOSPHERE}
 void main() {
     vec3 ro = cameraPosition;
     vec3 rd = normalize(vPosW - ro);
@@ -160,20 +242,49 @@ void main() {
     vec2 tP = raySphere(ro, rd, uCenter, uRp);
     float t0 = max(tA.x, 0.0);
     float t1 = tP.x > 0.0 ? tP.x : tA.y;
-    float thick = uRa - uRp;
-    float chord = max(t1 - t0, 0.0) / thick;
-    vec3 mid = ro + rd * (0.5 * (t0 + t1)) - uCenter;
-    float hgt = clamp((length(mid) - uRp) / thick, 0.0, 1.0);
-    float sunH = dot(normalize(mid), uSunDir);
     float mu = dot(rd, uSunDir);
-    float dens = chord * exp(-hgt * 2.0);
-    vec3 beta = vec3(0.075, 0.18, 0.45);
-    vec3 scat = 1.0 - exp(-beta * dens);
-    vec3 sunT = exp(-beta * 7.0 * (1.0 - smoothstep(-0.2, 0.5, sunH)));
-    float lit = smoothstep(-0.3, 0.12, sunH);
-    float rayleigh = 0.75 * (1.0 + mu * mu);
-    float mie = hgPhase(mu, 0.76) * (1.0 - exp(-dens * 0.08)) * 9.0;
-    vec3 col = (scat * rayleigh + mie * vec3(1.0, 0.82, 0.62)) * sunT * lit * uSunColor * uIntensity;
+    vec3 col;
+    if (uSteps == 0) {
+        float thick = uRa - uRp;
+        float chord = max(t1 - t0, 0.0) / thick;
+        vec3 mid = ro + rd * (0.5 * (t0 + t1)) - uCenter;
+        float hgt = clamp((length(mid) - uRp) / thick, 0.0, 1.0);
+        float sunH = dot(normalize(mid), uSunDir);
+        float dens = chord * exp(-hgt * 2.0);
+        vec3 beta = vec3(0.075, 0.18, 0.45);
+        vec3 scat = 1.0 - exp(-beta * dens);
+        vec3 sunT = exp(-beta * 7.0 * (1.0 - smoothstep(-0.2, 0.5, sunH)));
+        float lit = smoothstep(-0.3, 0.12, sunH);
+        float rayleigh = 0.75 * (1.0 + mu * mu);
+        float mie = hgPhase(mu, 0.76) * (1.0 - exp(-dens * 0.08)) * 9.0;
+        col = (scat * rayleigh + mie * vec3(1.0, 0.82, 0.62)) * sunT * lit * uSunColor * uIntensity;
+    } else {
+        // Single scattering along the view ray: each sample adds the sunlight that reaches it,
+        // scattered toward the camera and dimmed by the air between it and the camera.
+        // (Silhouette pixels can miss the analytic shell: nothing to add there.)
+        if (tA.y <= 0.0 || t1 <= t0) discard;
+        float ds = (t1 - t0) / float(uSteps);
+        vec3 tau = vec3(0.0);
+        vec3 sumR = vec3(0.0);
+        vec3 sumM = vec3(0.0);
+        for (int i = 0; i < 8; i++) {
+            if (i >= uSteps) break;
+            vec3 P = ro + rd * (t0 + (float(i) + 0.5) * ds) - uCenter;
+            float r = length(P);
+            float h = max(r - uRp, 0.0);
+            float rhoR = exp(-h / uH.x);
+            float rhoM = exp(-h / uH.y);
+            float rhoO = max(1.0 - abs(h - uOzone.x) / uOzone.y, 0.0);
+            vec3 ext = (uBetaR * rhoR + 1.1 * uBetaM * rhoM + uBetaO * rhoO) * ds;
+            vec4 sp = sunPath(r, dot(P, uSunDir) / r, rhoR, rhoM);
+            vec3 T = exp(-(tau + 0.5 * ext + sp.rgb)) * sp.a;
+            sumR += T * rhoR;
+            sumM += T * rhoM;
+            tau += ext;
+        }
+        float phaseR = 0.0597 * (1.0 + mu * mu);
+        col = (sumR * uBetaR * phaseR + sumM * (uBetaM * hgPhase(mu, 0.76))) * ds * uSunColor * uScatter;
+    }
     gl_FragColor = vec4(col, 1.0);
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
@@ -295,8 +406,14 @@ void main() {
     vec3 base = uColor;
     float shine = 24.0;
     if (uPanel > 0.5) {
-        vec2 g = abs(fract(vUv * vec2(5.0, 18.0)) - 0.5);
-        float grid = smoothstep(0.44, 0.5, max(g.x, g.y));
+        // Cell frames, anti-aliased to one pixel; once cells shrink toward a pixel the grid
+        // turns into its average instead of shimmering as the station drifts
+        vec2 cell = vUv * vec2(5.0, 18.0);
+        vec2 fw = max(fwidth(cell), vec2(1e-4));
+        vec2 g = abs(fract(cell) - 0.5);
+        vec2 line = smoothstep(0.47 - fw, 0.47 + fw, g);
+        float grid = max(line.x, line.y);
+        grid = mix(grid, 0.12, smoothstep(0.2, 0.45, max(fw.x, fw.y)));
         base = mix(vec3(0.03, 0.05, 0.12), vec3(0.32, 0.27, 0.18), grid);
         shine = 80.0;
     }
@@ -347,6 +464,39 @@ function buildStation(uniformsBase) {
     return station;
 }
 
+// View-ray samples through the shell per tier; 0 keeps the one-sample approximation
+const ATMO_STEPS = { high: 8, medium: 4, low: 0 };
+const ATMO_THICK = 3.5;
+
+/* Earth's vertical optical depths (Rayleigh 0.047/0.109/0.265, ozone 0.010/0.028/0.001), spread
+   over scale heights stretched with the shell. Rayleigh (1.4x, a warmer low sun), Mie (0.15, a
+   hazy day) and ozone (1.5x) are raised and the shell's gain set by eye against the original
+   hero shot. */
+function atmosphereUniforms() {
+    const H = [1.5, 0.8];               // Rayleigh, Mie scale heights in world units
+    const ozone = [1.45, 0.9];
+    const betaR = new THREE.Vector3(0.0465, 0.1086, 0.265).multiplyScalar(1.4 / H[0]);
+    const betaM = 0.15 / H[1];
+    const betaO = new THREE.Vector3(0.00975, 0.0282, 0.0013).multiplyScalar(1.5 / ozone[1]);
+    // Transmittance with the sun overhead (vertical columns), so midday stays white
+    const col = (h) => h * (1 - Math.exp(-ATMO_THICK / h));
+    const zen = new THREE.Vector3(
+        Math.exp(-(betaR.x * col(H[0]) + 1.1 * betaM * col(H[1]) + betaO.x * ozone[1])),
+        Math.exp(-(betaR.y * col(H[0]) + 1.1 * betaM * col(H[1]) + betaO.y * ozone[1])),
+        Math.exp(-(betaR.z * col(H[0]) + 1.1 * betaM * col(H[1]) + betaO.z * ozone[1])),
+    );
+    return {
+        uRp: { value: R },
+        uRa: { value: R + ATMO_THICK },
+        uBetaR: { value: betaR },
+        uBetaM: { value: betaM },
+        uBetaO: { value: betaO },
+        uH: { value: new THREE.Vector2(...H) },
+        uOzone: { value: new THREE.Vector2(...ozone) },
+        uZenithT: { value: zen },
+    };
+}
+
 export async function create(ctx) {
     const { renderer, T, noise } = ctx;
     const origin = new THREE.Vector3(...ORIGINS.earth);
@@ -356,8 +506,13 @@ export async function create(ctx) {
     const sunDir = new THREE.Vector3(...SUNS.earth).normalize();
     const sunColor = new THREE.Vector3(2.1, 2.0, 1.85);
 
-    const albedo = bakeCube(renderer, { size: T.earthCube, fragment: ALBEDO_FRAG });
-    const aux = bakeCube(renderer, { size: T.earthCube, fragment: AUX_FRAG });
+    const [albedo, aux] = await Promise.all([
+        bakeCubeAsync(renderer, { size: T.earthCube, fragment: ALBEDO_FRAG, label: 'earth-albedo' }),
+        bakeCubeAsync(renderer, { size: T.earthCube, fragment: AUX_FRAG, label: 'earth-aux' }),
+    ]);
+
+    const atmo = atmosphereUniforms();
+    const steps = { uSteps: { value: ATMO_STEPS[T.name] || 0 } };
 
     // Planet: tilted axis, slow spin
     const tilt = new THREE.Group();
@@ -369,6 +524,8 @@ export async function create(ctx) {
 
     const seg = T.sphereSeg;
     const surfUniforms = {
+        ...atmo,
+        ...steps,
         uAlbedo: { value: albedo.texture },
         uAux: { value: aux.texture },
         uSunDir: { value: sunDir },
@@ -376,6 +533,7 @@ export async function create(ctx) {
         uSunColor: { value: sunColor },
         uCloudRot: { value: 0 },
         uCity: { value: 1.6 },
+        uGlint: { value: 1 },
     };
     const surface = new THREE.Mesh(
         new THREE.SphereGeometry(R, seg, seg / 2),
@@ -385,14 +543,15 @@ export async function create(ctx) {
     spin.add(surface);
 
     const atmoUniforms = {
+        ...atmo,
+        ...steps,
         uCenter: { value: new THREE.Vector3() },
-        uRp: { value: R },
-        uRa: { value: R * 1.035 },
         uSunDir: { value: sunDir },
         uSunColor: { value: sunColor },
         uIntensity: { value: 0.8 },
+        uScatter: { value: 12 },
     };
-    const atmo = new THREE.Mesh(
+    const shell = new THREE.Mesh(
         new THREE.SphereGeometry(R * 1.035, seg, seg / 2),
         new THREE.ShaderMaterial({
             uniforms: atmoUniforms,
@@ -403,9 +562,9 @@ export async function create(ctx) {
             blending: THREE.AdditiveBlending,
         }),
     );
-    atmo.position.copy(CENTER);
-    atmo.renderOrder = 20;
-    group.add(atmo);
+    shell.position.copy(CENTER);
+    shell.renderOrder = 20;
+    group.add(shell);
 
     // Moon: craters and maria from the shared noise texture, Lommel-Seeliger shading
     const moon = new THREE.Mesh(
@@ -525,7 +684,9 @@ export async function create(ctx) {
             }
         },
         setVisible(v) { sun.visible = v; },
-        setTier() {},
+        setTier(tier) {
+            steps.uSteps.value = ATMO_STEPS[tier.name] || 0;
+        },
         dispose() {
             ctx.scene.remove(sun);
             albedo.dispose();

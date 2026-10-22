@@ -4,7 +4,7 @@
    lengthens the streaks. At rest they're faint specks. Always loaded. */
 import * as THREE from 'three';
 import { tempToColor, sampleStarTemp } from '../lib/color.js';
-import { mulberry32, clamp } from '../lib/math.js';
+import { mulberry32, smoothstep } from '../lib/math.js';
 
 const VERT = /* glsl */ `
 attribute vec3 aPos;
@@ -117,7 +117,9 @@ export function createStars(ctx) {
             uniforms.uStreakDt.value = (1 / 60) * (1 + 3 * f.warp);
             uniforms.uRes.value.copy(f.res);
             uniforms.uSize.value = 1.6 * f.dpr;
-            const speed = clamp(f.speed / 2500, 0, 1);
+            // Cruise legs between set pieces run at ~20-30k units/s even at an ordinary scroll pace,
+            // so only those (and warps) brighten the streaks fully
+            const speed = smoothstep(4000, 20000, f.speed);
             // Capped under the bloom threshold: bloomed points render as square halos
             uniforms.uBright.value = Math.min(0.9, 0.16 + 0.6 * speed + 0.35 * f.warp);
         },

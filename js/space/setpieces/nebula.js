@@ -7,7 +7,7 @@ import * as THREE from 'three';
 import { HASH, FULLSCREEN_VERT } from '../shaders/common.glsl.js';
 import { ORIGINS, KEYS } from '../path-data.js';
 import { makeCompositeMesh } from '../lib/bake.js';
-import { createGlow } from '../lib/glow.js';
+import { createGlow, fadeGlow } from '../lib/glow.js';
 
 const HALF = new THREE.Vector3(950, 560, 1150);
 
@@ -90,18 +90,28 @@ void main() {
 }
 `;
 
+/* The march jitters each pixel's start with a fixed interleaved-gradient pattern. Four
+   bilinear taps half a low-res texel apart form a 3x3 tent over the target, which averages
+   that pattern into smooth gas. Presence scales the premultiplied result (rgb and alpha),
+   so the nebula fades to the sky behind it rather than to black. */
 const COMPOSITE_FRAG = /* glsl */ `
 uniform sampler2D tNebula;
+uniform vec2 uTexel;
+uniform float uPresence;
 varying vec2 vUv;
 void main() {
-    gl_FragColor = texture2D(tNebula, vUv);
+    vec2 o = 0.5 * uTexel;
+    vec4 c = texture2D(tNebula, vUv + vec2(-o.x, -o.y)) + texture2D(tNebula, vUv + vec2(o.x, -o.y))
+           + texture2D(tNebula, vUv + vec2(-o.x, o.y)) + texture2D(tNebula, vUv + vec2(o.x, o.y));
+    gl_FragColor = c * 0.25;
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
+    gl_FragColor *= uPresence;
 }
 `;
 
 export async function create(ctx) {
-    const { T, noise, halfFloat } = ctx;
+    const { renderer, T, noise, halfFloat } = ctx;
     const center = new THREE.Vector3(...ORIGINS.nebula);
     const group = new THREE.Group();
 
@@ -155,8 +165,22 @@ export async function create(ctx) {
     marchScene.add(marchQuad);
     const marchCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
 
+    // The march draws in its own scene, which the manager's compile of the group never sees: compile
+    // it here, against the target it renders into, or its long loop links inside the first frame
+    // the nebula shows (a visible freeze on the first scroll out of the hero)
+    const prevTarget = renderer.getRenderTarget();
+    renderer.setRenderTarget(target);
+    const marchCompiled = renderer.compileAsync(marchScene, marchCam);
+    renderer.setRenderTarget(prevTarget);
+    await marchCompiled;
+
+    const compositeUniforms = {
+        tNebula: { value: target.texture },
+        uTexel: { value: new THREE.Vector2(1, 1) },
+        uPresence: { value: 1 },
+    };
     const composite = makeCompositeMesh(new THREE.ShaderMaterial({
-        uniforms: { tNebula: { value: target.texture } },
+        uniforms: compositeUniforms,
         vertexShader: FULLSCREEN_VERT,
         fragmentShader: COMPOSITE_FRAG,
         transparent: true,
@@ -169,22 +193,32 @@ export async function create(ctx) {
     composite.renderOrder = 25;
     group.add(composite);
 
-    for (const s of stars) {
+    const glows = stars.map((s) => {
         const g = createGlow({ color: s.c, core: 3, halo: 0.35, size: 40 });
         g.position.set(...s.p).add(center);
         group.add(g);
-    }
+        return g;
+    });
 
     let scale = T.nebulaScale;
+    let presence = 1;
     return {
         group,
-        update(f) {
+        update(f, k = 1) {
+            presence = k;
             marchUniforms.uTime.value = f.t;
+            compositeUniforms.uPresence.value = k;
+            for (const g of glows) fadeGlow(g, k);
         },
         beforeRender(renderer, camera, f) {
+            // Faded out completely: skip the march (the composite multiplies the stale target by ~0)
+            if (presence < 0.002) return;
             const w = Math.max(1, Math.round(f.res.x * scale));
             const h = Math.max(1, Math.round(f.res.y * scale));
-            if (target.width !== w || target.height !== h) target.setSize(w, h);
+            if (target.width !== w || target.height !== h) {
+                target.setSize(w, h);
+                compositeUniforms.uTexel.value.set(1 / w, 1 / h);
+            }
             marchUniforms.uInvProj.value.copy(camera.projectionMatrixInverse);
             marchUniforms.uCamWorld.value.copy(camera.matrixWorld);
             marchUniforms.uCamPos.value.copy(camera.position);

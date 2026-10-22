@@ -75,7 +75,10 @@ void main() {
     vec3 n = normalize(vObj);
     float lat = asin(clamp(n.y, -1.0, 1.0));
     float lon = atan(n.z, n.x);
-    float u = lon / 6.2831853 + 0.5 + uTime * (0.0016 + 0.0009 * cos(lat * 7.0));
+    // Differential rotation by latitude, held at one rate across the storm's band so the oval
+    // drifts as a whole instead of shearing into a smear over time
+    float rl = mix(lat, -0.38, 1.0 - smoothstep(0.07, 0.12, abs(lat + 0.38)));
+    float u = lon / 6.2831853 + 0.5 + uTime * (0.0016 + 0.0009 * cos(rl * 7.0));
     vec3 alb = texture2D(uBands, vec2(u, lat / 3.14159265 + 0.5)).rgb;
 
     vec3 N = normalize(vNormalW);
@@ -91,7 +94,8 @@ void main() {
         float tr = -p.y / uSunL.y;
         if (tr > 0.0) {
             float rr = length((p + uSunL * tr).xz) / uR;
-            if (rr > uRin && rr < uRout) occ = texture2D(uRing, vec2((rr - uRin) / (uRout - uRin), 0.5)).a;
+            // Explicit LOD: this lookup sits in a branch, where implicit mip derivatives are undefined
+            if (rr > uRin && rr < uRout) occ = textureLod(uRing, vec2((rr - uRin) / (uRout - uRin), 0.5), 0.0).a;
         }
     }
 
@@ -124,6 +128,7 @@ uniform vec3 uSunL;
 uniform vec3 uSunW;
 uniform vec3 uNormalW;
 uniform vec3 uSunColor;
+uniform float uPresence;
 uniform float uR;
 uniform float uRin;
 uniform float uRout;
@@ -159,6 +164,7 @@ void main() {
         alpha = dens;
     }
     col *= (1.0 - 0.96 * shadow) * uSunColor;
+    alpha *= uPresence;
     gl_FragColor = vec4(col * alpha, alpha);
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
@@ -294,8 +300,11 @@ function ringProfile(rand) {
         data[i * 4 + 3] = Math.round(255 * Math.min(1, d));
     }
     const tex = new THREE.DataTexture(data, N, 1, THREE.RGBAFormat);
+    // Mipmapped: where the rings are foreshortened, the ringlets and gaps are finer than a pixel
+    // and a single-level lookup shimmers as the camera moves
+    tex.generateMipmaps = true;
     tex.magFilter = THREE.LinearFilter;
-    tex.minFilter = THREE.LinearFilter;
+    tex.minFilter = THREE.LinearMipmapLinearFilter;
     tex.wrapS = THREE.ClampToEdgeWrapping;
     tex.needsUpdate = true;
     return tex;
@@ -354,9 +363,11 @@ export async function create(ctx) {
     const sunL = new THREE.Vector3(...SUNS.gasGiant).normalize();
     const sunW = sunL.clone().applyEuler(group.rotation);
     const normalW = new THREE.Vector3(0, 1, 0).applyEuler(group.rotation);
-    const sunColor = new THREE.Vector3(1.25, 1.2, 1.12);
+    // Shared by every lit surface; update() scales it by presence (rings fade their alpha instead)
+    const SUN = new THREE.Vector3(1.25, 1.2, 1.12);
+    const sunColor = SUN.clone();
 
-    const bands = bake2D(renderer, { width: T.bands, height: T.bands / 2, fragment: BANDS_FRAG });
+    const bands = await bake2D(renderer, { width: T.bands, height: T.bands / 2, fragment: BANDS_FRAG, label: 'gas-giant-bands' });
     const ring = ringProfile(rand);
     const common = {
         uSunL: { value: sunL }, uSunW: { value: sunW }, uSunColor: { value: sunColor },
@@ -373,8 +384,9 @@ export async function create(ctx) {
 
     const ringGeo = new THREE.RingGeometry(RIN * R, ROUT * R, 256, 1);
     ringGeo.rotateX(-Math.PI / 2);
+    const ringUniforms = { ...common, uNormalW: { value: normalW }, uSunColor: { value: SUN }, uPresence: { value: 1 } };
     const rings = new THREE.Mesh(ringGeo, new THREE.ShaderMaterial({
-        uniforms: { ...common, uNormalW: { value: normalW } },
+        uniforms: ringUniforms,
         vertexShader: RING_VERT,
         fragmentShader: RING_FRAG,
         side: THREE.DoubleSide,
@@ -463,7 +475,9 @@ export async function create(ctx) {
 
     return {
         group,
-        update(f) {
+        update(f, presence = 1) {
+            sunColor.copy(SUN).multiplyScalar(presence);
+            ringUniforms.uPresence.value = presence;
             planetUniforms.uTime.value = f.t;
             rockUniforms.uTime.value = f.t;
         },

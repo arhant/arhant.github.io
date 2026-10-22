@@ -4,10 +4,10 @@
    stars drawn as sharp points at infinity with blackbody colours; and the
    occasional meteor. Always loaded. */
 import * as THREE from 'three';
-import { bakeCube } from '../lib/bake.js';
+import { bakeCubeAsync } from '../lib/bake.js';
 import { SIMPLEX } from '../shaders/common.glsl.js';
 import { tempToColor, sampleStarTemp } from '../lib/color.js';
-import { mulberry32, gaussian } from '../lib/math.js';
+import { mulberry32, gaussian, smoothstep } from '../lib/math.js';
 import { viewDir } from '../path-data.js';
 
 const MAX_OBJ = 48;
@@ -83,13 +83,14 @@ attribute float aPhase;
 uniform float uDpr;
 uniform float uTime;
 uniform float uTwinkle;
+uniform float uGain;
 varying vec3 vCol;
 void main() {
     vec4 vp = viewMatrix * vec4(position, 0.0);
     gl_Position = projectionMatrix * vec4(vp.xyz * 1000.0, 1.0);
     gl_Position.z = gl_Position.w * 0.99999;
     float tw = 1.0 + uTwinkle * 0.05 * sin(uTime * (1.3 + aPhase * 2.0) + aPhase * 40.0);
-    vCol = aColor * aMag * tw;
+    vCol = aColor * aMag * tw * uGain;
     gl_PointSize = (1.3 + 2.4 * sqrt(aMag)) * uDpr;
 }
 `;
@@ -101,6 +102,29 @@ void main() {
     float r2 = dot(c, c) * 4.0;
     float a = (exp(-r2 * 6.0) + 0.08 * exp(-r2 * 1.2)) * smoothstep(0.5, 0.3, length(c));
     gl_FragColor = vec4(vCol * a, 1.0);
+    #include <tonemapping_fragment>
+    #include <colorspace_fragment>
+}
+`;
+
+/* Background for the 8-bit (no half-float) path. That cube is stored sRGB-encoded, and three
+   skips tone mapping for sRGB backgrounds, which would lift the darks there; this box draws it
+   tone-mapped like every other surface. Same construction as three's own background box. */
+const BG_VERT = /* glsl */ `
+varying vec3 vDir;
+void main() {
+    vDir = position;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    gl_Position.z = gl_Position.w;
+}
+`;
+
+const BG_FRAG = /* glsl */ `
+uniform samplerCube uSky;
+uniform float uIntensity;
+varying vec3 vDir;
+void main() {
+    gl_FragColor = vec4(textureCube(uSky, vDir).rgb * uIntensity, 1.0);
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
 }
@@ -143,6 +167,14 @@ void main() {
     #include <colorspace_fragment>
 }
 `;
+
+/* Deep space is calmer behind the dense Mission Log text: the Milky Way and far stars ease down
+   while the camera turns from the star to the galaxy, and come back up before the black hole,
+   which bends this same sky and must match it exactly (black-hole.js reads this too). */
+export function skyGain(f) {
+    if (f.plunge && f.plunge.active) return 1;
+    return 1 - 0.38 * smoothstep(3.5, 4.0, f.s) * (1 - smoothstep(4.85, 5.2, f.s));
+}
 
 export function galacticFrame() {
     const north = new THREE.Vector3(0.55, 0.8, 0.2).normalize();
@@ -191,27 +223,56 @@ function deepSky(frame) {
     return { obj, objB };
 }
 
-export function createSky(ctx) {
-    const { renderer, T, scene } = ctx;
+function skyBake(ctx) {
     const frame = galacticFrame();
     const { obj, objB } = deepSky(frame);
     const count = obj.length;
     while (obj.length < MAX_OBJ) { obj.push(new THREE.Vector4()); objB.push(new THREE.Vector4()); }
-
-    const cube = bakeCube(renderer, {
-        size: T.skyCube,
-        fragment: SKY_FRAG,
-        type: ctx.halfFloat ? THREE.HalfFloatType : THREE.UnsignedByteType,
-        uniforms: {
-            uNorth: { value: frame.north },
-            uCenter: { value: frame.center },
-            uObj: { value: obj },
-            uObjB: { value: objB },
-            uObjCount: { value: count },
+    return {
+        frame,
+        options: {
+            size: ctx.T.skyCube,
+            fragment: SKY_FRAG,
+            type: ctx.halfFloat ? THREE.HalfFloatType : THREE.UnsignedByteType,
+            // 8-bit fallback: stored sRGB-encoded so the faint Milky Way gradient doesn't band
+            srgb: !ctx.halfFloat,
+            label: 'sky',
+            uniforms: {
+                uNorth: { value: frame.north },
+                uCenter: { value: frame.center },
+                uObj: { value: obj },
+                uObjB: { value: objB },
+                uObjCount: { value: count },
+            },
         },
-    });
-    scene.background = cube.texture;
-    scene.backgroundIntensity = 1;
+    };
+}
+
+/* The bake's program compiles off the main thread first (a ~1 s stall otherwise) */
+export async function createSkyAsync(ctx) {
+    const { frame, options } = skyBake(ctx);
+    return buildSky(ctx, frame, await bakeCubeAsync(ctx.renderer, options));
+}
+
+function buildSky(ctx, frame, cube) {
+    const { T, scene } = ctx;
+    let bg = null;
+    if (ctx.halfFloat) {
+        scene.background = cube.texture;
+        scene.backgroundIntensity = 1;
+    } else {
+        bg = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.ShaderMaterial({
+            uniforms: { uSky: { value: cube.texture }, uIntensity: { value: 1 } },
+            vertexShader: BG_VERT,
+            fragmentShader: BG_FRAG,
+            side: THREE.BackSide,
+            depthTest: false,
+            depthWrite: false,
+        }));
+        bg.frustumCulled = false;
+        bg.renderOrder = -10;
+        scene.add(bg);
+    }
 
     // Far stars: 60% concentrated toward the galactic plane, 40% isotropic
     const n = T.farStars;
@@ -249,7 +310,7 @@ export function createSky(ctx) {
     geo.setAttribute('aMag', new THREE.BufferAttribute(mag, 1));
     geo.setAttribute('aPhase', new THREE.BufferAttribute(phase, 1));
     const mat = new THREE.ShaderMaterial({
-        uniforms: { uDpr: { value: 1 }, uTime: { value: 0 }, uTwinkle: { value: 1 } },
+        uniforms: { uDpr: { value: 1 }, uTime: { value: 0 }, uTwinkle: { value: 1 }, uGain: { value: 1 } },
         vertexShader: STAR_VERT,
         fragmentShader: STAR_FRAG,
         transparent: true,
@@ -317,14 +378,26 @@ export function createSky(ctx) {
     return {
         cube: cube.texture,
         frame,
+        starCount: n,
         update(f) {
+            const gain = skyGain(f);
+            if (bg) {
+                bg.position.copy(f.camera.position);
+                bg.material.uniforms.uIntensity.value = gain;
+            } else {
+                scene.backgroundIntensity = gain;
+            }
+            mat.uniforms.uGain.value = gain;
             mat.uniforms.uTime.value = f.t;
             mat.uniforms.uDpr.value = f.dpr;
+            // Twinkling and meteors are effects of an atmosphere: only in the Earth shots
+            // (and neither while motion is stilled)
+            mat.uniforms.uTwinkle.value = f.still ? 0 : 1 - smoothstep(0.8, 1.2, f.s);
 
             nextMeteor -= f.dt;
             if (nextMeteor <= 0) {
                 const free = meteors.find((m) => !m.mesh.visible);
-                if (free) spawn(free, f.camera);
+                if (free && f.s < 0.9 && !f.still) spawn(free, f.camera);
                 nextMeteor = 3.5 + mrand() * 6;
             }
             for (const m of meteors) {
@@ -340,6 +413,11 @@ export function createSky(ctx) {
         },
         dispose() {
             cube.dispose();
+            if (bg) {
+                scene.remove(bg);
+                bg.geometry.dispose();
+                bg.material.dispose();
+            }
             geo.dispose();
             mat.dispose();
             scene.remove(stars);

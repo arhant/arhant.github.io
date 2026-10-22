@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Spec-driven development with AI agents | Arhant Jain</title>
+    <meta name="description" content="Arhant Jain led his team's adoption of spec-driven development with GitHub Spec Kit, using Claude Code, MCP and AI agents with human review and AI cost tracking.">
+    <meta name="author" content="Arhant Jain">
+    <link rel="canonical" href="https://arhant.github.io/work/spec-driven-development/">
+    <meta name="theme-color" content="#07071a">
+    <meta name="color-scheme" content="dark">
+
+    <!-- Open Graph / social -->
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Arhant Jain">
+    <meta property="og:locale" content="en_US">
+    <meta property="og:url" content="https://arhant.github.io/work/spec-driven-development/">
+    <meta property="og:title" content="Spec-driven development with AI agents | Arhant Jain">
+    <meta property="og:description" content="How I led my team's adoption of spec-driven development with GitHub Spec Kit, with human review and AI cost tracking built in.">
+    <meta property="og:image" content="https://arhant.github.io/og-image.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Arhant Jain, Senior Software Engineer and Tech Lead, over a planet rising in space">
+    <meta property="article:author" content="https://arhant.github.io/">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image:alt" content="Arhant Jain, Senior Software Engineer and Tech Lead, over a planet rising in space">
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/favicon.png" sizes="32x32" type="image/png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+    <!-- Motion mode is decided before first paint (same rule and storage key as the homepage) -->
+    <script>
+        (function (d) {
+            var m = null;
+            var save = navigator.connection && navigator.connection.saveData;
+            try { m = localStorage.getItem('motion'); } catch (e) {}
+            if (m !== 'full' && m !== 'lite') {
+                var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+                m = (reduce || save) ? 'lite' : 'full';
+            }
+            d.documentElement.classList.add('js');
+            if (save) d.documentElement.classList.add('save-data');
+            d.documentElement.dataset.motion = m;
+        })(document);
+    </script>
+
+    <!-- Self-hosted fonts: preload the two faces above the fold (JetBrains Mono loads on demand) -->
+    <link rel="preload" href="/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/fonts/space-grotesk-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/page.css">
+    <!-- Classic and in <head> on purpose: its pagereveal listener must exist before first render -->
+    <script src="/js/page.js"></script>
+
+    <!-- Warm the homepage when a link to it is hovered or pressed (prefetch only, never prerender) -->
+    <script type="speculationrules">
+        {
+            "prefetch": [
+                { "where": { "href_matches": "/" }, "eagerness": "moderate" }
+            ]
+        }
+    </script>
+
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@graph": [
+                {
+                    "@type": "Article",
+                    "headline": "Spec-driven development with AI agents",
+                    "description": "How Arhant Jain led his team's adoption of spec-driven development with GitHub Spec Kit, with human review and AI cost tracking built in.",
+                    "url": "https://arhant.github.io/work/spec-driven-development/",
+                    "mainEntityOfPage": "https://arhant.github.io/work/spec-driven-development/",
+                    "image": "https://arhant.github.io/og-image.jpg",
+                    "datePublished": "2026-10-22",
+                    "dateModified": "2026-10-22",
+                    "inLanguage": "en",
+                    "author": { "@type": "Person", "name": "Arhant Jain", "url": "https://arhant.github.io/" }
+                },
+                {
+                    "@type": "BreadcrumbList",
+                    "itemListElement": [
+                        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://arhant.github.io/" },
+                        { "@type": "ListItem", "position": 2, "name": "Case studies", "item": "https://arhant.github.io/#projects" },
+                        { "@type": "ListItem", "position": 3, "name": "Spec-driven development with AI agents" }
+                    ]
+                }
+            ]
+        }
+    </script>
+
+    <!-- Google Analytics: the deploy workflow replaces the placeholder with the
+         GA_MEASUREMENT_ID repository secret. Left unreplaced (local dev), GA stays off. -->
+    <script>
+        (function () {
+            var id = '__GA_MEASUREMENT_ID__';
+            if (!/^G-[A-Z0-9]+$/.test(id)) return;
+            var s = document.createElement('script');
+            s.async = true;
+            s.src = 'https://www.googletagmanager.com/gtag/js?id=' + id;
+            document.head.appendChild(s);
+            window.dataLayer = window.dataLayer || [];
+            window.gtag = function () { window.dataLayer.push(arguments); };
+            window.gtag('js', new Date());
+            window.gtag('config', id);
+        })();
+    </script>
+</head>
+<body class="subpage">
+    <a href="#main" class="skip-link">Skip to content</a>
+
+    <!-- Static space backdrop: reading pages never load the 3D scene -->
+    <div class="backdrop" aria-hidden="true">
+        <div class="backdrop-band"></div>
+        <div class="backdrop-stars backdrop-stars--near"></div>
+        <div class="backdrop-stars backdrop-stars--far"></div>
+    </div>
+
+    <!-- ==================== HUD (simplified) ==================== -->
+    <header class="hud">
+        <nav class="nav" aria-label="Primary">
+            <div class="nav-inner">
+                <a href="/" class="nav-home"><span class="nav-logo" aria-hidden="true">AJ</span><span class="nav-home-name">Arhant Jain</span></a>
+                <ul class="nav-links" role="list">
+                    <li><a href="/#projects" aria-current="true">Case Studies</a></li>
+                    <li><a href="/#contact">Contact</a></li>
+                </ul>
+                <div class="nav-actions">
+                    <button type="button" class="hud-btn" id="motion-toggle" aria-pressed="false" hidden>
+                        <svg class="icon" aria-hidden="true" focusable="false"><use href="/img/icons.svg#i-gauge"/></svg>
+                        <span class="hud-btn-label">Lite mode</span>
+                    </button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main id="main" class="page-main" tabindex="-1">
+        <article class="article" aria-labelledby="page-title">
+            <header class="article-head">
+                <nav class="crumbs" aria-label="Breadcrumb">
+                    <ol role="list">
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/#projects">Case studies</a></li>
+                        <li><span aria-current="page">Spec-driven development with AI agents</span></li>
+                    </ol>
+                </nav>
+                <p class="case-code">ML-01 · AI-assisted engineering</p>
+                <h1 id="page-title" class="page-title page-title--case">Spec-driven development with AI agents</h1>
+                <p class="article-dek">How I led my team's adoption of AI-assisted development: spec-driven development with GitHub Spec Kit, with human review and AI cost tracking built in.</p>
+                <dl class="article-meta">
+                    <div><dt>Where</dt><dd>Cox Automotive · Finance Services</dd></div>
+                    <div><dt>My part</dt><dd>Led the adoption; wrote the first specifications</dd></div>
+                    <div><dt>Team</dt><dd>6 engineers</dd></div>
+                </dl>
+            </header>
+
+            <div class="sheet prose">
+                <section class="tldr" aria-labelledby="tldr-title">
+                    <h2 id="tldr-title" class="tldr-label">In short</h2>
+                    <p>I introduced spec-driven development with GitHub Spec Kit to my team and wrote its first specifications. It is now the standard way new features are planned.</p>
+                    <dl class="facts">
+                        <div><dt>Microservices built and reviewed with AI tools</dt><dd>10+</dd></div>
+                        <div><dt>Engineers on the team I lead</dt><dd>6</dd></div>
+                    </dl>
+                </section>
+
+                <section aria-labelledby="context-title">
+                    <h2 id="context-title">Context</h2>
+                    <p>I'm a Senior Software Engineer and Tech Lead at Cox Automotive, in the Finance Services division. We build the credit application, lender connectivity, contracting, and document signing platforms used by about 10,000 US dealerships and major lenders.</p>
+                    <p>The team needed a consistent, reviewable way to plan and build features with AI tools, with quality and cost kept under control.</p>
+                </section>
+
+                <section aria-labelledby="did-title">
+                    <h2 id="did-title">What I did</h2>
+                    <ul class="list" role="list">
+                        <li>Introduced <strong>spec-driven development with GitHub Spec Kit</strong> and wrote the team's first specifications.</li>
+                        <li>Use <strong>Claude Code, MCP integrations, and AI agents</strong> daily to design, build, test, and review production code across 10+ microservices.</li>
+                        <li>Promote <strong>responsible, cost-aware AI use</strong>, with three guardrails:</li>
+                    </ul>
+                    <ul class="cards" role="list">
+                        <li>
+                            <h3>Human review</h3>
+                            <p>AI-generated specs and code are reviewed by a person before release.</p>
+                        </li>
+                        <li>
+                            <h3>Tracked spend</h3>
+                            <p>AI spend is tracked on enterprise dashboards.</p>
+                        </li>
+                        <li>
+                            <h3>The right model</h3>
+                            <p>The model is matched to the task.</p>
+                        </li>
+                    </ul>
+                    <h3>My role and the team's</h3>
+                    <p>I lead and mentor a team of 6 engineers, and run sprint and quarterly planning, design reviews, and production support. I led the adoption and wrote the first specifications; the team now plans new features from specs.</p>
+                </section>
+
+                <!-- OWNER: a "Decisions and trade-offs" section (what you weighed, and why Spec Kit) needs facts only
+                     you can supply. It is left out until you add them; publish nothing confidential. -->
+
+                <section aria-labelledby="result-title">
+                    <h2 id="result-title">Result</h2>
+                    <p>Spec-driven development is now the standard way new features are planned on the team.</p>
+                    <!-- OWNER: a before/after measure (for example planning or review time) would make this stronger.
+                         Add it only if the number is real and publishable. -->
+                </section>
+
+                <section aria-labelledby="stack-title">
+                    <h2 id="stack-title">Stack</h2>
+                    <ul class="tags" role="list"><li>Claude Code</li><li>MCP</li><li>AI agents</li><li>GitHub Spec Kit</li><li>AI cost management</li></ul>
+                </section>
+            </div>
+
+            <aside class="panel page-cta" aria-labelledby="cta-title">
+                <h2 id="cta-title">Want to talk about this work?</h2>
+                <p>Happy to talk about distributed systems, AI-assisted engineering, security and identity, or growing engineering teams. Email or LinkedIn is the best way to reach me.</p>
+                <div class="contact-actions">
+                    <a class="btn btn-primary" href="mailto:arhant@nyu.edu" data-copy-email data-track="copy_email">
+                        <svg class="icon" aria-hidden="true" focusable="false"><use href="/img/icons.svg#i-envelope"/></svg>
+                        <span class="email-text">arhant@nyu.edu</span>
+                        <svg class="icon email-copy-icon" aria-hidden="true" focusable="false"><use href="/img/icons.svg#i-copy"/></svg>
+                    </a>
+                    <a class="btn btn-ghost" href="https://www.linkedin.com/in/arhant-jain" target="_blank" rel="noopener" data-track="linkedin"><svg class="icon icon--brand" aria-hidden="true" focusable="false"><use href="/img/icons.svg#i-linkedin-in"/></svg> LinkedIn<span class="sr-only"> (opens in a new tab)</span></a>
+                </div>
+            </aside>
+
+            <div class="article-foot">
+                <a class="back-link" href="/#ml-spec-driven"><svg class="icon" aria-hidden="true" focusable="false"><use href="/img/icons.svg#i-arrow-left"/></svg>Back to case studies</a>
+                <nav aria-labelledby="more-title">
+                    <h2 id="more-title" class="more-title">More case studies</h2>
+                    <ul class="more-list" role="list">
+                        <li><a href="/work/message-level-encryption/">Message-level encryption for the Amazon launch</a></li>
+                        <li><a href="/work/credit-application-apis/">Credit Application &amp; Leads APIs</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </article>
+    </main>
+
+    <!-- Copy confirmation: the toast is visual only; screen readers hear the live region -->
+    <div class="toast" id="toast" aria-hidden="true">
+        <svg class="icon" aria-hidden="true" focusable="false"><use href="/img/icons.svg#i-check"/></svg>
+        <span class="toast-msg"></span>
+        <span class="toast-detail"></span>
+    </div>
+    <p class="sr-only" id="live-status" role="status" aria-live="polite"></p>
+
+    <footer class="footer">
+        <nav aria-label="Footer">
+            <ul class="footer-links" role="list">
+                <li><a href="/">Home</a></li>
+                <li><a href="/#projects">Case Studies</a></li>
+                <li><a href="/black-hole/">Black hole explainer</a></li>
+                <li><a href="/#contact">Contact</a></li>
+            </ul>
+        </nav>
+        <p>© 2026 Arhant Jain. All rights reserved.</p>
+    </footer>
+</body>
+</html>

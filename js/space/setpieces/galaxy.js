@@ -8,7 +8,7 @@ import * as THREE from 'three';
 import { ORIGINS, viewPoint } from '../path-data.js';
 import { tempToColor } from '../lib/color.js';
 import { mulberry32, gaussian } from '../lib/math.js';
-import { createGlow } from '../lib/glow.js';
+import { createGlow, fadeGlow } from '../lib/glow.js';
 
 const RG = 2600;
 const PITCH = Math.tan(THREE.MathUtils.degToRad(14));
@@ -57,8 +57,12 @@ varying vec3 vCol;
 void main() {
     vec4 mv = modelViewMatrix * vec4(position, 1.0);
     gl_Position = projectionMatrix * mv;
-    gl_PointSize = clamp(uScale * (0.6 + aMag) / -mv.z, 1.0, 4.0) * uDpr;
-    vCol = aColor * aMag;
+    // Points never shrink below 1 px; a sub-pixel star keeps the light of the area it really
+    // covers instead, so the distant disk doesn't over-brighten and shimmer
+    float sz = uScale * (0.6 + aMag) / -mv.z;
+    gl_PointSize = clamp(sz, 1.0, 4.0) * uDpr;
+    float cover = min(sz, 1.0);
+    vCol = aColor * aMag * cover * cover;
 }
 `;
 
@@ -154,7 +158,11 @@ export async function create(ctx) {
     const disk = new THREE.Group();
     group.add(disk);
 
-    const diskUniforms = { uNoise: { value: noise }, uIntensity: { value: 0.95 } };
+    // Authored intensities; update() scales them by presence every frame
+    const DISK_I = 0.95;
+    const PTS_I = 0.42;
+    const RING_I = 0.9;
+    const diskUniforms = { uNoise: { value: noise }, uIntensity: { value: DISK_I } };
     const diskGeo = new THREE.PlaneGeometry(RG * 2, RG * 2, 1, 1);
     diskGeo.rotateX(-Math.PI / 2);
     const impostor = new THREE.Mesh(diskGeo, new THREE.ShaderMaterial({
@@ -201,7 +209,7 @@ export async function create(ctx) {
     ptsGeo.setAttribute('aColor', new THREE.BufferAttribute(col, 3));
     ptsGeo.setAttribute('aMag', new THREE.BufferAttribute(mag, 1));
     ptsGeo.setDrawRange(0, T.galaxyPoints);
-    const ptsUniforms = { uScale: { value: 7000 }, uDpr: { value: 1 }, uIntensity: { value: 0.42 } };
+    const ptsUniforms = { uScale: { value: 7000 }, uDpr: { value: 1 }, uIntensity: { value: PTS_I } };
     const points = new THREE.Points(ptsGeo, new THREE.ShaderMaterial({
         uniforms: ptsUniforms,
         vertexShader: PTS_VERT,
@@ -256,7 +264,7 @@ export async function create(ctx) {
 
     // Ring nebula in the foreground of the Case Studies entry shot
     group.updateMatrixWorld();
-    const ringUniforms = { uNoise: { value: noise }, uIntensity: { value: 0.9 }, uSize: { value: 300 } };
+    const ringUniforms = { uNoise: { value: noise }, uIntensity: { value: RING_I }, uSize: { value: 300 } };
     const ring = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.ShaderMaterial({
         uniforms: ringUniforms,
         vertexShader: RING_VERT,
@@ -302,15 +310,20 @@ export async function create(ctx) {
 
     return {
         group,
-        update(f) {
-            disk.rotation.y = -f.t * 0.004;
+        update(f, presence = 1) {
+            // A real disk turns once in ~250 Myr: drift slowly enough that it never reads as spinning
+            disk.rotation.y = -f.t * 0.0004;
             ptsUniforms.uDpr.value = f.dpr;
+            diskUniforms.uIntensity.value = DISK_I * presence;
+            ptsUniforms.uIntensity.value = PTS_I * presence;
+            ringUniforms.uIntensity.value = RING_I * presence;
+            fadeGlow(core, presence);
             toCam.subVectors(f.camera.position, origin).normalize();
             for (const j of jets) {
                 j.uniforms.uTime.value = f.t;
                 jetW.copy(j.dir).applyEuler(group.rotation);
                 const D = 1 / (GAMMA * (1 - BETA * jetW.dot(toCam)));
-                j.uniforms.uBoost.value = Math.min(2, Math.max(0.08, Math.pow(D, 3) * 0.5));
+                j.uniforms.uBoost.value = Math.min(2, Math.max(0.08, Math.pow(D, 3) * 0.5)) * presence;
             }
         },
         setTier(tier) {

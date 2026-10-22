@@ -1,0 +1,133 @@
+name: Checks
+
+# Blocking:  internal links and #anchors (lychee, offline) and accessibility (axe-core).
+# Warn-only: Lighthouse on the static fallback (continue-on-error).
+# Weekly:    external links (schedule only, or a manual run with "external_links").
+#
+# There is deliberately no push trigger. On a push to main/master, deploy.yml calls this file
+# (workflow_call) once and only deploys if it passes, so the checks never run twice for a push.
+on:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      external_links:
+        description: Also run the external link check
+        type: boolean
+        default: false
+  workflow_call:
+  schedule:
+    - cron: '23 6 * * 1' # Mondays 06:23 UTC
+
+permissions:
+  contents: read
+
+concurrency:
+  group: checks-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  links:
+    name: Internal links and anchors
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Root-absolute links (/work/…, /#contact) resolve against the repo root. A directory link
+      # needs an index.html, and its #fragment must match an id in that file. External URLs are
+      # skipped here; the weekly job checks them.
+      - name: Check links and #anchors (offline)
+        uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
+        with:
+          args: >-
+            --offline --include-fragments --no-progress
+            --root-dir "${{ github.workspace }}" --index-files index.html
+            -- './*.html' './work/**/*.html' './black-hole/*.html'
+          fail: true
+
+  a11y:
+    name: Accessibility (axe-core)
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+
+      - name: Install Playwright and Chromium
+        run: |
+          python -m pip install --disable-pip-version-check --no-input playwright==1.64.0
+          python -m playwright install --with-deps chromium
+
+      # Every page at 1440x900 and 390x844, in lite and full motion. Fails on serious or critical
+      # violations. Headless Chromium has no GPU, so full motion ends on the static backdrop.
+      - name: Run axe-core
+        run: python .github/scripts/a11y.py
+
+  lighthouse:
+    name: Lighthouse (static fallback, warn-only)
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Mobile, median of 3 runs. Budgets: LCP < 2.5 s, CLS < 0.05, accessibility >= 0.95 and a
+      # script-transfer budget. SwiftShader means this measures the static fallback, not the 3D.
+      - name: Run Lighthouse CI
+        id: lhci
+        uses: treosh/lighthouse-ci-action@3e7e23fb74242897f95c0ba9cabad3d0227b9b18 # 12.6.2
+        with:
+          configPath: ./.github/scripts/lighthouserc.yml
+          uploadArtifacts: true
+
+      - name: Report budgets over the limit
+        if: always() && steps.lhci.outputs.assertionResults != ''
+        env:
+          RESULTS: ${{ steps.lhci.outputs.assertionResults }}
+        run: |
+          over=$(printf '%s' "$RESULTS" | jq -r '.[] | select(.passed == false)
+            | "\(.url) \(.auditId)\(if .auditProperty then ":" + (.auditProperty | tostring) else "" end): \(.actual) (budget \(.operator) \(.expected))"')
+          {
+            echo "### Lighthouse budgets (static fallback, warn-only)"
+            if [ -z "$over" ]; then echo "All budgets met."; else printf '%s\n' "$over" | sed 's/^/- /'; fi
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ -n "$over" ]; then
+            printf '%s\n' "$over" | while IFS= read -r line; do
+              echo "::warning title=Lighthouse budget (static fallback)::$line"
+            done
+          fi
+
+  external-links:
+    name: External links (weekly)
+    if: github.event_name == 'schedule' || inputs.external_links
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # LinkedIn answers link checkers with status 999, and mailto links are not web pages.
+      # 429 (rate limited) is not a broken link.
+      - name: Check external links
+        uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
+        with:
+          args: >-
+            --no-progress --max-retries 3 --timeout 30
+            --accept '100..=103,200..=299,429'
+            --root-dir "${{ github.workspace }}" --index-files index.html
+            --exclude 'linkedin\.com' --exclude '^mailto:'
+            -- './*.html' './work/**/*.html' './black-hole/*.html'
+          fail: true

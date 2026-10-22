@@ -14,6 +14,11 @@ import { ORIGINS } from './path-data.js';
 import { smoothstep, lerp } from './lib/math.js';
 
 const RS = 25; // world units per Schwarzschild radius (matches black-hole.js)
+// Contact frames the card with a tighter lens and a sideways view offset; the fall eases both
+// back to the plunge's own framing over its first seconds, so the schedule below plays as tuned
+const LENS_FOV = 50;
+const LENS_EASE = 2.5;
+const OFFSET_EASE = 1.2;
 
 // (seconds, distance in Schwarzschild radii): a long approach, quick through the
 // photon sphere (1.5 rs), the horizon at 18 s, then the last moments inside
@@ -50,6 +55,9 @@ export class Plunge {
         this.fromFov = 50;
         this.from = { beta: 0, tidal: 0, blackout: 0, exposure: 1 };
         this.startFov = 50;
+        this.startView = { x: 0, y: 0, on: false }; // the rig's view offset when the fall began
+        this.rigOpts = { still: false, contact: null };
+        this.handBack = null; // view-offset weight handed back to the rig on the return
         this.rt = 0;
         this.lastTick = -1;
 
@@ -71,6 +79,12 @@ export class Plunge {
         this.schedule[0][1] = Math.log(Math.max(2.5, this.dir.length() / RS));
         this.dir.normalize();
         this.startFov = cam.fov;
+        // Remembered as fractions of the full view, so a resize mid-ease can't skew it
+        const v = cam.view;
+        this.startView.on = !!(v && v.enabled);
+        this.startView.x = this.startView.on ? v.offsetX / v.fullWidth : 0;
+        this.startView.y = this.startView.on ? v.offsetY / v.fullHeight : 0;
+        this.handBack = null;
         this.t = 0;
         this.lastTick = -1;
         this.state = 'falling';
@@ -90,12 +104,33 @@ export class Plunge {
         this.from.blackout = this.params.blackout;
         this.from.exposure = this.params.exposure;
         cam.up.copy(WORLD_UP);
+        // The rig takes the view offset back from wherever the fall's ease-out had got to
+        this.handBack = this.startView.on ? 1 - smoothstep(0, OFFSET_EASE, this.t) : 0;
+        this.startView.on = false;
     }
 
     reset() {
         this.state = 'idle';
         this.camera.up.copy(WORLD_UP);
+        // Cut short mid-ease (lite mode): don't leave a stale offset behind
+        if (this.startView.on && this.camera.view && this.camera.view.enabled) this.camera.clearViewOffset();
+        this.startView.on = false;
         Object.assign(this.params, { beta: 0, tidal: 0, blackout: 0, exposure: 1, r: 99, active: false });
+    }
+
+    /* Slide the Contact view offset back to centre over the first moments of the fall */
+    easeViewOffset(t) {
+        const cam = this.camera;
+        const V = this.startView;
+        if (!V.on) return;
+        const k = 1 - smoothstep(0, OFFSET_EASE, t);
+        if (k > 0) {
+            const fw = 2 * cam.aspect;
+            cam.setViewOffset(fw, 2, V.x * fw * k, V.y * 2 * k, fw, 2);
+        } else {
+            V.on = false;
+            cam.clearViewOffset();
+        }
     }
 
     /* Distance in rs at time t: cubic Hermite through the schedule in log space (smooth speed) */
@@ -127,7 +162,14 @@ export class Plunge {
         if (this.state === 'returning') {
             this.rt += dt;
             const k = smoothstep(0, 1.4, this.rt);
-            rig.update(dt, time, J);
+            // The rig eases its Contact view offset back in (it was released during the fall)
+            if (this.handBack !== null) {
+                rig.releaseOffset(this.handBack);
+                this.handBack = null;
+            }
+            this.rigOpts.still = !!frame.still;
+            this.rigOpts.contact = frame.contact || null;
+            rig.update(dt, time, J, this.rigOpts);
             this._pos.copy(cam.position);
             this._quat.copy(cam.quaternion);
             const rigFov = cam.fov;
@@ -151,6 +193,7 @@ export class Plunge {
         const t = this.t;
         const r = this.rAt(t);
         P.r = r;
+        rig.releaseOffset();
 
         this._prev.copy(cam.position);
         cam.position.copy(this.center).addScaledVector(this.dir, r * RS);
@@ -161,10 +204,14 @@ export class Plunge {
         const up = this._up.crossVectors(side, fwd).normalize();
         const pitch = smoothstep(HORIZON_TIME + 0.5, HORIZON_TIME + 5.5, t) * 1.15;
         const look = this._look.copy(fwd).multiplyScalar(Math.cos(pitch)).addScaledVector(up, Math.sin(pitch));
-        const roll = Math.sin(t * 0.17) * 0.1 + t * 0.012;
+        // A slow roll sells the free fall; a still camera (reduced motion, opted into 3D) has none
+        const roll = frame.still ? 0 : Math.sin(t * 0.17) * 0.1 + t * 0.012;
         cam.up.copy(up).multiplyScalar(Math.cos(roll)).addScaledVector(side, Math.sin(roll));
         cam.lookAt(look.add(cam.position));
-        cam.fov = lerp(this.startFov, 66, smoothstep(8, HORIZON_TIME, t));
+        // Contact's tighter lens opens back up to the plunge's own (portrait screens start wider and keep theirs)
+        const lens = lerp(this.startFov, Math.max(this.startFov, LENS_FOV), smoothstep(0, LENS_EASE, t));
+        cam.fov = lerp(lens, 66, smoothstep(8, HORIZON_TIME, t));
+        this.easeViewOffset(t);
         cam.updateProjectionMatrix();
         cam.updateMatrixWorld();
 

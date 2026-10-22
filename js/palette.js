@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Command palette (Ctrl/⌘ K). Loaded on first use by main.js.
+   Command palette (Ctrl/⌘ K or /). Loaded on first use by main.js.
    Native <dialog> for focus trapping, Esc and the backdrop; the input is an
    ARIA combobox over a listbox of sections, case studies and actions.
    ========================================================================== */
@@ -12,31 +12,43 @@ let filtered = [];
 let active = 0;
 let opener = null;
 let ctx = null;
+let shown = false;
 
+// Jumps go through main.js, so they warp like links, focus the heading and leave a Back entry
 function goTo(id) {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.scrollIntoView({ behavior: ctx.isLite() ? 'auto' : 'smooth', block: 'start' });
-    history.replaceState(null, '', `#${id}`);
-    const heading = el.matches('h1, h2, h3') ? el : el.querySelector('h1, h2, h3');
-    if (heading) {
-        if (!heading.hasAttribute('tabindex')) heading.setAttribute('tabindex', '-1');
-        heading.focus({ preventScroll: true });
+    if (ctx.jumpTo) {
+        ctx.jumpTo(id);
+        return;
     }
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: ctx.isLite() ? 'auto' : 'smooth', block: 'start' });
+}
+
+const has = (name) => typeof ctx[name] === 'function';
+const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+
+// "high · 60 fps · 100% → Medium": what runs now, and what choosing the row switches to
+function qualityHint(q) {
+    const parts = [q.tier];
+    if (Number.isFinite(q.fps)) parts.push(`${Math.round(q.fps)} fps`);
+    if (Number.isFinite(q.scale)) parts.push(`${Math.round(q.scale * 100)}%`);
+    return `${parts.filter(Boolean).join(' · ')} → ${cap(q.next)}${q.reloads ? ' (reloads scene)' : ''}`;
 }
 
 function buildItems() {
     const sections = ctx.sections.map((s) => {
         const h = s.querySelector('h1, h2');
-        const label = s.id === 'hero' ? 'Top' : (h ? h.textContent.trim() : s.id);
+        const label = s.id === 'hero' ? 'Top' : (s.dataset.label || (h ? h.textContent : s.id)).trim();
         return { group: 'Sections', label, hint: s.id === 'hero' ? 'Launch' : '', run: () => goTo(s.id) };
     });
-    sections.splice(2, 0, { group: 'Sections', label: 'Education', hint: 'About', run: () => goTo('education') });
+    if (document.getElementById('education')) {
+        sections.splice(2, 0, { group: 'Sections', label: 'Education', hint: 'About', run: () => goTo('education') });
+    }
 
-    const cases = [...document.querySelectorAll('.case')].map((c) => ({
+    const cases = [...document.querySelectorAll('.case[id]')].map((c) => ({
         group: 'Case studies',
-        label: c.querySelector('h3').textContent.trim(),
-        hint: (c.querySelector('.case-code').childNodes[0].textContent || '').trim(),
+        label: (c.querySelector('h3')?.textContent || c.id).trim(),
+        hint: (c.querySelector('.case-code')?.childNodes[0]?.textContent || '').trim(),
         run: () => goTo(c.id),
     }));
 
@@ -46,8 +58,19 @@ function buildItems() {
         { group: 'Actions', label: 'Open LinkedIn', hint: 'new tab', run: () => window.open('https://www.linkedin.com/in/arhant-jain', '_blank', 'noopener') },
         { group: 'Actions', label: 'Open GitHub', hint: 'new tab', run: () => window.open('https://github.com/arhant', '_blank', 'noopener') },
         { group: 'Actions', label: '', hint: 'motion', toggle: true, run: () => ctx.toggleMotion() },
-        { group: 'Actions', label: 'Back to top', hint: 'Return to launch', run: () => ctx.backToTop() },
     ];
+    // Scene commands only while the 3D scene is running
+    if (has('canPlunge') && ctx.canPlunge()) {
+        actions.push({ group: 'Actions', label: 'Cross the event horizon', hint: 'black hole · about 25 s', run: () => ctx.plunge() });
+    }
+    if (has('canLook') && ctx.canLook()) {
+        actions.push({ group: 'Actions', label: 'Look around the scene', hint: '3D · Esc to return', run: () => ctx.look() });
+    }
+    const quality = has('quality') ? ctx.quality() : null;
+    if (quality) {
+        actions.push({ group: 'Actions', label: 'Graphics quality', hint: qualityHint(quality), run: () => ctx.setQuality(quality.next) });
+    }
+    actions.push({ group: 'Actions', label: 'Back to top', hint: 'Return to launch', run: () => ctx.backToTop() });
     return [...sections, ...cases, ...actions];
 }
 
@@ -124,9 +147,19 @@ function choose(i) {
     item.run();
 }
 
+// Runs once per open, whichever way it closes. The dialog's close event arrives a task later,
+// so a command that runs right after close() already sees the palette as shut.
+function closed() {
+    if (!shown) return;
+    shown = false;
+    document.documentElement.classList.remove('palette-open');
+    if (ctx && ctx.onClose) ctx.onClose();
+}
+
 function close(restoreFocus = true) {
     if (!dialog.open) return;
     dialog.close();
+    closed();
     if (restoreFocus && opener && opener.focus) opener.focus();
 }
 
@@ -143,7 +176,7 @@ function build() {
                        placeholder="Jump to a section, case study or action" autocomplete="off" spellcheck="false">
                 <kbd>Esc</kbd>
             </div>
-            <ul id="palette-list" class="palette-list" role="listbox" aria-label="Commands"></ul>
+            <ul id="palette-list" class="palette-list" role="listbox" aria-label="Commands" tabindex="-1"></ul>
             <p class="palette-foot" aria-hidden="true"><kbd>↑</kbd><kbd>↓</kbd> move <kbd>Enter</kbd> select <kbd>Esc</kbd> close</p>
         </div>`;
     document.body.appendChild(dialog);
@@ -160,10 +193,7 @@ function build() {
     });
     // Clicking the backdrop (the dialog box itself, outside the inner panel) closes it
     dialog.addEventListener('click', (e) => { if (e.target === dialog) close(); });
-    dialog.addEventListener('close', () => {
-        document.documentElement.classList.remove('palette-open');
-        if (ctx && ctx.onClose) ctx.onClose();
-    });
+    dialog.addEventListener('close', closed);
 }
 
 export function openPalette(context) {
@@ -177,5 +207,6 @@ export function openPalette(context) {
     render();
     document.documentElement.classList.add('palette-open');
     dialog.showModal();
+    shown = true;
     input.focus();
 }

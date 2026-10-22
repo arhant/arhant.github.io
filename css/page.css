@@ -1,0 +1,430 @@
+/* ==========================================================================
+   Arhant Jain: standalone reading pages (/work/<slug>/ and /black-hole/)
+   Loaded after style.css and reuses its layers, tokens and components (HUD,
+   buttons, tags, panels, toast). No canvas and no 3D: the static .backdrop
+   only. Body class: .subpage.
+   ========================================================================== */
+
+/* Cross-document view transitions come from style.css (the opt-in, the site-nav
+   name on .nav-inner and the 240 ms cross-fade); here a case-study title
+   (case-title) morphs out of its homepage card. js/page.js skips them in lite mode. */
+
+/* ==================== COMPONENTS ==================== */
+@layer components {
+
+    /* ---------- HUD: home, Work, Contact and the motion toggle ---------- */
+    .subpage .nav {
+        background: rgb(7 7 26 / 0.8);
+        -webkit-backdrop-filter: blur(14px) saturate(140%);
+        backdrop-filter: blur(14px) saturate(140%);
+        border-bottom-color: var(--border);
+    }
+    .subpage .nav-inner { gap: var(--space-4); }
+
+    .nav-home {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        min-height: 44px;
+        color: var(--text-2);
+        text-decoration: none;
+        transition: color var(--dur-base) var(--ease);
+    }
+    .nav-home:hover { color: var(--text); }
+    .nav-home-name { font: 600 var(--step--1) var(--font); letter-spacing: 0.01em; white-space: nowrap; }
+
+    /* Only two links, so they stay visible at every width (no menu button here) */
+    .subpage .nav-links { display: flex; margin-left: auto; }
+    .subpage .nav-actions { margin-left: 0; }
+
+    /* ---------- Page frame ---------- */
+    .page-main {
+        padding: calc(var(--nav-h) + clamp(28px, 6vh, 64px)) var(--gutter) clamp(56px, 9vh, 96px);
+    }
+    .article { max-width: 50rem; margin-inline: auto; }
+    /* Explainer: the hero still runs wider than the reading column */
+    .article--wide { max-width: 72rem; }
+    .article--wide > :not(.hero-figure) { max-width: 50rem; margin-inline: auto; }
+
+    /* ---------- Header: breadcrumbs, eyebrow, title, dek, meta ---------- */
+    .article-head {
+        margin-bottom: var(--space-7);
+        text-shadow: 0 1px 2px rgb(7 7 26 / 0.75), 0 0 10px rgb(7 7 26 / 0.5);
+    }
+
+    .crumbs ol {
+        display: flex;
+        align-items: center;
+        color: var(--text-muted);
+        font: 500 var(--step--2)/1.5 var(--mono);
+        letter-spacing: var(--track-meta);
+    }
+    /* One line: the current page (already the h1) is the part that gets truncated */
+    .crumbs li { display: flex; align-items: center; flex-shrink: 0; }
+    .crumbs li:last-child { flex-shrink: 1; min-width: 0; }
+    .crumbs li + li::before {
+        content: '›';
+        content: '›' / '';
+        margin-inline: 10px;
+        color: var(--text-muted);
+    }
+    .crumbs a {
+        display: inline-block;
+        padding-block: 4px;
+        color: var(--text-2);
+        text-decoration: underline;
+        text-underline-offset: 3px;
+        text-decoration-color: rgb(var(--accent-2-rgb) / 0.35);
+    }
+    .crumbs a:hover { color: var(--interactive); text-decoration-color: currentColor; }
+    .crumbs [aria-current] { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    .article-head .case-code { margin-top: var(--space-6); }
+    .page-title {
+        margin-top: 10px;
+        font-size: clamp(2rem, 1.35rem + 3vw, 3.25rem);
+        line-height: 1.08;
+        letter-spacing: -0.03em;
+    }
+    .page-title--case { view-transition-name: case-title; }
+
+    .article-dek {
+        margin-top: 16px;
+        max-width: 60ch;
+        color: var(--text-2);
+        font-size: clamp(var(--step-0), 1rem + 0.4vw, 1.2rem);
+        line-height: 1.6;
+        text-wrap: pretty;
+    }
+
+    .article-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px 28px;
+        margin-top: var(--space-6);
+        padding-top: var(--space-5);
+        border-top: 1px solid var(--hairline);
+    }
+    .article-meta dt {
+        color: var(--text-muted);
+        font: 500 var(--step--2)/1.5 var(--mono);
+        letter-spacing: var(--track-label);
+        text-transform: uppercase;
+    }
+    .article-meta dd { margin-top: 2px; color: var(--text); font-size: var(--step--1); }
+
+    /* ---------- Reading sheet + prose ---------- */
+    .sheet {
+        padding: clamp(22px, 5vw, 56px);
+        border: 1px solid var(--hairline);
+        border-radius: var(--r-lg);
+        background: var(--surface);
+        box-shadow: 0 30px 60px -40px rgb(0 0 0 / 0.85);
+    }
+
+    .prose { color: var(--text-2); font-size: var(--step-0); line-height: 1.7; }
+    .prose > section + section { margin-top: clamp(36px, 5vw, 52px); }
+    .prose h2 {
+        margin-bottom: 14px;
+        font-size: clamp(1.375rem, 1.2rem + 0.6vw, 1.625rem);
+        letter-spacing: -0.02em;
+    }
+    .prose h3 { margin: 28px 0 10px; font-size: var(--step-card); }
+    .prose p, .prose .list, .prose .steps { max-width: 68ch; text-wrap: pretty; }
+    .prose :is(p, .list, .steps, .figure, .cards, .tags) + :is(p, .list, .steps, .figure, .cards, .tags) { margin-top: 1em; }
+    .prose strong { color: var(--text); }
+    .prose sub { font-size: 0.72em; line-height: 0; }
+    .prose math { color: var(--text); font-size: 1.05em; }
+    .prose var { font-style: italic; }
+    .prose a:not(.btn) {
+        color: var(--interactive);
+        text-decoration: underline;
+        text-underline-offset: 3px;
+        text-decoration-color: rgb(var(--accent-2-rgb) / 0.45);
+    }
+    .prose a:not(.btn):hover { text-decoration-color: currentColor; }
+
+    .list { display: grid; gap: 10px; }
+    .list > li { position: relative; padding-left: 22px; }
+    .list > li::before {
+        content: '';
+        position: absolute;
+        left: 2px;
+        top: 0.72em;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--decor);
+    }
+
+    .steps { display: grid; gap: 12px; counter-reset: step; }
+    .steps > li { position: relative; padding-left: 40px; counter-increment: step; }
+    .steps > li::before {
+        content: counter(step);
+        position: absolute;
+        left: 0;
+        top: 0.1em;
+        display: grid;
+        place-items: center;
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        border: 1px solid rgb(var(--accent-1-rgb) / 0.5);
+        color: var(--text);
+        font: 600 var(--step--2)/1 var(--mono);
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* ---------- In short: the outcome first ---------- */
+    .tldr {
+        padding: 20px 24px 22px;
+        border-radius: var(--r-md);
+        background: rgb(var(--accent-1-rgb) / 0.08);
+        box-shadow: inset 3px 0 0 var(--decor);
+    }
+    .prose .tldr-label {
+        margin-bottom: 8px;
+        color: var(--eyebrow);
+        font: 600 var(--step--2)/1.4 var(--mono);
+        letter-spacing: var(--track-label);
+        text-transform: uppercase;
+    }
+    .tldr p { color: var(--text); }
+
+    .facts {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 10px;
+        margin-top: 18px;
+    }
+    .facts > div {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding: 12px 14px;
+        border: 1px solid var(--hairline);
+        border-radius: var(--r-sm);
+        background: rgb(9 9 30 / 0.6);
+    }
+    .facts dt { order: 2; color: var(--text-muted); font: 500 var(--step--2)/1.45 var(--mono); letter-spacing: 0.02em; }
+    .facts dd {
+        order: 1;
+        color: var(--text);
+        font: 600 1.25rem/1.15 var(--mono);
+        font-variant-numeric: tabular-nums;
+    }
+    .facts--words dd { font-size: 1.05rem; }
+
+    /* Small fact cards (guardrails and similar) */
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+    .cards > li { padding: 16px 18px; border: 1px solid var(--hairline); border-radius: var(--r-md); background: rgb(255 255 255 / 0.02); }
+    .prose .cards h3 { margin: 0 0 6px; font-size: 1rem; }
+    .cards p { font-size: var(--step--1); line-height: 1.6; }
+
+    /* ---------- Diagrams: inline SVG, text equivalent alongside ---------- */
+    .figure { margin-block: 28px; }
+    .diagram { width: 100%; height: auto; max-width: 460px; margin-inline: auto; overflow: visible; }
+    .diagram text { fill: var(--text); font-family: var(--font); font-size: 18px; font-weight: 600; }
+    .diagram .dg-note { fill: var(--text-muted); font: 500 14px var(--mono); }
+    .diagram .dg-label { font: 600 14px var(--mono); letter-spacing: 0.04em; }
+    .diagram .dg-node { fill: rgb(14 14 42 / 0.92); stroke: rgb(var(--accent-1-rgb) / 0.55); stroke-width: 1.5; }
+    .diagram .dg-node--muted { stroke: var(--hairline-strong); stroke-dasharray: 5 4; }
+    .diagram .dg-layer { fill: none; stroke-width: 1.5; }
+    .diagram .dg-tls { stroke: rgb(255 255 255 / 0.4); stroke-dasharray: 6 5; }
+    .diagram .dg-jwe { stroke: var(--accent-3); fill: rgb(var(--accent-3-rgb) / 0.05); }
+    .diagram .dg-jws { stroke: var(--accent-1); fill: rgb(var(--accent-1-rgb) / 0.07); }
+    .diagram .dg-flow { stroke: var(--text-muted); stroke-width: 1.5; fill: none; }
+    .diagram .dg-arrowhead { fill: var(--text-muted); }
+    .diagram .dg-tls-text { fill: var(--text-2); }
+    .diagram .dg-jwe-text { fill: var(--accent-3); }
+    .diagram .dg-jws-text { fill: #b9b4ff; }
+    .figure figcaption {
+        max-width: 56ch;
+        margin: 14px auto 0;
+        color: var(--text-muted);
+        font-size: var(--step--1);
+        line-height: 1.55;
+        text-align: center;
+    }
+
+    /* Radii to scale (explainer): circles on the left, the legend is the text version */
+    .radii {
+        display: grid;
+        grid-template-columns: minmax(0, 220px) minmax(0, 1fr);
+        gap: 20px 32px;
+        align-items: center;
+        margin-block: 24px;
+    }
+    .radii .diagram { max-width: 220px; }
+    .radii-ring { fill: none; stroke-width: 2; }
+    .radii-ring--isco { stroke: rgb(255 168 96); stroke-dasharray: 2 5; stroke-linecap: round; }
+    .radii-ring--shadow { stroke: var(--accent-1); }
+    .radii-ring--photon { stroke: var(--accent-3); stroke-dasharray: 7 5; }
+    .radii-ring--horizon { fill: #000; stroke: rgb(255 255 255 / 0.6); }
+    .legend { display: grid; gap: 12px; }
+    .legend > div { display: grid; grid-template-columns: 26px minmax(0, 1fr); column-gap: 12px; }
+    /* Swatch: same colour and line style as the ring it names (never colour alone) */
+    .legend > div::before {
+        content: '';
+        grid-column: 1;
+        grid-row: 1;
+        align-self: center;
+        width: 26px;
+        border-top: 2px solid var(--text-muted);
+    }
+    .legend dt { grid-column: 2; grid-row: 1; color: var(--text); font-weight: 600; font-size: var(--step--1); }
+    .legend dd { grid-column: 2; color: var(--text-2); font-size: var(--step--1); line-height: 1.55; }
+    .legend .val { color: var(--text); font-family: var(--mono); font-variant-numeric: tabular-nums; }
+    .legend > .legend--horizon::before { height: 8px; border: 1px solid rgb(255 255 255 / 0.6); border-radius: 2px; background: #000; }
+    .legend > .legend--photon::before { border-top: 2px dashed var(--accent-3); }
+    .legend > .legend--shadow::before { border-top-color: var(--accent-1); }
+    .legend > .legend--isco::before { border-top: 2px dotted rgb(255 168 96); }
+
+    /* ---------- Explainer hero still ---------- */
+    .hero-figure { margin: 0 0 var(--space-7); }
+    .hero-figure img {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 2520 / 1080;
+        object-fit: cover;
+        border-radius: var(--r-lg);
+        border: 1px solid var(--hairline);
+        /* The hairline sits over the page, not over a black fill, so it stays navy, not grey */
+        background: var(--bg);
+        background-clip: padding-box;
+    }
+    .hero-figure figcaption {
+        max-width: 50rem;
+        margin: 12px auto 0;
+        color: var(--text-muted);
+        font-size: var(--step--1);
+        line-height: 1.55;
+    }
+
+    .plunge-cta { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; margin-block: var(--space-6) var(--space-7); }
+    .plunge-cta-note { max-width: 46ch; color: var(--text-muted); font-size: var(--step--1); line-height: 1.55; }
+
+    .sources { display: grid; gap: 14px; }
+    .sources li { max-width: 68ch; }
+    .sources .src-meta { display: block; color: var(--text-muted); font-size: var(--step--1); }
+
+    /* ---------- Contact call to action ---------- */
+    .page-cta {
+        margin-top: var(--space-8);
+        padding: clamp(26px, 4vw, 40px);
+        text-align: center;
+    }
+    .page-cta h2 { font-size: clamp(1.4rem, 1.2rem + 0.8vw, 1.75rem); letter-spacing: -0.02em; }
+    .page-cta p { max-width: 52ch; margin: 10px auto 0; color: var(--text-2); line-height: 1.7; text-wrap: pretty; }
+    .page-cta .contact-actions { margin-top: 22px; }
+
+    /* ---------- Article foot: back to the card, other case studies ---------- */
+    .article-foot {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 20px 40px;
+        margin-top: var(--space-7);
+    }
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 44px;
+        color: var(--interactive);
+        font: 500 var(--step--1) var(--mono);
+        text-decoration: underline;
+        text-underline-offset: 4px;
+        text-decoration-color: rgb(var(--accent-2-rgb) / 0.4);
+    }
+    .back-link:hover { text-decoration-color: currentColor; }
+    .back-link .icon { width: 16px; height: 16px; stroke-width: 2; }
+    .more-title {
+        color: var(--eyebrow);
+        font: 600 var(--step--2)/1.4 var(--mono);
+        letter-spacing: var(--track-label);
+        text-transform: uppercase;
+    }
+    .more-list { display: grid; gap: 2px; margin-top: 8px; }
+    .more-list a {
+        display: inline-block;
+        padding-block: 6px;
+        color: var(--text);
+        text-decoration: underline;
+        text-underline-offset: 3px;
+        text-decoration-color: rgb(var(--accent-2-rgb) / 0.35);
+    }
+    .more-list a:hover { color: var(--interactive); text-decoration-color: currentColor; }
+
+    /* ---------- Responsive ---------- */
+    @media (max-width: 860px) {
+        /* The toggle keeps its accessible name when the label is visually hidden */
+        .subpage .hud-btn-label {
+            display: block;
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0 0 0 0);
+            white-space: nowrap;
+        }
+    }
+    @media (max-width: 640px) {
+        .radii { grid-template-columns: 1fr; }
+        .radii .diagram { max-width: 200px; }
+    }
+    @media (max-width: 520px) {
+        .nav-home-name {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0 0 0 0);
+            white-space: nowrap;
+        }
+        .subpage .nav-links a { padding-inline: 10px; }
+        .tldr { padding: 18px 18px 20px; }
+        .hero-figure img { border-radius: var(--r-md); }
+    }
+
+    /* ---------- Forced colors + print ---------- */
+    @media (forced-colors: active) {
+        .sheet, .tldr, .facts > div, .cards > li { border: 1px solid CanvasText; }
+        .diagram text, .diagram .dg-arrowhead { fill: CanvasText; }
+        .diagram :is(.dg-node, .dg-layer, .dg-flow, .radii-ring) { stroke: CanvasText; }
+        .legend > div::before { border-color: CanvasText; }
+    }
+
+    @media print {
+        .subpage .nav-actions, .crumbs, .article-foot, .page-cta .contact-actions, .plunge-cta { display: none !important; }
+        .page-main { padding: 0; }
+        .sheet { padding: 0; border: 0; background: none; box-shadow: none; }
+        .article-head { text-shadow: none; }
+        .page-title, .prose h2, .prose h3, .prose strong, .tldr p, .facts dd, .article-meta dd, .legend dt { color: #000; }
+        .prose, .prose p, .article-dek, .list li, .steps li, .legend dd, .cards p { color: #222; }
+        .article-meta dt, .facts dt, .figure figcaption, .hero-figure figcaption, .sources .src-meta { color: #444; }
+        .tldr { background: none; box-shadow: inset 3px 0 0 #999; }
+        .facts > div, .cards > li { background: none; border-color: #bbb; break-inside: avoid; }
+        .figure, .radii, .hero-figure { break-inside: avoid; }
+        .diagram text, .diagram .dg-tls-text, .diagram .dg-jwe-text, .diagram .dg-jws-text { fill: #000; }
+        .diagram .dg-node { fill: #fff; stroke: #555; }
+        .diagram .dg-flow { stroke: #555; }
+        .diagram .dg-arrowhead { fill: #555; }
+        .diagram .dg-note { fill: #444; }
+        .diagram .dg-tls { stroke: #777; }
+        .steps > li::before { color: #000; border-color: #888; }
+        .subpage .footer { background: none; color: #444; }
+        .subpage .footer-links a { color: #222; }
+        .prose a:not(.btn) { color: #000; }
+        .sources a::after { content: ' (' attr(href) ')'; font-size: 0.85em; word-break: break-all; }
+    }
+}
+
+/* ==================== MOTION (full mode only) ==================== */
+@layer motion {
+    html[data-motion="full"] .back-link .icon { transition: translate var(--dur-base) var(--ease); }
+    html[data-motion="full"] .back-link:hover .icon { translate: -3px 0; }
+}

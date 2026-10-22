@@ -12,14 +12,34 @@ void main() {
 }
 `;
 
-/* Render a direction → colour shader into a cube map. `fragment` receives `varying vec3 vDir`. */
-export function bakeCube(renderer, { size, fragment, type = THREE.UnsignedByteType, uniforms = {}, mipmaps = true }) {
+/* User Timing for a bake, so load cost shows up in the Performance panel and in
+   performance.getEntriesByType('measure'): the time until the texture is ready (bakes that
+   yield in between can measure more than the main-thread time they cost). */
+function measure(label, t0) {
+    try {
+        performance.measure(`space:bake:${label}`, { start: t0, end: performance.now() });
+    } catch (e) { /* User Timing Level 3 unavailable */ }
+}
+
+/* three keys a program on the target it renders to (output colour space), so `target` must be
+   current while compileAsync builds the programs, or the first real draw compiles a second,
+   blocking copy. compileAsync creates its programs before its first await. */
+function compileFor(renderer, target, scene, camera) {
+    const before = renderer.getRenderTarget();
+    renderer.setRenderTarget(target);
+    const compiled = renderer.compileAsync(scene, camera);
+    renderer.setRenderTarget(before);
+    return compiled;
+}
+
+function cubeBake({ size, fragment, type, uniforms, mipmaps, srgb }) {
     const rt = new THREE.WebGLCubeRenderTarget(size, {
         type,
         generateMipmaps: mipmaps,
         minFilter: mipmaps ? THREE.LinearMipmapLinearFilter : THREE.LinearFilter,
         magFilter: THREE.LinearFilter,
         depthBuffer: false,
+        colorSpace: srgb && type === THREE.UnsignedByteType ? THREE.SRGBColorSpace : THREE.NoColorSpace,
     });
     const material = new THREE.ShaderMaterial({
         uniforms,
@@ -33,14 +53,37 @@ export function bakeCube(renderer, { size, fragment, type = THREE.UnsignedByteTy
     const box = new THREE.Mesh(new THREE.BoxGeometry(2, 2, 2), material);
     scene.add(box);
     const camera = new THREE.CubeCamera(0.1, 10, rt);
-    camera.update(renderer, scene);
-    box.geometry.dispose();
-    material.dispose();
+    return {
+        rt, scene, camera,
+        render(renderer) {
+            camera.update(renderer, scene);
+            box.geometry.dispose();
+            material.dispose();
+            return rt;
+        },
+    };
+}
+
+/* Render a direction → colour shader into a cube map. `fragment` receives `varying vec3 vDir`.
+   `srgb` stores an 8-bit target sRGB-encoded (the GPU encodes on write and decodes on read),
+   so dark gradients keep ~10x more levels than 8-bit linear and don't band.
+   The program compiles off the main thread first (KHR_parallel_shader_compile, where
+   available), then the six faces render, so the bake never stalls the page for its compile. */
+export async function bakeCubeAsync(renderer, { size, fragment, type = THREE.UnsignedByteType, uniforms = {}, mipmaps = true, srgb = false, label = 'cube' }) {
+    const t0 = performance.now();
+    const bake = cubeBake({ size, fragment, type, uniforms, mipmaps, srgb });
+    await compileFor(renderer, bake.rt, bake.scene, bake.camera.children[0]);
+    const rt = bake.render(renderer);
+    measure(label, t0);
     return rt;
 }
 
-/* Render a uv → colour shader into a 2D texture. `fragment` receives `varying vec2 vUv`. */
-export function bake2D(renderer, { width, height, fragment, uniforms = {}, wrapS = THREE.RepeatWrapping }) {
+/* Render a uv → colour shader into a 2D texture. `fragment` receives `varying vec2 vUv`.
+   Spread over frames so an idle-time bake never costs one long frame: the program compiles
+   off the main thread where KHR_parallel_shader_compile exists, then the target is filled in
+   horizontal strips, one per frame. Resolves to the render target. */
+export async function bake2D(renderer, { width, height, fragment, uniforms = {}, wrapS = THREE.RepeatWrapping, strips = 4, label = '2d' }) {
+    const t0 = performance.now();
     const rt = new THREE.WebGLRenderTarget(width, height, {
         type: THREE.UnsignedByteType,
         wrapS,
@@ -55,12 +98,24 @@ export function bake2D(renderer, { width, height, fragment, uniforms = {}, wrapS
     quad.frustumCulled = false;
     const scene = new THREE.Scene();
     scene.add(quad);
-    const prev = renderer.getRenderTarget();
-    renderer.setRenderTarget(rt);
-    renderer.render(scene, new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1));
-    renderer.setRenderTarget(prev);
+    const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+    await compileFor(renderer, rt, scene, camera);
+    // Each strip clears and draws only inside its scissor; mipmaps are rebuilt after every draw,
+    // so the chain is complete once the last strip lands
+    rt.scissorTest = true;
+    for (let i = 0; i < strips; i++) {
+        if (i > 0) await nextFrame();
+        const y0 = Math.floor((i * height) / strips);
+        rt.scissor.set(0, y0, width, Math.floor(((i + 1) * height) / strips) - y0);
+        const prev = renderer.getRenderTarget();
+        renderer.setRenderTarget(rt);
+        renderer.render(scene, camera);
+        renderer.setRenderTarget(prev);
+    }
+    rt.scissorTest = false;
     quad.geometry.dispose();
     material.dispose();
+    measure(label, t0);
     return rt;
 }
 
@@ -82,6 +137,7 @@ void main() {
 /* Tileable 3D noise texture shared by every set-piece.
    R: fbm, G: fbm (second seed), B: Worley F1 distance, A: ridged fbm. */
 export async function bakeNoise3D(renderer, size) {
+    const t0 = performance.now();
     const rt = new THREE.WebGL3DRenderTarget(size, size, size, { depthBuffer: false });
     const tex = rt.texture;
     tex.format = THREE.RGBAFormat;
@@ -114,6 +170,7 @@ export async function bakeNoise3D(renderer, size) {
     renderer.setRenderTarget(null);
     quad.geometry.dispose();
     material.dispose();
+    measure('noise3d', t0);
     return { texture: tex, dispose: () => rt.dispose() };
 }
 

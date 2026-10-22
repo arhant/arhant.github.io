@@ -1,0 +1,26 @@
+# Lighthouse CI config for the warn-only "lighthouse" job in .github/workflows/ci.yml.
+#
+# This covers the STATIC FALLBACK only. Headless Chrome on the runner renders WebGL with
+# SwiftShader, which js/space/boot.js treats as a software GPU, so the 3D scene never loads here.
+# The numbers say how fast the page, its text and the poster backdrop arrive, not how the 3D runs;
+# the live scene is on the README's manual release checklist.
+#
+# Lighthouse defaults apply: mobile form factor, simulated Slow 4G and a 4x CPU slowdown.
+# Every assertion is "warn": results show up as annotations and never block a deploy.
+ci:
+  collect:
+    staticDistDir: .
+    url:
+      - http://localhost/
+      - http://localhost/work/spec-driven-development/
+      - http://localhost/black-hole/
+    numberOfRuns: 3
+  assert:
+    assertions:
+      largest-contentful-paint: [warn, { maxNumericValue: 2500, aggregationMethod: median }]
+      cumulative-layout-shift: [warn, { maxNumericValue: 0.05, aggregationMethod: median }]
+      'categories:accessibility': [warn, { minScore: 0.95, aggregationMethod: median }]
+      # Script transfer on the fallback path (main.js, boot.js and anything they pull in, gzipped).
+      # Three.js alone is about 170 KB gzipped, so this also catches the scene downloading on a
+      # device that then falls back.
+      'resource-summary:script:size': [warn, { maxNumericValue: 61440, aggregationMethod: median }]

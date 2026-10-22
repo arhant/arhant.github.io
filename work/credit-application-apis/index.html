@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Credit Application &amp; Leads APIs | Arhant Jain</title>
+    <meta name="description" content="Arhant Jain architected and shipped Cox Automotive's flagship Credit Application and Leads APIs: 800 dealerships connected and $16M+ in first-year revenue.">
+    <meta name="author" content="Arhant Jain">
+    <link rel="canonical" href="https://arhant.github.io/work/credit-application-apis/">
+    <meta name="theme-color" content="#07071a">
+    <meta name="color-scheme" content="dark">
+
+    <!-- Open Graph / social -->
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Arhant Jain">
+    <meta property="og:locale" content="en_US">
+    <meta property="og:url" content="https://arhant.github.io/work/credit-application-apis/">
+    <meta property="og:title" content="Credit Application &amp; Leads APIs | Arhant Jain">
+    <meta property="og:description" content="The flagship APIs that connected 800 dealerships to a centralized lender network and generated $16M+ in first-year revenue.">
+    <meta property="og:image" content="https://arhant.github.io/og-image.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Arhant Jain, Senior Software Engineer and Tech Lead, over a planet rising in space">
+    <meta property="article:author" content="https://arhant.github.io/">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image:alt" content="Arhant Jain, Senior Software Engineer and Tech Lead, over a planet rising in space">
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/favicon.png" sizes="32x32" type="image/png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+    <!-- Motion mode is decided before first paint (same rule and storage key as the homepage) -->
+    <script>
+        (function (d) {
+            var m = null;
+            var save = navigator.connection && navigator.connection.saveData;
+            try { m = localStorage.getItem('motion'); } catch (e) {}
+            if (m !== 'full' && m !== 'lite') {
+                var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+                m = (reduce || save) ? 'lite' : 'full';
+            }
+            d.documentElement.classList.add('js');
+            if (save) d.documentElement.classList.add('save-data');
+            d.documentElement.dataset.motion = m;
+        })(document);
+    </script>
+
+    <!-- Self-hosted fonts: preload the two faces above the fold (JetBrains Mono loads on demand) -->
+    <link rel="preload" href="/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/fonts/space-grotesk-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/page.css">
+    <!-- Classic and in <head> on purpose: its pagereveal listener must exist before first render -->
+    <script src="/js/page.js"></script>
+
+    <!-- Warm the homepage when a link to it is hovered or pressed (prefetch only, never prerender) -->
+    <script type="speculationrules">
+        {
+            "prefetch": [
+                { "where": { "href_matches": "/" }, "eagerness": "moderate" }
+            ]
+        }
+    </script>
+
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@graph": [
+                {
+                    "@type": "Article",
+                    "headline": "Credit Application & Leads APIs",
+                    "description": "How Arhant Jain architected and shipped Cox Automotive's flagship Credit Application and Leads APIs, connecting 800 dealerships to a centralized lender network and generating $16M+ in first-year revenue.",
+                    "url": "https://arhant.github.io/work/credit-application-apis/",
+                    "mainEntityOfPage": "https://arhant.github.io/work/credit-application-apis/",
+                    "image": "https://arhant.github.io/og-image.jpg",
+                    "datePublished": "2026-10-22",
+                    "dateModified": "2026-10-22",
+                    "inLanguage": "en",
+                    "author": { "@type": "Person", "name": "Arhant Jain", "url": "https://arhant.github.io/" }
+                },
+                {
+                    "@type": "BreadcrumbList",
+                    "itemListElement": [
+                        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://arhant.github.io/" },
+                        { "@type": "ListItem", "position": 2, "name": "Case studies", "item": "https://arhant.github.io/#projects" },
+                        { "@type": "ListItem", "position": 3, "name": "Credit Application & Leads APIs" }
+                    ]
+                }
+            ]
+        }
+    </script>
+
+    <!-- Google Analytics: the deploy workflow replaces the placeholder with the
+         GA_MEASUREMENT_ID repository secret. Left unreplaced (local dev), GA stays off. -->
+    <script>
+        (function () {
+            var id = '__GA_MEASUREMENT_ID__';
+            if (!/^G-[A-Z0-9]+$/.test(id)) return;
+            var s = document.createElement('script');
+            s.async = true;
+            s.src = 'https://www.googletagmanager.com/gtag/js?id=' + id;
+            document.head.appendChild(s);
+            window.dataLayer = window.dataLayer || [];
+            window.gtag = function () { window.dataLayer.push(arguments); };
+            window.gtag('js', new Date());
+            window.gtag('config', id);
+        })();
+    </script>
+</head>
+<body class="subpage">
+    <a href="#main" class="skip-link">Skip to content</a>
+
+    <!-- Static space backdrop: reading pages never load the 3D scene -->
+    <div class="backdrop" aria-hidden="true">
+        <div class="backdrop-band"></div>
+        <div class="backdrop-stars backdrop-stars--near"></div>
+        <div class="backdrop-stars backdrop-stars--far"></div>
+    </div>
+
+    <!-- ==================== HUD (simplified) ==================== -->
+    <header class="hud">
+        <nav class="nav" aria-label="Primary">
+            <div class="nav-inner">
+                <a href="/" class="nav-home"><span class="nav-logo" aria-hidden="true">AJ</span><span class="nav-home-name">Arhant Jain</span></a>
+                <ul class="nav-links" role="list">
+                    <li><a href="/#projects" aria-current="true">Case Studies</a></li>
+                    <li><a href="/#contact">Contact</a></li>
+                </ul>
+                <div class="nav-actions">
+                    <button type="button" class="hud-btn" id="motion-toggle" aria-pressed="false" hidden>
+                        <svg class="icon" aria-hidden="true" focusable="false"><use href="/img/icons.svg#i-gauge"/></svg>
+                        <span class="hud-btn-label">Lite mode</span>
+                    </button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main id="main" class="page-main" tabindex="-1">
+        <article class="article" aria-labelledby="page-title">
+            <header class="article-head">
+                <nav class="crumbs" aria-label="Breadcrumb">
+                    <ol role="list">
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/#projects">Case studies</a></li>
+                        <li><span aria-current="page">Credit Application &amp; Leads APIs</span></li>
+                    </ol>
+                </nav>
+                <p class="case-code">ML-07 · Founding platform, 2018 – 2021</p>
+                <h1 id="page-title" class="page-title page-title--case">Credit Application &amp; Leads APIs</h1>
+                <p class="article-dek">The flagship APIs that connected 800 dealerships to a centralized lender network, built while pioneering AWS Lambda, Serverless Framework, and Terraform at Cox.</p>
+                <dl class="article-meta">
+                    <div><dt>Where</dt><dd>Cox Automotive · Finance Services</dd></div>
+                    <div><dt>My part</dt><dd>Architected and shipped the APIs</dd></div>
+                    <div><dt>Period</dt><dd>2018 – 2021</dd></div>
+                </dl>
+            </header>
+
+            <div class="sheet prose">
+                <section class="tldr" aria-labelledby="tldr-title">
+                    <h2 id="tldr-title" class="tldr-label">In short</h2>
+                    <p>I architected and shipped the flagship Credit Application and Leads APIs, connecting 800 dealerships to a centralized lender network and generating $16M+ in first-year revenue. Along the way I introduced a CI/CD pipeline that moved production releases from monthly to every sprint.</p>
+                    <dl class="facts">
+                        <div><dt>First-year revenue</dt><dd>$16M+</dd></div>
+                        <div><dt>Dealerships connected</dt><dd>800</dd></div>
+                        <div><dt>Production releases (about 150% more throughput)</dt><dd>Monthly → every sprint</dd></div>
+                    </dl>
+                </section>
+
+                <section aria-labelledby="context-title">
+                    <h2 id="context-title">Context</h2>
+                    <p>This was founding platform work in Cox Automotive's Finance Services division, which builds the credit application, lender connectivity, contracting, and document signing platforms used by about 10,000 US dealerships and major lenders.</p>
+                    <p>Dealerships needed a single way to reach a centralized lender network with credit applications and leads.</p>
+                </section>
+
+                <section aria-labelledby="did-title">
+                    <h2 id="did-title">What I did</h2>
+                    <ul class="list" role="list">
+                        <li><strong>Architected and shipped</strong> the flagship Credit Application and Leads APIs.</li>
+                        <li><strong>Pioneered adoption of AWS Lambda, Serverless Framework, and Terraform</strong> at Cox.</li>
+                        <li>Introduced a <strong>CI/CD pipeline</strong> that moved production releases from monthly to every sprint (about 150% more throughput).</li>
+                    </ul>
+
+                    <figure class="figure" aria-labelledby="ca-caption">
+                        <svg class="diagram" viewBox="0 0 420 284" role="img" aria-labelledby="ca-svg-title ca-svg-desc">
+                            <title id="ca-svg-title">Where the APIs sit</title>
+                            <desc id="ca-svg-desc">800 dealerships send credit applications and leads through the Credit Application and Leads APIs to a centralized lender network.</desc>
+                            <defs>
+                                <marker id="ca-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                                    <path class="dg-arrowhead" d="M0 0 10 5 0 10z"/>
+                                </marker>
+                            </defs>
+                            <rect class="dg-node dg-node--muted" x="60" y="4" width="300" height="56" rx="12"/>
+                            <text x="210" y="38" text-anchor="middle">800 dealerships</text>
+
+                            <line class="dg-flow" x1="210" y1="60" x2="210" y2="104" marker-end="url(#ca-arrow)"/>
+                            <text class="dg-note" x="224" y="88">credit applications, leads</text>
+
+                            <rect class="dg-node" x="24" y="110" width="372" height="64" rx="14"/>
+                            <text x="210" y="148" text-anchor="middle">Credit Application &amp; Leads APIs</text>
+
+                            <line class="dg-flow" x1="210" y1="174" x2="210" y2="218" marker-end="url(#ca-arrow)"/>
+
+                            <rect class="dg-node dg-node--muted" x="60" y="224" width="300" height="56" rx="12"/>
+                            <text x="210" y="258" text-anchor="middle">Centralized lender network</text>
+                        </svg>
+                        <figcaption id="ca-caption">Simplified: the APIs give dealerships one way to reach a centralized lender network with credit applications and leads.</figcaption>
+                    </figure>
+
+                    <h3>Running it in production</h3>
+                    <p>In the same period I set the operational standard for Finance Services APIs at a <strong>99.995% Platinum-tier SLA</strong>, with automated failover, PagerDuty alerting, and resiliency game days.</p>
+                    <p>On the Credit Application Lambda, I also resolved a high-severity production incident during a partner traffic surge by tracing TCP connection resets, Lambda timeouts, and exhausted retries, then shipped persistent HTTP sessions with exponential backoff and wrote the runbook now reused across services.</p>
+                </section>
+
+                <!-- OWNER: a "Decisions and trade-offs" section, and your role versus the team's (team size, who did
+                     what), need facts only you can supply. They are left out until you add them; publish nothing confidential. -->
+
+                <section aria-labelledby="result-title">
+                    <h2 id="result-title">Result</h2>
+                    <p>800 dealerships connected to a centralized lender network, <strong>$16M+ in first-year revenue</strong>, and production releases every sprint instead of monthly.</p>
+                </section>
+
+                <section aria-labelledby="stack-title">
+                    <h2 id="stack-title">Stack</h2>
+                    <ul class="tags" role="list"><li>REST APIs</li><li>AWS Lambda</li><li>Serverless Framework</li><li>Terraform</li><li>CI/CD</li></ul>
+                </section>
+            </div>
+
+            <aside class="panel page-cta" aria-labelledby="cta-title">
+                <h2 id="cta-title">Want to talk about this work?</h2>
+                <p>Happy to talk about distributed systems, AI-assisted engineering, security and identity, or growing engineering teams. Email or LinkedIn is the best way to reach me.</p>
+                <div class="contact-actions">
+                    <a class="btn btn-primary" href="mailto:arhant@nyu.edu" data-copy-email data-track="copy_email">
+                        <svg class="icon" aria-hidden="true" focusable="false"><use href="/img/icons.svg#i-envelope"/></svg>
+                        <span class="email-text">arhant@nyu.edu</span>
+                        <svg class="icon email-copy-icon" aria-hidden="true" focusable="false"><use href="/img/icons.svg#i-copy"/></svg>
+                    </a>
+                    <a class="btn btn-ghost" href="https://www.linkedin.com/in/arhant-jain" target="_blank" rel="noopener" data-track="linkedin"><svg class="icon icon--brand" aria-hidden="true" focusable="false"><use href="/img/icons.svg#i-linkedin-in"/></svg> LinkedIn<span class="sr-only"> (opens in a new tab)</span></a>
+                </div>
+            </aside>
+
+            <div class="article-foot">
+                <a class="back-link" href="/#ml-credit-app"><svg class="icon" aria-hidden="true" focusable="false"><use href="/img/icons.svg#i-arrow-left"/></svg>Back to case studies</a>
+                <nav aria-labelledby="more-title">
+                    <h2 id="more-title" class="more-title">More case studies</h2>
+                    <ul class="more-list" role="list">
+                        <li><a href="/work/spec-driven-development/">Spec-driven development with AI agents</a></li>
+                        <li><a href="/work/message-level-encryption/">Message-level encryption for the Amazon launch</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </article>
+    </main>
+
+    <!-- Copy confirmation: the toast is visual only; screen readers hear the live region -->
+    <div class="toast" id="toast" aria-hidden="true">
+        <svg class="icon" aria-hidden="true" focusable="false"><use href="/img/icons.svg#i-check"/></svg>
+        <span class="toast-msg"></span>
+        <span class="toast-detail"></span>
+    </div>
+    <p class="sr-only" id="live-status" role="status" aria-live="polite"></p>
+
+    <footer class="footer">
+        <nav aria-label="Footer">
+            <ul class="footer-links" role="list">
+                <li><a href="/">Home</a></li>
+                <li><a href="/#projects">Case Studies</a></li>
+                <li><a href="/black-hole/">Black hole explainer</a></li>
+                <li><a href="/#contact">Contact</a></li>
+            </ul>
+        </nav>
+        <p>© 2026 Arhant Jain. All rights reserved.</p>
+    </footer>
+</body>
+</html>

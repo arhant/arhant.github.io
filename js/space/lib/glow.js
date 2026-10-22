@@ -49,5 +49,15 @@ export function createGlow({ color = [1, 1, 1], core = 6, halo = 1, size = 10 })
     const mesh = new THREE.Mesh(sharedGeometry, material);
     mesh.renderOrder = 21;
     mesh.frustumCulled = false;
+    mesh.userData.glow = { core, halo };
     return mesh;
+}
+
+/* Scale a glow's authored core/halo by k (set-piece presence); always from the
+   stored base values, so repeated calls never compound */
+export function fadeGlow(mesh, k) {
+    const base = mesh.userData.glow;
+    const u = mesh.material.uniforms;
+    u.uCore.value = base.core * k;
+    u.uHalo.value = base.halo * k;
 }

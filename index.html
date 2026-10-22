@@ -31,24 +31,51 @@
     <link rel="icon" href="favicon.png" sizes="32x32" type="image/png">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
 
-    <!-- Motion mode is decided before first paint: lite never downloads the 3D scene -->
+    <!-- Motion mode is decided before first paint: lite never downloads the 3D scene.
+         html.save-data skips the poster stills; html.intro plays the hero entrance once per session. -->
     <script>
         (function (d) {
+            var root = d.documentElement;
             var m = null;
+            var save = !!(navigator.connection && navigator.connection.saveData);
             try { m = localStorage.getItem('motion'); } catch (e) {}
             if (m !== 'full' && m !== 'lite') {
                 var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-                var save = navigator.connection && navigator.connection.saveData;
                 m = (reduce || save) ? 'lite' : 'full';
             }
-            d.documentElement.classList.add('js');
-            d.documentElement.dataset.motion = m;
+            root.classList.add('js');
+            if (save) root.classList.add('save-data');
+            root.dataset.motion = m;
+            // Page-to-page transitions only with full motion. Registered here, before first render;
+            // main.js (a deferred module) could miss this event. It handles pageswap.
+            // Skipping rejects the transition's ready promise: handled, so it never logs as an error.
+            addEventListener('pagereveal', function (e) {
+                if (!e.viewTransition || root.dataset.motion === 'full') return;
+                e.viewTransition.ready.catch(function () {});
+                e.viewTransition.skipTransition();
+            });
+
+            // Entrance only for a fresh visit that starts at the top: not deep links, restores or Back
+            if (m !== 'full') return;
+            var hash = location.hash;
+            var navEntry = performance.getEntriesByType ? performance.getEntriesByType('navigation')[0] : null;
+            if ((hash && hash !== '#hero' && hash !== '#main') || window.scrollY > 0
+                || (navEntry && navEntry.type === 'back_forward')) return;
+            try {
+                if (sessionStorage.getItem('intro')) return;
+                sessionStorage.setItem('intro', '1');
+            } catch (e) { return; }
+            root.classList.add('intro');
+            // Dropped once the entrance is over, so switching 3D off and on never replays it
+            requestAnimationFrame(function () {
+                setTimeout(function () { root.classList.remove('intro'); }, 1200);
+            });
         })(document);
     </script>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&amp;family=JetBrains+Mono:wght@400..700&amp;family=Space+Grotesk:wght@500..700&amp;display=swap" rel="stylesheet">
+    <!-- Self-hosted fonts: preload the two faces above the fold (JetBrains Mono loads on demand) -->
+    <link rel="preload" href="fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="fonts/space-grotesk-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="css/style.css">
 
     <script type="importmap">
@@ -64,19 +91,32 @@
     <script type="application/ld+json">
         {
             "@context": "https://schema.org",
-            "@type": "Person",
-            "name": "Arhant Jain",
+            "@type": "ProfilePage",
             "url": "https://arhant.github.io/",
-            "image": "https://arhant.github.io/img/arhant-jain-480.jpg",
-            "jobTitle": "Senior Software Engineer, Tech Lead",
-            "worksFor": { "@type": "Organization", "name": "Cox Automotive" },
-            "alumniOf": [
-                { "@type": "CollegeOrUniversity", "name": "NYU Tandon School of Engineering" },
-                { "@type": "CollegeOrUniversity", "name": "Northern India Engineering College" }
-            ],
-            "sameAs": ["https://www.linkedin.com/in/arhant-jain", "https://github.com/arhant"],
-            "knowsAbout": ["Python", "Amazon Web Services", "Distributed systems", "Event-driven architecture",
-                "AI-assisted software engineering", "Model Context Protocol", "Microsoft Entra ID", "Terraform"]
+            "mainEntity": {
+                "@type": "Person",
+                "name": "Arhant Jain",
+                "url": "https://arhant.github.io/",
+                "image": "https://arhant.github.io/img/arhant-jain-portrait-960.jpg",
+                "jobTitle": "Senior Software Engineer, Tech Lead",
+                "worksFor": { "@type": "Organization", "name": "Cox Automotive" },
+                "alumniOf": [
+                    { "@type": "CollegeOrUniversity", "name": "NYU Tandon School of Engineering" },
+                    { "@type": "CollegeOrUniversity", "name": "Northern India Engineering College" }
+                ],
+                "sameAs": ["https://www.linkedin.com/in/arhant-jain", "https://github.com/arhant"],
+                "knowsAbout": ["Python", "Amazon Web Services", "Distributed systems", "Event-driven architecture",
+                    "AI-assisted software engineering", "Model Context Protocol", "Microsoft Entra ID", "Terraform"]
+            }
+        }
+    </script>
+
+    <!-- Warm the case-study pages when a link to one is hovered or pressed (prefetch only, never prerender) -->
+    <script type="speculationrules">
+        {
+            "prefetch": [
+                { "where": { "href_matches": "/work/*" }, "eagerness": "moderate" }
+            ]
         }
     </script>
 
@@ -99,38 +139,46 @@
 </head>
 <body>
     <svg xmlns="http://www.w3.org/2000/svg" class="sprite" width="0" height="0" aria-hidden="true" focusable="false">
-      <!-- Icons: Font Awesome Free 6.5.1 by @fontawesome, https://fontawesome.com, CC BY 4.0 -->
-      <symbol id="i-bars" viewBox="0 0 448 512"><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></symbol>
-      <symbol id="i-calendar" viewBox="0 0 448 512"><path d="M96 32V64H48C21.5 64 0 85.5 0 112v48H448V112c0-26.5-21.5-48-48-48H352V32c0-17.7-14.3-32-32-32s-32 14.3-32 32V64H160V32c0-17.7-14.3-32-32-32S96 14.3 96 32zM448 192H0V464c0 26.5 21.5 48 48 48H400c26.5 0 48-21.5 48-48V192z"/></symbol>
-      <symbol id="i-chart-line" viewBox="0 0 512 512"><path d="M64 64c0-17.7-14.3-32-32-32S0 46.3 0 64V400c0 44.2 35.8 80 80 80H480c17.7 0 32-14.3 32-32s-14.3-32-32-32H80c-8.8 0-16-7.2-16-16V64zm406.6 86.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L320 210.7l-57.4-57.4c-12.5-12.5-32.8-12.5-45.3 0l-112 112c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L240 221.3l57.4 57.4c12.5 12.5 32.8 12.5 45.3 0l128-128z"/></symbol>
-      <symbol id="i-check" viewBox="0 0 448 512"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></symbol>
-      <symbol id="i-chevron-down" viewBox="0 0 512 512"><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></symbol>
-      <symbol id="i-cloud" viewBox="0 0 640 512"><path d="M0 336c0 79.5 64.5 144 144 144H512c70.7 0 128-57.3 128-128c0-61.9-44-113.6-102.4-125.4c4.1-10.7 6.4-22.4 6.4-34.6c0-53-43-96-96-96c-19.7 0-38.1 6-53.3 16.2C367 64.2 315.3 32 256 32C167.6 32 96 103.6 96 192c0 2.7 .1 5.4 .2 8.1C40.2 219.8 0 273.2 0 336z"/></symbol>
-      <symbol id="i-code" viewBox="0 0 640 512"><path d="M392.8 1.2c-17-4.9-34.7 5-39.6 22l-128 448c-4.9 17 5 34.7 22 39.6s34.7-5 39.6-22l128-448c4.9-17-5-34.7-22-39.6zm80.6 120.1c-12.5 12.5-12.5 32.8 0 45.3L562.7 256l-89.4 89.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l112-112c12.5-12.5 12.5-32.8 0-45.3l-112-112c-12.5-12.5-32.8-12.5-45.3 0zm-306.7 0c-12.5-12.5-32.8-12.5-45.3 0l-112 112c-12.5 12.5-12.5 32.8 0 45.3l112 112c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L77.3 256l89.4-89.4c12.5-12.5 12.5-32.8 0-45.3z"/></symbol>
-      <symbol id="i-copy" viewBox="0 0 448 512"><path d="M208 0H332.1c12.7 0 24.9 5.1 33.9 14.1l67.9 67.9c9 9 14.1 21.2 14.1 33.9V336c0 26.5-21.5 48-48 48H208c-26.5 0-48-21.5-48-48V48c0-26.5 21.5-48 48-48zM48 128h80v64H64V448H256V416h64v48c0 26.5-21.5 48-48 48H48c-26.5 0-48-21.5-48-48V176c0-26.5 21.5-48 48-48z"/></symbol>
-      <symbol id="i-diagram-project" viewBox="0 0 576 512"><path d="M0 80C0 53.5 21.5 32 48 32h96c26.5 0 48 21.5 48 48V96H384V80c0-26.5 21.5-48 48-48h96c26.5 0 48 21.5 48 48v96c0 26.5-21.5 48-48 48H432c-26.5 0-48-21.5-48-48V160H192v16c0 1.7-.1 3.4-.3 5L272 288h96c26.5 0 48 21.5 48 48v96c0 26.5-21.5 48-48 48H272c-26.5 0-48-21.5-48-48V336c0-1.7 .1-3.4 .3-5L144 224H48c-26.5 0-48-21.5-48-48V80z"/></symbol>
-      <symbol id="i-envelope" viewBox="0 0 512 512"><path d="M48 64C21.5 64 0 85.5 0 112c0 15.1 7.1 29.3 19.2 38.4L236.8 313.6c11.4 8.5 27 8.5 38.4 0L492.8 150.4c12.1-9.1 19.2-23.3 19.2-38.4c0-26.5-21.5-48-48-48H48zM0 176V384c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V176L294.4 339.2c-22.8 17.1-54 17.1-76.8 0L0 176z"/></symbol>
-      <symbol id="i-feather" viewBox="0 0 512 512"><path d="M278.5 215.6L23 471c-9.4 9.4-9.4 24.6 0 33.9s24.6 9.4 33.9 0l57-57h68c49.7 0 97.9-14.4 139-41c11.1-7.2 5.5-23-7.8-23c-5.1 0-9.2-4.1-9.2-9.2c0-4.1 2.7-7.6 6.5-8.8l81-24.3c2.5-.8 4.8-2.1 6.7-4l22.4-22.4c10.1-10.1 2.9-27.3-11.3-27.3l-32.2 0c-5.1 0-9.2-4.1-9.2-9.2c0-4.1 2.7-7.6 6.5-8.8l112-33.6c4-1.2 7.4-3.9 9.3-7.7C506.4 207.6 512 184.1 512 160c0-41-16.3-80.3-45.3-109.3l-5.5-5.5C432.3 16.3 393 0 352 0s-80.3 16.3-109.3 45.3L139 149C91 197 64 262.1 64 330v55.3L253.6 195.8c6.2-6.2 16.4-6.2 22.6 0c5.4 5.4 6.1 13.6 2.2 19.8z"/></symbol>
-      <symbol id="i-gears" viewBox="0 0 640 512"><path d="M308.5 135.3c7.1-6.3 9.9-16.2 6.2-25c-2.3-5.3-4.8-10.5-7.6-15.5L304 89.4c-3-5-6.3-9.9-9.8-14.6c-5.7-7.6-15.7-10.1-24.7-7.1l-28.2 9.3c-10.7-8.8-23-16-36.2-20.9L199 27.1c-1.9-9.3-9.1-16.7-18.5-17.8C173.9 8.4 167.2 8 160.4 8h-.7c-6.8 0-13.5 .4-20.1 1.2c-9.4 1.1-16.6 8.6-18.5 17.8L115 56.1c-13.3 5-25.5 12.1-36.2 20.9L50.5 67.8c-9-3-19-.5-24.7 7.1c-3.5 4.7-6.8 9.6-9.9 14.6l-3 5.3c-2.8 5-5.3 10.2-7.6 15.6c-3.7 8.7-.9 18.6 6.2 25l22.2 19.8C32.6 161.9 32 168.9 32 176s.6 14.1 1.7 20.9L11.5 216.7c-7.1 6.3-9.9 16.2-6.2 25c2.3 5.3 4.8 10.5 7.6 15.6l3 5.2c3 5.1 6.3 9.9 9.9 14.6c5.7 7.6 15.7 10.1 24.7 7.1l28.2-9.3c10.7 8.8 23 16 36.2 20.9l6.1 29.1c1.9 9.3 9.1 16.7 18.5 17.8c6.7 .8 13.5 1.2 20.4 1.2s13.7-.4 20.4-1.2c9.4-1.1 16.6-8.6 18.5-17.8l6.1-29.1c13.3-5 25.5-12.1 36.2-20.9l28.2 9.3c9 3 19 .5 24.7-7.1c3.5-4.7 6.8-9.5 9.8-14.6l3.1-5.4c2.8-5 5.3-10.2 7.6-15.5c3.7-8.7 .9-18.6-6.2-25l-22.2-19.8c1.1-6.8 1.7-13.8 1.7-20.9s-.6-14.1-1.7-20.9l22.2-19.8zM112 176a48 48 0 1 1 96 0 48 48 0 1 1 -96 0zM504.7 500.5c6.3 7.1 16.2 9.9 25 6.2c5.3-2.3 10.5-4.8 15.5-7.6l5.4-3.1c5-3 9.9-6.3 14.6-9.8c7.6-5.7 10.1-15.7 7.1-24.7l-9.3-28.2c8.8-10.7 16-23 20.9-36.2l29.1-6.1c9.3-1.9 16.7-9.1 17.8-18.5c.8-6.7 1.2-13.5 1.2-20.4s-.4-13.7-1.2-20.4c-1.1-9.4-8.6-16.6-17.8-18.5L583.9 307c-5-13.3-12.1-25.5-20.9-36.2l9.3-28.2c3-9 .5-19-7.1-24.7c-4.7-3.5-9.6-6.8-14.6-9.9l-5.3-3c-5-2.8-10.2-5.3-15.6-7.6c-8.7-3.7-18.6-.9-25 6.2l-19.8 22.2c-6.8-1.1-13.8-1.7-20.9-1.7s-14.1 .6-20.9 1.7l-19.8-22.2c-6.3-7.1-16.2-9.9-25-6.2c-5.3 2.3-10.5 4.8-15.6 7.6l-5.2 3c-5.1 3-9.9 6.3-14.6 9.9c-7.6 5.7-10.1 15.7-7.1 24.7l9.3 28.2c-8.8 10.7-16 23-20.9 36.2L315.1 313c-9.3 1.9-16.7 9.1-17.8 18.5c-.8 6.7-1.2 13.5-1.2 20.4s.4 13.7 1.2 20.4c1.1 9.4 8.6 16.6 17.8 18.5l29.1 6.1c5 13.3 12.1 25.5 20.9 36.2l-9.3 28.2c-3 9-.5 19 7.1 24.7c4.7 3.5 9.5 6.8 14.6 9.8l5.4 3.1c5 2.8 10.2 5.3 15.5 7.6c8.7 3.7 18.6 .9 25-6.2l19.8-22.2c6.8 1.1 13.8 1.7 20.9 1.7s14.1-.6 20.9-1.7l19.8 22.2zM464 304a48 48 0 1 1 0 96 48 48 0 1 1 0-96z"/></symbol>
-      <symbol id="i-github" viewBox="0 0 496 512"><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></symbol>
-      <symbol id="i-graduation-cap" viewBox="0 0 640 512"><path d="M320 32c-8.1 0-16.1 1.4-23.7 4.1L15.8 137.4C6.3 140.9 0 149.9 0 160s6.3 19.1 15.8 22.6l57.9 20.9C57.3 229.3 48 259.8 48 291.9v28.1c0 28.4-10.8 57.7-22.3 80.8c-6.5 13-13.9 25.8-22.5 37.6C0 442.7-.9 448.3 .9 453.4s6 8.9 11.2 10.2l64 16c4.2 1.1 8.7 .3 12.4-2s6.3-6.1 7.1-10.4c8.6-42.8 4.3-81.2-2.1-108.7C90.3 344.3 86 329.8 80 316.5V291.9c0-30.2 10.2-58.7 27.9-81.5c12.9-15.5 29.6-28 49.2-35.7l157-61.7c8.2-3.2 17.5 .8 20.7 9s-.8 17.5-9 20.7l-157 61.7c-12.4 4.9-23.3 12.4-32.2 21.6l159.6 57.6c7.6 2.7 15.6 4.1 23.7 4.1s16.1-1.4 23.7-4.1L624.2 182.6c9.5-3.4 15.8-12.5 15.8-22.6s-6.3-19.1-15.8-22.6L343.7 36.1C336.1 33.4 328.1 32 320 32zM128 408c0 35.3 86 72 192 72s192-36.7 192-72L496.7 262.6 354.5 314c-11.1 4-22.8 6-34.5 6s-23.5-2-34.5-6L143.3 262.6 128 408z"/></symbol>
-      <symbol id="i-linkedin-in" viewBox="0 0 448 512"><path d="M100.28 448H7.4V148.9h92.88zM53.79 108.1C24.09 108.1 0 83.5 0 53.8a53.79 53.79 0 0 1 107.58 0c0 29.7-24.1 54.3-53.79 54.3zM447.9 448h-92.68V302.4c0-34.7-.7-79.2-48.29-79.2-48.29 0-55.69 37.7-55.69 76.7V448h-92.78V148.9h89.08v40.8h1.3c12.4-23.5 42.69-48.3 87.88-48.3 94 0 111.28 61.9 111.28 142.3V448z"/></symbol>
-      <symbol id="i-location-dot" viewBox="0 0 384 512"><path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/></symbol>
-      <symbol id="i-magnifying-glass" viewBox="0 0 512 512"><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352a144 144 0 1 0 0-288 144 144 0 1 0 0 288z"/></symbol>
-      <symbol id="i-robot" viewBox="0 0 640 512"><path d="M320 0c17.7 0 32 14.3 32 32V96H472c39.8 0 72 32.2 72 72V440c0 39.8-32.2 72-72 72H168c-39.8 0-72-32.2-72-72V168c0-39.8 32.2-72 72-72H288V32c0-17.7 14.3-32 32-32zM208 384c-8.8 0-16 7.2-16 16s7.2 16 16 16h32c8.8 0 16-7.2 16-16s-7.2-16-16-16H208zm96 0c-8.8 0-16 7.2-16 16s7.2 16 16 16h32c8.8 0 16-7.2 16-16s-7.2-16-16-16H304zm96 0c-8.8 0-16 7.2-16 16s7.2 16 16 16h32c8.8 0 16-7.2 16-16s-7.2-16-16-16H400zM264 256a40 40 0 1 0 -80 0 40 40 0 1 0 80 0zm152 40a40 40 0 1 0 0-80 40 40 0 1 0 0 80zM48 224H64V416H48c-26.5 0-48-21.5-48-48V272c0-26.5 21.5-48 48-48zm544 0c26.5 0 48 21.5 48 48v96c0 26.5-21.5 48-48 48H576V224h16z"/></symbol>
-      <symbol id="i-rocket" viewBox="0 0 512 512"><path d="M156.6 384.9L125.7 354c-8.5-8.5-11.5-20.8-7.7-32.2c3-8.9 7-20.5 11.8-33.8L24 288c-8.6 0-16.6-4.6-20.9-12.1s-4.2-16.7 .2-24.1l52.5-88.5c13-21.9 36.5-35.3 61.9-35.3l82.3 0c2.4-4 4.8-7.7 7.2-11.3C289.1-4.1 411.1-8.1 483.9 5.3c11.6 2.1 20.6 11.2 22.8 22.8c13.4 72.9 9.3 194.8-111.4 276.7c-3.5 2.4-7.3 4.8-11.3 7.2v82.3c0 25.4-13.4 49-35.3 61.9l-88.5 52.5c-7.4 4.4-16.6 4.5-24.1 .2s-12.1-12.2-12.1-20.9V380.8c-14.1 4.9-26.4 8.9-35.7 11.9c-11.2 3.6-23.4 .5-31.8-7.8zM384 168a40 40 0 1 0 0-80 40 40 0 1 0 0 80z"/></symbol>
-      <symbol id="i-satellite-dish" viewBox="0 0 512 512"><path d="M192 32c0-17.7 14.3-32 32-32C383.1 0 512 128.9 512 288c0 17.7-14.3 32-32 32s-32-14.3-32-32C448 164.3 347.7 64 224 64c-17.7 0-32-14.3-32-32zM60.6 220.6L164.7 324.7l28.4-28.4c-.7-2.6-1.1-5.4-1.1-8.3c0-17.7 14.3-32 32-32s32 14.3 32 32s-14.3 32-32 32c-2.9 0-5.6-.4-8.3-1.1l-28.4 28.4L291.4 451.4c14.5 14.5 11.8 38.8-7.3 46.3C260.5 506.9 234.9 512 208 512C93.1 512 0 418.9 0 304c0-26.9 5.1-52.5 14.4-76.1c7.5-19 31.8-21.8 46.3-7.3zM224 96c106 0 192 86 192 192c0 17.7-14.3 32-32 32s-32-14.3-32-32c0-70.7-57.3-128-128-128c-17.7 0-32-14.3-32-32s14.3-32 32-32z"/></symbol>
-      <symbol id="i-shield-halved" viewBox="0 0 512 512"><path d="M256 0c4.6 0 9.2 1 13.4 2.9L457.7 82.8c22 9.3 38.4 31 38.3 57.2c-.5 99.2-41.3 280.7-213.6 363.2c-16.7 8-36.1 8-52.8 0C57.3 420.7 16.5 239.2 16 140c-.1-26.2 16.3-47.9 38.3-57.2L242.7 2.9C246.8 1 251.4 0 256 0zm0 66.8V444.8C394 378 431.1 230.1 432 141.4L256 66.8l0 0z"/></symbol>
-      <symbol id="i-sitemap" viewBox="0 0 576 512"><path d="M208 80c0-26.5 21.5-48 48-48h64c26.5 0 48 21.5 48 48v64c0 26.5-21.5 48-48 48h-8v40H464c30.9 0 56 25.1 56 56v32h8c26.5 0 48 21.5 48 48v64c0 26.5-21.5 48-48 48H464c-26.5 0-48-21.5-48-48V368c0-26.5 21.5-48 48-48h8V288c0-4.4-3.6-8-8-8H312v40h8c26.5 0 48 21.5 48 48v64c0 26.5-21.5 48-48 48H256c-26.5 0-48-21.5-48-48V368c0-26.5 21.5-48 48-48h8V280H112c-4.4 0-8 3.6-8 8v32h8c26.5 0 48 21.5 48 48v64c0 26.5-21.5 48-48 48H48c-26.5 0-48-21.5-48-48V368c0-26.5 21.5-48 48-48h8V288c0-30.9 25.1-56 56-56H264V192h-8c-26.5 0-48-21.5-48-48V80z"/></symbol>
-      <symbol id="i-users-gear" viewBox="0 0 640 512"><path d="M144 160A80 80 0 1 0 144 0a80 80 0 1 0 0 160zm368 0A80 80 0 1 0 512 0a80 80 0 1 0 0 160zM0 298.7C0 310.4 9.6 320 21.3 320H234.7c.2 0 .4 0 .7 0c-26.6-23.5-43.3-57.8-43.3-96c0-7.6 .7-15 1.9-22.3c-13.6-6.3-28.7-9.7-44.6-9.7H106.7C47.8 192 0 239.8 0 298.7zM320 320c24 0 45.9-8.8 62.7-23.3c2.5-3.7 5.2-7.3 8-10.7c2.7-3.3 5.7-6.1 9-8.3C410 262.3 416 243.9 416 224c0-53-43-96-96-96s-96 43-96 96s43 96 96 96zm65.4 60.2c-10.3-5.9-18.1-16.2-20.8-28.2H261.3C187.7 352 128 411.7 128 485.3c0 14.7 11.9 26.7 26.7 26.7H455.2c-2.1-5.2-3.2-10.9-3.2-16.4v-3c-1.3-.7-2.7-1.5-4-2.3l-2.6 1.5c-16.8 9.7-40.5 8-54.7-9.7c-4.5-5.6-8.6-11.5-12.4-17.6l-.1-.2-.1-.2-2.4-4.1-.1-.2-.1-.2c-3.4-6.2-6.4-12.6-9-19.3c-8.2-21.2 2.2-42.6 19-52.3l2.7-1.5c0-.8 0-1.5 0-2.3s0-1.5 0-2.3l-2.7-1.5zM533.3 192H490.7c-15.9 0-31 3.5-44.6 9.7c1.3 7.2 1.9 14.7 1.9 22.3c0 17.4-3.5 33.9-9.7 49c2.5 .9 4.9 2 7.1 3.3l2.6 1.5c1.3-.8 2.6-1.6 4-2.3v-3c0-19.4 13.3-39.1 35.8-42.6c7.9-1.2 16-1.9 24.2-1.9s16.3 .6 24.2 1.9c22.5 3.5 35.8 23.2 35.8 42.6v3c1.3 .7 2.7 1.5 4 2.3l2.6-1.5c16.8-9.7 40.5-8 54.7 9.7c2.3 2.8 4.5 5.8 6.6 8.7c-2.1-57.1-49-102.7-106.6-102.7zm91.3 163.9c6.3-3.6 9.5-11.1 6.8-18c-2.1-5.5-4.6-10.8-7.4-15.9l-2.3-4c-3.1-5.1-6.5-9.9-10.2-14.5c-4.6-5.7-12.7-6.7-19-3l-2.9 1.7c-9.2 5.3-20.4 4-29.6-1.3s-16.1-14.5-16.1-25.1v-3.4c0-7.3-4.9-13.8-12.1-14.9c-6.5-1-13.1-1.5-19.9-1.5s-13.4 .5-19.9 1.5c-7.2 1.1-12.1 7.6-12.1 14.9v3.4c0 10.6-6.9 19.8-16.1 25.1s-20.4 6.6-29.6 1.3l-2.9-1.7c-6.3-3.6-14.4-2.6-19 3c-3.7 4.6-7.1 9.5-10.2 14.6l-2.3 3.9c-2.8 5.1-5.3 10.4-7.4 15.9c-2.6 6.8 .5 14.3 6.8 17.9l2.9 1.7c9.2 5.3 13.7 15.8 13.7 26.4s-4.5 21.1-13.7 26.4l-3 1.7c-6.3 3.6-9.5 11.1-6.8 17.9c2.1 5.5 4.6 10.7 7.4 15.8l2.4 4.1c3 5.1 6.4 9.9 10.1 14.5c4.6 5.7 12.7 6.7 19 3l2.9-1.7c9.2-5.3 20.4-4 29.6 1.3s16.1 14.5 16.1 25.1v3.4c0 7.3 4.9 13.8 12.1 14.9c6.5 1 13.1 1.5 19.9 1.5s13.4-.5 19.9-1.5c7.2-1.1 12.1-7.6 12.1-14.9v-3.4c0-10.6 6.9-19.8 16.1-25.1s20.4-6.6 29.6-1.3l2.9 1.7c6.3 3.6 14.4 2.6 19-3c3.7-4.6 7.1-9.4 10.1-14.5l2.4-4.2c2.8-5.1 5.3-10.3 7.4-15.8c2.6-6.8-.5-14.3-6.8-17.9l-3-1.7c-9.2-5.3-13.7-15.8-13.7-26.4s4.5-21.1 13.7-26.4l3-1.7zM472 384a40 40 0 1 1 80 0 40 40 0 1 1 -80 0z"/></symbol>
-      <symbol id="i-xmark" viewBox="0 0 384 512"><path d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"/></symbol>
-      <symbol id="i-youtube" viewBox="0 0 576 512"><path d="M549.655 124.083c-6.281-23.65-24.787-42.276-48.284-48.597C458.781 64 288 64 288 64S117.22 64 74.629 75.486c-23.497 6.322-42.003 24.947-48.284 48.597-11.412 42.867-11.412 132.305-11.412 132.305s0 89.438 11.412 132.305c6.281 23.65 24.787 41.5 48.284 47.821C117.22 448 288 448 288 448s170.78 0 213.371-11.486c23.497-6.321 42.003-24.171 48.284-47.821 11.412-42.867 11.412-132.305 11.412-132.305s0-89.438-11.412-132.305zm-317.51 213.508V175.185l142.739 81.205-142.739 81.201z"/></symbol>
+      <!-- Line icons: Lucide 0.460.0, https://lucide.dev, ISC. Stroke width is set from CSS (.icon). -->
+      <symbol id="i-bars" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></symbol>
+      <symbol id="i-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></symbol>
+      <symbol id="i-chart-line" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="m19 9-5 5-4-4-3 3"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></symbol>
+      <symbol id="i-chevron-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></symbol>
+      <symbol id="i-cloud" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></symbol>
+      <symbol id="i-code" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></symbol>
+      <symbol id="i-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></symbol>
+      <symbol id="i-diagram-project" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="8" x="3" y="3" rx="2"/><path d="M7 11v4a2 2 0 0 0 2 2h4"/><rect width="8" height="8" x="13" y="13" rx="2"/></symbol>
+      <symbol id="i-envelope" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></symbol>
+      <symbol id="i-feather" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12.67 19a2 2 0 0 0 1.416-.588l6.154-6.172a6 6 0 0 0-8.49-8.49L5.586 9.914A2 2 0 0 0 5 11.328V18a1 1 0 0 0 1 1z"/><path d="M16 8 2 22"/><path d="M17.5 15H9"/></symbol>
+      <symbol id="i-gears" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></symbol>
+      <symbol id="i-graduation-cap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/></symbol>
+      <symbol id="i-location-dot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></symbol>
+      <symbol id="i-magnifying-glass" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+      <symbol id="i-robot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></symbol>
+      <symbol id="i-rocket" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></symbol>
+      <symbol id="i-satellite-dish" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10a7.31 7.31 0 0 0 10 10Z"/><path d="m9 15 3-3"/><path d="M17 13a6 6 0 0 0-6-6"/><path d="M21 13A10 10 0 0 0 11 3"/></symbol>
+      <symbol id="i-shield-halved" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="M12 22V2"/></symbol>
+      <symbol id="i-sitemap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="16" y="16" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="9" y="2" width="6" height="6" rx="1"/><path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3"/><path d="M12 12V8"/></symbol>
+      <symbol id="i-users-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+      <symbol id="i-xmark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+      <symbol id="i-arrow-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></symbol>
+      <symbol id="i-arrow-up-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></symbol>
+      <symbol id="i-arrow-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></symbol>
+      <symbol id="i-gauge" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></symbol>
+      <symbol id="i-orbit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><path d="M10.4 21.9a10 10 0 0 0 9.941-15.416"/><path d="M13.5 2.1a10 10 0 0 0-9.841 15.416"/></symbol>
+      <symbol id="i-external-link" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></symbol>
+      <!-- Brand marks: Font Awesome Free 6.5.1 Brands by @fontawesome, https://fontawesome.com, CC BY 4.0. Filled, never stroked. -->
+      <symbol id="i-github" viewBox="0 0 496 512" fill="currentColor" stroke="none"><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></symbol>
+      <symbol id="i-linkedin-in" viewBox="0 0 448 512" fill="currentColor" stroke="none"><path d="M100.28 448H7.4V148.9h92.88zM53.79 108.1C24.09 108.1 0 83.5 0 53.8a53.79 53.79 0 0 1 107.58 0c0 29.7-24.1 54.3-53.79 54.3zM447.9 448h-92.68V302.4c0-34.7-.7-79.2-48.29-79.2-48.29 0-55.69 37.7-55.69 76.7V448h-92.78V148.9h89.08v40.8h1.3c12.4-23.5 42.69-48.3 87.88-48.3 94 0 111.28 61.9 111.28 142.3V448z"/></symbol>
+      <symbol id="i-youtube" viewBox="0 0 576 512" fill="currentColor" stroke="none"><path d="M549.655 124.083c-6.281-23.65-24.787-42.276-48.284-48.597C458.781 64 288 64 288 64S117.22 64 74.629 75.486c-23.497 6.322-42.003 24.947-48.284 48.597-11.412 42.867-11.412 132.305-11.412 132.305s0 89.438 11.412 132.305c6.281 23.65 24.787 41.5 48.284 47.821C117.22 448 288 448 288 448s170.78 0 213.371-11.486c23.497-6.321 42.003-24.171 48.284-47.821 11.412-42.867 11.412-132.305 11.412-132.305s0-89.438-11.412-132.305zm-317.51 213.508V175.185l142.739 81.205-142.739 81.201z"/></symbol>
     </svg>
 
     <a href="#main" class="skip-link">Skip to content</a>
 
-    <!-- Static space backdrop: shown in lite mode, without JS, and until the 3D scene is ready -->
-    <div class="backdrop" aria-hidden="true">
+    <!-- Static space backdrop: shown in lite mode, without JS, and until the 3D scene is ready.
+         .backdrop--poster paints a still of the real scene where the browser supports it. -->
+    <div class="backdrop backdrop--poster" aria-hidden="true">
         <div class="backdrop-band"></div>
         <div class="backdrop-stars backdrop-stars--near"></div>
         <div class="backdrop-stars backdrop-stars--far"></div>
@@ -141,7 +189,9 @@
     <header class="hud">
         <nav class="nav" aria-label="Primary">
             <div class="nav-inner">
-                <a href="#hero" class="nav-logo" aria-label="Arhant Jain, back to top">AJ</a>
+                <a href="#hero" class="nav-logo" aria-label="AJ, Arhant Jain, back to top">AJ</a>
+                <span id="section-label" class="section-label" aria-hidden="true"></span>
+                <p id="scene-caption" class="scene-caption" aria-hidden="true" hidden></p>
                 <ul class="nav-links" role="list">
                     <li><a href="#about" data-nav="about">About</a></li>
                     <li><a href="#experience" data-nav="experience">Experience</a></li>
@@ -150,13 +200,13 @@
                     <li><a href="#contact" data-nav="contact">Contact</a></li>
                 </ul>
                 <div class="nav-actions">
-                    <button type="button" class="hud-btn" id="palette-btn" hidden aria-keyshortcuts="Control+K Meta+K">
+                    <button type="button" class="hud-btn" id="palette-btn" hidden aria-keyshortcuts="Control+K Meta+K Slash">
                         <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-magnifying-glass"/></svg>
                         <kbd class="kbd-hint">Ctrl K</kbd>
                         <span class="sr-only">Open command palette</span>
                     </button>
                     <button type="button" class="hud-btn" id="motion-toggle" aria-pressed="false" hidden>
-                        <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-feather"/></svg>
+                        <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-gauge"/></svg>
                         <span class="hud-btn-label">Lite mode</span>
                     </button>
                     <button type="button" class="nav-toggle" aria-expanded="false" aria-controls="mobile-menu" hidden>
@@ -192,13 +242,13 @@
                     <div class="hero-id">
                         <div class="avatar">
                             <picture>
-                                <source type="image/avif" srcset="img/arhant-jain-320.avif 320w, img/arhant-jain-480.avif 480w" sizes="(min-width: 769px) 88px, 76px">
-                                <source type="image/webp" srcset="img/arhant-jain-320.webp 320w, img/arhant-jain-480.webp 480w" sizes="(min-width: 769px) 88px, 76px">
+                                <source type="image/avif" srcset="img/arhant-jain-320.avif 320w, img/arhant-jain-480.avif 480w" sizes="(min-width: 769px) 106px, 92px">
+                                <source type="image/webp" srcset="img/arhant-jain-320.webp 320w, img/arhant-jain-480.webp 480w" sizes="(min-width: 769px) 106px, 92px">
                                 <img src="img/arhant-jain-320.jpg" width="88" height="88" alt="Portrait of Arhant Jain" decoding="async" fetchpriority="high">
                             </picture>
                             <span class="avatar-orbit" aria-hidden="true"></span>
                         </div>
-                        <p class="mono-label">Tech Lead · Cox Automotive · New York</p>
+                        <p class="mono-label">Tech&nbsp;Lead&nbsp;· Cox&nbsp;Automotive<span class="hero-loc"><span class="hero-sep"> · </span>New&nbsp;York</span></p>
                     </div>
 
                     <h1 id="hero-title" class="hero-name" tabindex="-1">Arhant Jain</h1>
@@ -211,25 +261,6 @@
                         Day to day I build with generative AI: Claude Code, MCP, AI agents, and spec-driven development.
                     </p>
 
-                    <dl class="readouts">
-                        <div class="readout">
-                            <dt>Years building production systems</dt>
-                            <dd><span class="readout-value" data-count data-to="8" data-suffix="+" aria-hidden="true">8+</span><span class="sr-only">8+</span></dd>
-                        </div>
-                        <div class="readout">
-                            <dt>US dealerships on the platforms</dt>
-                            <dd><span class="readout-value" data-count data-to="10000" data-prefix="~" aria-hidden="true">~10,000</span><span class="sr-only">about 10,000</span></dd>
-                        </div>
-                        <div class="readout">
-                            <dt>First-year revenue, Credit App &amp; Leads APIs</dt>
-                            <dd><span class="readout-value" data-count data-to="16" data-prefix="$" data-suffix="M+" aria-hidden="true">$16M+</span><span class="sr-only">$16M+</span></dd>
-                        </div>
-                        <div class="readout">
-                            <dt>Platinum-tier API SLA standard</dt>
-                            <dd><span class="readout-value" data-count data-to="99.995" data-from="90" data-decimals="3" data-suffix="%" aria-hidden="true">99.995%</span><span class="sr-only">99.995%</span></dd>
-                        </div>
-                    </dl>
-
                     <div class="hero-cta">
                         <a href="#projects" class="btn btn-primary">
                             <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-rocket"/></svg>
@@ -240,11 +271,30 @@
                             Contact
                         </a>
                         <ul class="social" role="list">
-                            <li><a href="https://www.linkedin.com/in/arhant-jain" target="_blank" rel="noopener" data-track="linkedin"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-linkedin-in"/></svg><span class="sr-only">LinkedIn (opens in a new tab)</span></a></li>
-                            <li><a href="https://github.com/arhant" target="_blank" rel="noopener" data-track="github"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-github"/></svg><span class="sr-only">GitHub (opens in a new tab)</span></a></li>
+                            <li><a href="https://www.linkedin.com/in/arhant-jain" target="_blank" rel="noopener" data-track="linkedin"><svg class="icon icon--brand" aria-hidden="true" focusable="false"><use href="#i-linkedin-in"/></svg><span class="sr-only">LinkedIn (opens in a new tab)</span></a></li>
+                            <li><a href="https://github.com/arhant" target="_blank" rel="noopener" data-track="github"><svg class="icon icon--brand" aria-hidden="true" focusable="false"><use href="#i-github"/></svg><span class="sr-only">GitHub (opens in a new tab)</span></a></li>
                             <li><a href="mailto:arhant@nyu.edu" data-copy-email data-track="copy_email"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-envelope"/></svg><span class="sr-only">Email arhant@nyu.edu</span></a></li>
                         </ul>
                     </div>
+
+                    <dl class="readouts">
+                        <div class="readout">
+                            <dt>Years building production systems</dt>
+                            <dd><span class="readout-value" aria-hidden="true">8+</span><span class="sr-only">8+</span></dd>
+                        </div>
+                        <div class="readout">
+                            <dt>US dealerships on the platforms</dt>
+                            <dd><span class="readout-value" aria-hidden="true">~10,000</span><span class="sr-only">about 10,000</span></dd>
+                        </div>
+                        <div class="readout">
+                            <dt>First-year revenue, Credit App &amp; Leads APIs</dt>
+                            <dd><span class="readout-value" aria-hidden="true">$16M+</span><span class="sr-only">$16M+</span></dd>
+                        </div>
+                        <div class="readout">
+                            <dt>Platinum-tier API SLA standard</dt>
+                            <dd><span class="readout-value" aria-hidden="true">99.995%</span><span class="sr-only">99.995%</span></dd>
+                        </div>
+                    </dl>
                 </div>
             </div>
             <a href="#about" class="scroll-cue">
@@ -256,13 +306,13 @@
         <!-- ==================== 01 ABOUT ==================== -->
         <section id="about" class="section" data-scene="nebula" aria-labelledby="about-title">
             <div class="container">
-                <header class="section-head" data-readable>
-                    <p class="mono-label"><span class="sec-num">01</span> // Mission Brief</p>
+                <header class="section-head" data-reveal data-readable>
+                    <p class="mono-label" aria-hidden="true"><span class="sec-num">01</span></p>
                     <h2 id="about-title">About</h2>
                 </header>
 
                 <div class="about-grid">
-                    <div class="panel about-text" data-reveal data-readable>
+                    <div class="panel panel--quiet about-text" data-reveal data-readable>
                         <p>
                             I'm a Senior Software Engineer and Tech Lead at Cox Automotive, where I've spent 8+ years in
                             the Finance Services division. We build the credit application, lender connectivity,
@@ -281,23 +331,33 @@
                         </p>
                     </div>
 
+                    <div class="panel panel--quiet about-portrait" data-reveal data-readable>
+                        <picture>
+                            <source type="image/avif" srcset="img/arhant-jain-portrait-480.avif 480w, img/arhant-jain-portrait-720.avif 720w, img/arhant-jain-portrait-960.avif 960w" sizes="(max-width: 560px) calc(100vw - 32px), (max-width: 768px) 400px, 320px">
+                            <source type="image/webp" srcset="img/arhant-jain-portrait-480.webp 480w, img/arhant-jain-portrait-720.webp 720w, img/arhant-jain-portrait-960.webp 960w" sizes="(max-width: 560px) calc(100vw - 32px), (max-width: 768px) 400px, 320px">
+                            <img src="img/arhant-jain-portrait-480.jpg" srcset="img/arhant-jain-portrait-480.jpg 480w, img/arhant-jain-portrait-720.jpg 720w, img/arhant-jain-portrait-960.jpg 960w" sizes="(max-width: 560px) calc(100vw - 32px), (max-width: 768px) 400px, 320px"
+                                 width="480" height="600" loading="lazy" decoding="async"
+                                 alt="Arhant Jain in a navy blazer, standing outside a glass-fronted building beside evergreen trees">
+                        </picture>
+                    </div>
+
                     <ul class="focus-grid" role="list">
-                        <li class="panel focus-card" data-reveal data-readable>
+                        <li class="panel panel--quiet focus-card" data-reveal data-readable>
                             <svg class="icon focus-icon" aria-hidden="true" focusable="false"><use href="#i-robot"/></svg>
                             <h3>AI-Assisted Engineering</h3>
                             <p>Spec-driven development, Claude Code, MCP, and AI agents, with human review and AI cost tracking.</p>
                         </li>
-                        <li class="panel focus-card" data-reveal data-readable>
+                        <li class="panel panel--quiet focus-card" data-reveal data-readable>
                             <svg class="icon focus-icon" aria-hidden="true" focusable="false"><use href="#i-diagram-project"/></svg>
                             <h3>Distributed Systems</h3>
                             <p>Python and AWS serverless, event-driven architecture, blue/green and multi-region deployments.</p>
                         </li>
-                        <li class="panel focus-card" data-reveal data-readable>
+                        <li class="panel panel--quiet focus-card" data-reveal data-readable>
                             <svg class="icon focus-icon" aria-hidden="true" focusable="false"><use href="#i-shield-halved"/></svg>
                             <h3>Security &amp; Identity</h3>
                             <p>Message-level encryption (JWE/JWS), AWS KMS, Microsoft Entra ID RBAC, and AWS WAF hardening.</p>
                         </li>
-                        <li class="panel focus-card" data-reveal data-readable>
+                        <li class="panel panel--quiet focus-card" data-reveal data-readable>
                             <svg class="icon focus-icon" aria-hidden="true" focusable="false"><use href="#i-users-gear"/></svg>
                             <h3>Technical Leadership</h3>
                             <p>A team of 6, design reviews and ADRs, sprint and quarterly planning, and on-call leadership.</p>
@@ -305,9 +365,8 @@
                     </ul>
                 </div>
 
-                <div id="education" class="panel edu" data-reveal data-readable>
+                <div id="education" class="panel panel--quiet edu" data-reveal data-readable>
                     <div class="edu-head">
-                        <p class="mono-label">Flight School</p>
                         <h3>Education</h3>
                     </div>
                     <ul class="edu-list" role="list">
@@ -329,12 +388,12 @@
         <!-- ==================== 02 EXPERIENCE ==================== -->
         <section id="experience" class="section" data-scene="gas-giant" aria-labelledby="experience-title">
             <div class="container">
-                <header class="section-head" data-readable>
-                    <p class="mono-label"><span class="sec-num">02</span> // Flight Record</p>
+                <header class="section-head" data-reveal data-readable>
+                    <p class="mono-label" aria-hidden="true"><span class="sec-num">02</span></p>
                     <h2 id="experience-title">Experience</h2>
                 </header>
 
-                <article class="panel role" data-reveal data-readable>
+                <article class="panel panel--quiet role" data-reveal data-readable>
                     <header class="role-head">
                         <div>
                             <h3>Senior Software Engineer, Tech Lead</h3>
@@ -442,7 +501,7 @@
                     </ol>
                 </article>
 
-                <article class="panel role role--compact" data-reveal data-readable>
+                <article class="panel panel--quiet role role--compact" data-reveal data-readable>
                     <header class="role-head">
                         <div>
                             <h3>Data Analyst &amp; Lead Instructor</h3>
@@ -466,77 +525,70 @@
         <!-- ==================== 03 SKILLS ==================== -->
         <section id="skills" class="section" data-scene="star" aria-labelledby="skills-title">
             <div class="container">
-                <header class="section-head" data-readable>
-                    <p class="mono-label"><span class="sec-num">03</span> // Onboard Systems</p>
+                <header class="section-head" data-reveal data-readable>
+                    <p class="mono-label" aria-hidden="true"><span class="sec-num">03</span></p>
                     <h2 id="skills-title">Skills</h2>
                 </header>
 
                 <div class="systems-grid">
-                    <article class="panel system" data-reveal data-readable>
+                    <article class="panel panel--quiet system" data-reveal data-readable>
                         <header class="system-head">
                             <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-code"/></svg>
                             <h3>Languages &amp; Frameworks</h3>
-                            <span class="sys-code" aria-hidden="true">SYS-01</span>
                         </header>
                         <ul class="chips" role="list">
                             <li>Python</li><li>FastAPI</li><li>Django</li><li>SQLAlchemy</li><li>Pytest</li><li>SQL</li><li>REST APIs</li><li>OpenAPI</li>
                         </ul>
                     </article>
-                    <article class="panel system system--wide" data-reveal data-readable>
+                    <article class="panel panel--quiet system system--wide" data-reveal data-readable>
                         <header class="system-head">
                             <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-cloud"/></svg>
                             <h3>Cloud (AWS)</h3>
-                            <span class="sys-code" aria-hidden="true">SYS-02</span>
                         </header>
                         <ul class="chips" role="list">
                             <li>Lambda</li><li>DynamoDB</li><li>API Gateway</li><li>SQS</li><li>S3</li><li>IAM</li><li>KMS</li><li>WAF</li><li>ECS</li><li>Fargate</li><li>CloudWatch</li><li>X-Ray</li>
                         </ul>
                     </article>
-                    <article class="panel system system--wide" data-reveal data-readable>
+                    <article class="panel panel--quiet system system--wide" data-reveal data-readable>
                         <header class="system-head">
                             <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-robot"/></svg>
                             <h3>AI &amp; Generative AI</h3>
-                            <span class="sys-code" aria-hidden="true">SYS-03</span>
                         </header>
                         <ul class="chips" role="list">
                             <li>Claude Code</li><li>Model Context Protocol (MCP)</li><li>AI agents</li><li>LLMs</li><li>Spec-driven development (GitHub Spec Kit)</li><li>Prompt &amp; context engineering</li><li>AI-assisted code review</li><li>AI cost management</li>
                         </ul>
                     </article>
-                    <article class="panel system" data-reveal data-readable>
+                    <article class="panel panel--quiet system" data-reveal data-readable>
                         <header class="system-head">
                             <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-shield-halved"/></svg>
                             <h3>Security &amp; Identity</h3>
-                            <span class="sys-code" aria-hidden="true">SYS-04</span>
                         </header>
                         <ul class="chips" role="list">
                             <li>Microsoft Entra ID</li><li>RBAC</li><li>MFA</li><li>OAuth 2.0</li><li>TLS</li><li>Message-level encryption (JWE/JWS)</li>
                         </ul>
                     </article>
-                    <article class="panel system" data-reveal data-readable>
+                    <article class="panel panel--quiet system" data-reveal data-readable>
                         <header class="system-head">
                             <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-gears"/></svg>
                             <h3>DevOps &amp; Infrastructure</h3>
-                            <span class="sys-code" aria-hidden="true">SYS-05</span>
                         </header>
                         <ul class="chips" role="list">
                             <li>Terraform</li><li>GitHub Actions</li><li>Docker</li><li>Serverless Framework</li><li>Infrastructure as Code</li><li>CI/CD</li><li>Blue/green deployments</li><li>Multi-region deployments</li>
                         </ul>
                     </article>
-                    <article class="panel system" data-reveal data-readable>
+                    <article class="panel panel--quiet system" data-reveal data-readable>
                         <header class="system-head">
                             <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-chart-line"/></svg>
                             <h3>Observability</h3>
-                            <span class="sys-code" aria-hidden="true">SYS-06</span>
                         </header>
                         <ul class="chips" role="list">
                             <li>New Relic</li><li>Splunk</li><li>PagerDuty</li><li>Distributed tracing</li><li>k6 performance testing</li><li>On-call leadership</li>
                         </ul>
                     </article>
-                    <article class="panel system" data-reveal data-readable>
+                    <article class="panel panel--quiet system" data-reveal data-readable>
                         <header class="system-head">
                             <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-sitemap"/></svg>
                             <h3>Practices</h3>
-                            <span class="sys-code" aria-hidden="true">SYS-07</span>
                         </header>
                         <ul class="chips" role="list">
                             <li>System design</li><li>Microservices</li><li>Event-driven architecture</li><li>Architecture Decision Records (ADRs)</li><li>Agile/Scrum</li><li>Technical leadership</li><li>Mentoring</li>
@@ -549,174 +601,172 @@
         <!-- ==================== 04 MISSION LOG ==================== -->
         <section id="projects" class="section" data-scene="galaxy" aria-labelledby="projects-title">
             <div class="container">
-                <header class="section-head" data-readable>
-                    <p class="mono-label"><span class="sec-num">04</span> // Mission Log</p>
+                <header class="section-head" data-reveal data-readable>
+                    <p class="mono-label" aria-hidden="true"><span class="sec-num">04</span></p>
                     <h2 id="projects-title">Case Studies</h2>
                     <p class="section-intro">Seven missions from Cox Automotive's Finance Services platforms: the problem, the approach, and the impact.</p>
                 </header>
 
                 <ol class="missions" role="list">
                     <li class="missions-featured">
-                        <article id="ml-spec-driven" class="panel case case--featured" data-reveal data-readable>
+                        <article id="ml-spec-driven" class="panel case case--featured case--linked" data-reveal data-readable>
                             <header class="case-head">
                                 <p class="case-code">ML-01 · AI-assisted engineering</p>
                                 <h3>Spec-driven development with AI agents</h3>
                             </header>
                             <dl class="readouts readouts--compact">
-                                <div class="readout"><dt>Feature planning</dt><dd>Team standard</dd></div>
                                 <div class="readout"><dt>Microservices</dt><dd>10+</dd></div>
                             </dl>
                             <dl class="case-body">
-                                <div><dt>Problem</dt><dd>The team needed a consistent, reviewable way to plan and build features with AI tools, with quality and cost kept under control.</dd></div>
-                                <div><dt>Approach</dt><dd>Introduced spec-driven development with GitHub Spec Kit and wrote the team's first specifications. Use Claude Code, MCP integrations, and AI agents daily to design, build, test, and review production code across 10+ microservices, with human review of AI-generated specs and code before release, AI spend tracked on enterprise dashboards, and the model matched to the task.</dd></div>
                                 <div><dt>Impact</dt><dd>Spec-driven development is now the standard way new features are planned.</dd></div>
+                                <div><dt>Problem</dt><dd>The team needed a consistent, reviewable way to plan and build features with AI tools, with quality and cost kept under control.</dd></div>
+                                <div><dt>Approach</dt><dd>Introduced spec-driven development with GitHub Spec Kit and wrote the team's first specifications. Use Claude Code, MCP integrations, and AI agents daily across 10+ microservices, with human review of AI-generated specs and code before release and AI spend tracked on enterprise dashboards.</dd></div>
                             </dl>
                             <ul class="tags" role="list"><li>Claude Code</li><li>MCP</li><li>AI agents</li><li>GitHub Spec Kit</li><li>AI cost management</li></ul>
+                            <a class="case-link" href="/work/spec-driven-development/">Read the case study<span class="sr-only">: spec-driven development with AI agents</span><span aria-hidden="true"> →</span></a>
                         </article>
                     </li>
                     <li>
-                        <article id="ml-credit-decision" class="panel case" data-reveal data-readable>
+                        <article id="ml-credit-decision" class="panel panel--quiet case" data-reveal data-readable>
                             <header class="case-head">
                                 <p class="case-code">ML-02 · Architecture</p>
                                 <h3>Event-driven credit decision pipeline</h3>
                             </header>
-                            <dl class="readouts readouts--compact">
-                                <div class="readout"><dt>Infra cost per service / month (design target)</dt><dd>$730 → $80</dd></div>
+                            <dl class="case-figure">
+                                <div><dt>Design target, infra cost per service</dt><dd><span aria-hidden="true">$730 → $80/mo</span><span class="sr-only">about $730 to $80 per month</span></dd></div>
                             </dl>
                             <dl class="case-body">
+                                <div><dt>Impact</dt><dd>Removed manual configuration handoffs; designed to cut infrastructure cost per service from about $730 to $80 per month.</dd></div>
                                 <div><dt>Problem</dt><dd>Credit decisioning (pre-qualification, credit bureau pull, red flag verification) depended on manual configuration handoffs between steps.</dd></div>
                                 <div><dt>Approach</dt><dd>Architected an event-driven state machine with partner-driven routing and reprocessing from failure, as part of the .NET to Python serverless migration.</dd></div>
-                                <div><dt>Impact</dt><dd>Removed manual configuration handoffs; designed to cut infrastructure cost per service from about $730 to $80 per month.</dd></div>
                             </dl>
                             <ul class="tags" role="list"><li>Python</li><li>Serverless</li><li>Event-driven architecture</li><li>State machine</li></ul>
                         </article>
                     </li>
                     <li>
-                        <article id="ml-mle" class="panel case" data-reveal data-readable>
+                        <article id="ml-mle" class="panel panel--quiet case case--linked" data-reveal data-readable>
                             <header class="case-head">
                                 <p class="case-code">ML-03 · Security</p>
                                 <h3>Message-level encryption for the Amazon launch</h3>
                             </header>
-                            <dl class="readouts readouts--compact">
-                                <div class="readout"><dt>Layered on top of TLS</dt><dd>JWE + JWS</dd></div>
-                            </dl>
                             <dl class="case-body">
+                                <div><dt>Impact</dt><dd>Designed to meet Amazon's production launch security requirements, backed by a full automated security test suite.</dd></div>
                                 <div><dt>Problem</dt><dd>Amazon's production launch set security requirements for Finance Services APIs beyond transport-level TLS.</dd></div>
                                 <div><dt>Approach</dt><dd>Designed message-level encryption (JWE/JWS) on top of TLS, and defined key management with AWS KMS, key rotation, and partner onboarding, with backward compatibility.</dd></div>
-                                <div><dt>Impact</dt><dd>Designed to meet Amazon's production launch security requirements, backed by a full automated security test suite.</dd></div>
                             </dl>
                             <ul class="tags" role="list"><li>JWE/JWS</li><li>AWS KMS</li><li>TLS</li><li>Key rotation</li></ul>
+                            <a class="case-link" href="/work/message-level-encryption/">Read the case study<span class="sr-only">: message-level encryption for the Amazon launch</span><span aria-hidden="true"> →</span></a>
                         </article>
                     </li>
                     <li>
-                        <article id="ml-rbac" class="panel case" data-reveal data-readable>
+                        <article id="ml-rbac" class="panel panel--quiet case" data-reveal data-readable>
                             <header class="case-head">
                                 <p class="case-code">ML-04 · Identity <span class="badge badge--progress">In progress</span></p>
                                 <h3>Settings platform identity redesign</h3>
                             </header>
-                            <dl class="readouts readouts--compact">
-                                <div class="readout"><dt>Isolated environments</dt><dd>5</dd></div>
-                                <div class="readout"><dt>Roles per environment</dt><dd>9</dd></div>
-                                <div class="readout"><dt>Security groups</dt><dd>45</dd></div>
+                            <dl class="case-figure">
+                                <div><dt>Security groups · 5 isolated environments, 9 roles per environment</dt><dd>45</dd></div>
                             </dl>
                             <dl class="case-body">
-                                <div><dt>Problem</dt><dd>The Settings platform needed role-based access across isolated environments, with MFA enforced.</dd></div>
-                                <div><dt>Approach</dt><dd>Leading Phase 1 role-based access control on Microsoft Entra ID: 5 isolated environments, 9 roles per environment, 45 security groups, and MFA through conditional access.</dd></div>
                                 <div><dt>Status</dt><dd>Phase 1 in progress.</dd></div>
+                                <div><dt>Problem</dt><dd>The Settings platform needed role-based access across isolated environments, with MFA enforced.</dd></div>
+                                <div><dt>Approach</dt><dd>Leading Phase 1 role-based access control on Microsoft Entra ID, with MFA through conditional access.</dd></div>
                             </dl>
                             <ul class="tags" role="list"><li>Microsoft Entra ID</li><li>RBAC</li><li>MFA</li><li>Conditional access</li></ul>
                         </article>
                     </li>
                     <li>
-                        <article id="ml-librefresh" class="panel case" data-reveal data-readable>
+                        <article id="ml-librefresh" class="panel panel--quiet case" data-reveal data-readable>
                             <header class="case-head">
                                 <p class="case-code">ML-05 · Supply chain security</p>
                                 <h3>libRefresh</h3>
                             </header>
-                            <dl class="readouts readouts--compact">
-                                <div class="readout"><dt>Repositories</dt><dd>50+</dd></div>
+                            <dl class="case-figure">
+                                <div><dt>Repositories</dt><dd>50+</dd></div>
                             </dl>
                             <dl class="case-body">
+                                <div><dt>Impact</dt><dd>Rolled out across 50+ repositories.</dd></div>
                                 <div><dt>Problem</dt><dd>Keeping Python and Node dependencies patched for security across dozens of repositories was manual, repetitive work.</dd></div>
                                 <div><dt>Approach</dt><dd>Built libRefresh, a GitHub Action that automates Python and Node dependency security updates, with supply chain safeguards built into the automated updates.</dd></div>
-                                <div><dt>Impact</dt><dd>Rolled out across 50+ repositories.</dd></div>
                             </dl>
                             <ul class="tags" role="list"><li>GitHub Actions</li><li>Python</li><li>Node</li><li>Dependency security</li></ul>
                         </article>
                     </li>
                     <li>
-                        <article id="ml-blue-green" class="panel case" data-reveal data-readable>
+                        <article id="ml-blue-green" class="panel panel--quiet case" data-reveal data-readable>
                             <header class="case-head">
                                 <p class="case-code">ML-06 · Reliability</p>
                                 <h3>Blue/green deployment standard</h3>
                             </header>
-                            <dl class="readouts readouts--compact">
-                                <div class="readout"><dt>Release standard</dt><dd>Zero-downtime</dd></div>
-                            </dl>
                             <dl class="case-body">
+                                <div><dt>Impact</dt><dd>Now the team's standard for zero-downtime releases.</dd></div>
                                 <div><dt>Problem</dt><dd>APIs held to a 99.995% Platinum-tier SLA needed a repeatable way to release without downtime.</dd></div>
                                 <div><dt>Approach</dt><dd>Designed the team's blue/green deployment pattern with health-checked cutover and automated failover, and diagnosed the root cause of a latency regression during the move to an active-active, two-region setup.</dd></div>
-                                <div><dt>Impact</dt><dd>Now the team's standard for zero-downtime releases.</dd></div>
                             </dl>
                             <ul class="tags" role="list"><li>Blue/green</li><li>Multi-region</li><li>Automated failover</li><li>CI/CD</li></ul>
                         </article>
                     </li>
                     <li>
-                        <article id="ml-credit-app" class="panel case" data-reveal data-readable>
+                        <article id="ml-credit-app" class="panel panel--quiet case case--linked" data-reveal data-readable>
                             <header class="case-head">
                                 <p class="case-code">ML-07 · Founding platform, 2018 – 2021</p>
                                 <h3>Credit Application &amp; Leads APIs</h3>
                             </header>
-                            <dl class="readouts readouts--compact">
-                                <div class="readout"><dt>First-year revenue</dt><dd>$16M+</dd></div>
-                                <div class="readout"><dt>Dealerships connected</dt><dd>800</dd></div>
+                            <dl class="case-figure">
+                                <div><dt>First-year revenue</dt><dd>$16M+</dd></div>
+                                <div><dt>Dealerships connected</dt><dd>800</dd></div>
                             </dl>
                             <dl class="case-body">
+                                <div><dt>Impact</dt><dd>Connected 800 dealerships to a centralized lender network and generated $16M+ in first-year revenue.</dd></div>
                                 <div><dt>Problem</dt><dd>Dealerships needed a single way to reach a centralized lender network with credit applications and leads.</dd></div>
                                 <div><dt>Approach</dt><dd>Architected and shipped the flagship Credit Application and Leads APIs while pioneering AWS Lambda, Serverless Framework, and Terraform at Cox, and introduced a CI/CD pipeline that moved production releases from monthly to every sprint.</dd></div>
-                                <div><dt>Impact</dt><dd>Connected 800 dealerships to a centralized lender network and generated $16M+ in first-year revenue.</dd></div>
                             </dl>
                             <ul class="tags" role="list"><li>REST APIs</li><li>AWS Lambda</li><li>Serverless Framework</li><li>Terraform</li></ul>
+                            <a class="case-link" href="/work/credit-application-apis/">Read the case study<span class="sr-only">: Credit Application and Leads APIs</span><span aria-hidden="true"> →</span></a>
                         </article>
                     </li>
                 </ol>
 
-                <section class="panel archive" aria-labelledby="archive-title" data-reveal data-readable>
+                <section class="panel panel--quiet archive" aria-labelledby="archive-title" data-reveal data-readable>
                     <h3 id="archive-title" class="archive-title">Archive · NYU, 2016 – 2018</h3>
+                    <!-- Each name links to that project's own public repository; Gaming Culture has none -->
                     <ul class="archive-list" role="list">
-                        <!-- TODO: replace https://github.com/arhant with each project's repo URL -->
                         <li>
-                            <a href="https://github.com/arhant" target="_blank" rel="noopener">360FITNESS<span class="sr-only"> on GitHub (opens in a new tab)</span></a>
+                            <a class="archive-name" href="https://github.com/arhant/360Fitness" target="_blank" rel="noopener">360FITNESS<span class="sr-only">: source code on GitHub (opens in a new tab)</span></a>
                             <span class="archive-desc">Fitness web app with an AI chatbot, SMS alerts, and gym search.</span>
                             <span class="archive-stack">AWS · Lex · DynamoDB · Twilio</span>
-                            <a class="archive-extra" href="https://www.youtube.com/watch?v=aJV5kJzVFGo" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-youtube"/></svg> 360FITNESS demo video<span class="sr-only"> (opens in a new tab)</span></a>
+                            <a class="archive-extra" href="https://www.youtube.com/watch?v=aJV5kJzVFGo" target="_blank" rel="noopener"><svg class="icon icon--brand" aria-hidden="true" focusable="false"><use href="#i-youtube"/></svg> 360FITNESS demo video<span class="sr-only"> (opens in a new tab)</span></a>
                         </li>
                         <li>
-                            <a href="https://github.com/arhant" target="_blank" rel="noopener">Tweet Map<span class="sr-only"> on GitHub (opens in a new tab)</span></a>
+                            <a class="archive-name" href="https://github.com/arhant/Tweet_Map" target="_blank" rel="noopener">Tweet Map<span class="sr-only">: source code on GitHub (opens in a new tab)</span></a>
                             <span class="archive-desc">Real-time tweet heatmaps with instant search.</span>
                             <span class="archive-stack">Elasticsearch · Django · Python</span>
                         </li>
                         <li>
-                            <a href="https://github.com/arhant" target="_blank" rel="noopener">NYC Crime Analysis<span class="sr-only"> on GitHub (opens in a new tab)</span></a>
+                            <a class="archive-name" href="https://github.com/arhant/NYC-Crime-Analysis" target="_blank" rel="noopener">NYC Crime Analysis<span class="sr-only">: source code on GitHub (opens in a new tab)</span></a>
                             <span class="archive-desc">Patterns across 7M+ NYPD crime records.</span>
                             <span class="archive-stack">Python · Spark · MapReduce</span>
                         </li>
                         <li>
-                            <a href="https://github.com/arhant" target="_blank" rel="noopener">Tennis 360<span class="sr-only"> on GitHub (opens in a new tab)</span></a>
+                            <a class="archive-name" href="https://github.com/arhant/Tennis360" target="_blank" rel="noopener">Tennis 360<span class="sr-only">: source code on GitHub (opens in a new tab)</span></a>
                             <span class="archive-desc">Swing tracking and analysis with computer vision.</span>
                             <span class="archive-stack">Python · OpenCV</span>
                         </li>
                         <li>
-                            <a href="https://github.com/arhant" target="_blank" rel="noopener">Ethereum Ticketing<span class="sr-only"> on GitHub (opens in a new tab)</span></a>
+                            <a class="archive-name" href="https://github.com/arhant/ETH_Contracts" target="_blank" rel="noopener">Ethereum Ticketing<span class="sr-only">: source code on GitHub (opens in a new tab)</span></a>
                             <span class="archive-desc">Smart contracts against ticket duplication and bots.</span>
                             <span class="archive-stack">Solidity · Ethereum</span>
                         </li>
                         <li>
-                            <a href="https://github.com/arhant" target="_blank" rel="noopener">Gaming Culture<span class="sr-only"> on GitHub (opens in a new tab)</span></a>
+                            <span class="archive-name">Gaming Culture</span>
                             <span class="archive-desc">Social platform with matchmaking and team formation.</span>
                             <span class="archive-stack">Web · Matchmaking</span>
                         </li>
                     </ul>
+                    <a class="archive-all" href="https://github.com/arhant?tab=repositories" target="_blank" rel="noopener">
+                        <svg class="icon icon--brand" aria-hidden="true" focusable="false"><use href="#i-github"/></svg>
+                        All repositories on GitHub<span class="sr-only"> (opens in a new tab)</span>
+                    </a>
                 </section>
             </div>
         </section>
@@ -724,11 +774,11 @@
         <!-- ==================== 05 CONTACT ==================== -->
         <section id="contact" class="section section--last" data-scene="black-hole" aria-labelledby="contact-title">
             <div class="container">
-                <header class="section-head section-head--center" data-readable>
-                    <p class="mono-label"><span class="sec-num">05</span> // Open Channel</p>
-                    <h2 id="contact-title">Contact</h2>
+                <header class="section-head section-head--center" data-reveal data-readable>
+                    <p class="mono-label" aria-hidden="true"><span class="sec-num">05</span></p>
+                    <h2 id="contact-title" tabindex="-1">Contact</h2>
                 </header>
-                <div class="panel contact" data-reveal data-readable>
+                <div class="panel contact" data-reveal data-readable data-glass-panel>
                     <p class="contact-text">
                         Happy to talk about distributed systems, AI-assisted engineering, security and identity, or growing
                         engineering teams. Email or LinkedIn is the best way to reach me.
@@ -741,16 +791,25 @@
                         </a>
                     </div>
                     <ul class="contact-links" role="list">
-                        <li><a class="btn btn-ghost" href="https://www.linkedin.com/in/arhant-jain" target="_blank" rel="noopener" data-track="linkedin"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-linkedin-in"/></svg> LinkedIn<span class="sr-only"> (opens in a new tab)</span></a></li>
-                        <li><a class="btn btn-ghost" href="https://github.com/arhant" target="_blank" rel="noopener" data-track="github"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-github"/></svg> GitHub<span class="sr-only"> (opens in a new tab)</span></a></li>
+                        <li><a class="btn btn-ghost" href="https://www.linkedin.com/in/arhant-jain" target="_blank" rel="noopener" data-track="linkedin"><svg class="icon icon--brand" aria-hidden="true" focusable="false"><use href="#i-linkedin-in"/></svg> LinkedIn<span class="sr-only"> (opens in a new tab)</span></a></li>
+                        <li><a class="btn btn-ghost" href="https://github.com/arhant" target="_blank" rel="noopener" data-track="github"><svg class="icon icon--brand" aria-hidden="true" focusable="false"><use href="#i-github"/></svg> GitHub<span class="sr-only"> (opens in a new tab)</span></a></li>
                     </ul>
+                    <p class="contact-aside"><a href="/black-hole/">What would you actually see falling in?<span aria-hidden="true"> →</span></a></p>
                 </div>
+
+                <!-- Event-horizon plunge (full motion only): a deliberate 25 s dive, shown at the very bottom.
+                     Fixed near the bottom edge, outside the revealed panel so its translate can't capture it. -->
+                <button type="button" id="plunge-hint" class="plunge-hint" aria-describedby="plunge-hint-desc">
+                    <span class="plunge-hint-long">Cross the event horizon · 25 s</span>
+                    <span class="plunge-hint-short" aria-hidden="true">Event horizon ↓</span>
+                </button>
+                <span id="plunge-hint-desc" class="sr-only">About 25 seconds of animation. Press Escape to return.</span>
             </div>
         </section>
     </main>
 
     <a href="#hero" class="back-to-top" id="back-to-top">
-        <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-rocket"/></svg>
+        <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-arrow-up"/></svg>
         <span class="sr-only">Return to launch (back to top)</span>
     </a>
 
@@ -762,8 +821,13 @@
     </div>
     <p class="sr-only" id="live-status" role="status" aria-live="polite"></p>
 
-    <!-- Event-horizon plunge (full motion only): keep scrolling at the very bottom to fall in -->
-    <p class="plunge-hint" id="plunge-hint" aria-hidden="true">Keep scrolling to cross the event horizon</p>
+    <!-- After a "Case study" jump: one step back to the bullet you came from -->
+    <button type="button" id="back-chip" class="back-chip" hidden><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-arrow-left"/></svg><span class="back-chip-label">Back to Experience</span></button>
+
+    <!-- Free look (palette only): the page steps aside; this stays reachable while it is inert -->
+    <button type="button" id="look-exit" class="look-exit" hidden>Back to reading</button>
+
+    <!-- Event-horizon plunge HUD and end card (the start button lives in Contact) -->
     <div class="plunge-hud" id="plunge-hud" aria-hidden="true">
         <span class="plunge-phase" id="plunge-phase">Free fall</span>
         <span class="plunge-r" id="plunge-r">r = 19.4 r<sub>s</sub></span>

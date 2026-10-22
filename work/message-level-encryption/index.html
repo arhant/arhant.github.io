@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Message-level encryption for the Amazon launch | Arhant Jain</title>
+    <meta name="description" content="Arhant Jain designed message-level encryption (JWE/JWS) on top of TLS for Finance Services APIs to meet Amazon's production launch security requirements.">
+    <meta name="author" content="Arhant Jain">
+    <link rel="canonical" href="https://arhant.github.io/work/message-level-encryption/">
+    <meta name="theme-color" content="#07071a">
+    <meta name="color-scheme" content="dark">
+
+    <!-- Open Graph / social -->
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Arhant Jain">
+    <meta property="og:locale" content="en_US">
+    <meta property="og:url" content="https://arhant.github.io/work/message-level-encryption/">
+    <meta property="og:title" content="Message-level encryption for the Amazon launch | Arhant Jain">
+    <meta property="og:description" content="Designing JWE/JWS message-level encryption on top of TLS for Finance Services APIs, with key management in AWS KMS.">
+    <meta property="og:image" content="https://arhant.github.io/og-image.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Arhant Jain, Senior Software Engineer and Tech Lead, over a planet rising in space">
+    <meta property="article:author" content="https://arhant.github.io/">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image:alt" content="Arhant Jain, Senior Software Engineer and Tech Lead, over a planet rising in space">
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/favicon.png" sizes="32x32" type="image/png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+    <!-- Motion mode is decided before first paint (same rule and storage key as the homepage) -->
+    <script>
+        (function (d) {
+            var m = null;
+            var save = navigator.connection && navigator.connection.saveData;
+            try { m = localStorage.getItem('motion'); } catch (e) {}
+            if (m !== 'full' && m !== 'lite') {
+                var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+                m = (reduce || save) ? 'lite' : 'full';
+            }
+            d.documentElement.classList.add('js');
+            if (save) d.documentElement.classList.add('save-data');
+            d.documentElement.dataset.motion = m;
+        })(document);
+    </script>
+
+    <!-- Self-hosted fonts: preload the two faces above the fold (JetBrains Mono loads on demand) -->
+    <link rel="preload" href="/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/fonts/space-grotesk-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/page.css">
+    <!-- Classic and in <head> on purpose: its pagereveal listener must exist before first render -->
+    <script src="/js/page.js"></script>
+
+    <!-- Warm the homepage when a link to it is hovered or pressed (prefetch only, never prerender) -->
+    <script type="speculationrules">
+        {
+            "prefetch": [
+                { "where": { "href_matches": "/" }, "eagerness": "moderate" }
+            ]
+        }
+    </script>
+
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@graph": [
+                {
+                    "@type": "Article",
+                    "headline": "Message-level encryption for the Amazon launch",
+                    "description": "How Arhant Jain designed message-level encryption (JWE/JWS) on top of TLS for Finance Services APIs, with key management in AWS KMS, to meet Amazon's production launch security requirements.",
+                    "url": "https://arhant.github.io/work/message-level-encryption/",
+                    "mainEntityOfPage": "https://arhant.github.io/work/message-level-encryption/",
+                    "image": "https://arhant.github.io/og-image.jpg",
+                    "datePublished": "2026-10-22",
+                    "dateModified": "2026-10-22",
+                    "inLanguage": "en",
+                    "author": { "@type": "Person", "name": "Arhant Jain", "url": "https://arhant.github.io/" }
+                },
+                {
+                    "@type": "BreadcrumbList",
+                    "itemListElement": [
+                        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://arhant.github.io/" },
+                        { "@type": "ListItem", "position": 2, "name": "Case studies", "item": "https://arhant.github.io/#projects" },
+                        { "@type": "ListItem", "position": 3, "name": "Message-level encryption for the Amazon launch" }
+                    ]
+                }
+            ]
+        }
+    </script>
+
+    <!-- Google Analytics: the deploy workflow replaces the placeholder with the
+         GA_MEASUREMENT_ID repository secret. Left unreplaced (local dev), GA stays off. -->
+    <script>
+        (function () {
+            var id = '__GA_MEASUREMENT_ID__';
+            if (!/^G-[A-Z0-9]+$/.test(id)) return;
+            var s = document.createElement('script');
+            s.async = true;
+            s.src = 'https://www.googletagmanager.com/gtag/js?id=' + id;
+            document.head.appendChild(s);
+            window.dataLayer = window.dataLayer || [];
+            window.gtag = function () { window.dataLayer.push(arguments); };
+            window.gtag('js', new Date());
+            window.gtag('config', id);
+        })();
+    </script>
+</head>
+<body class="subpage">
+    <a href="#main" class="skip-link">Skip to content</a>
+
+    <!-- Static space backdrop: reading pages never load the 3D scene -->
+    <div class="backdrop" aria-hidden="true">
+        <div class="backdrop-band"></div>
+        <div class="backdrop-stars backdrop-stars--near"></div>
+        <div class="backdrop-stars backdrop-stars--far"></div>
+    </div>
+
+    <!-- ==================== HUD (simplified) ==================== -->
+    <header class="hud">
+        <nav class="nav" aria-label="Primary">
+            <div class="nav-inner">
+                <a href="/" class="nav-home"><span class="nav-logo" aria-hidden="true">AJ</span><span class="nav-home-name">Arhant Jain</span></a>
+                <ul class="nav-links" role="list">
+                    <li><a href="/#projects" aria-current="true">Case Studies</a></li>
+                    <li><a href="/#contact">Contact</a></li>
+                </ul>
+                <div class="nav-actions">
+                    <button type="button" class="hud-btn" id="motion-toggle" aria-pressed="false" hidden>
+                        <svg class="icon" aria-hidden="true" focusable="false"><use href="/img/icons.svg#i-gauge"/></svg>
+                        <span class="hud-btn-label">Lite mode</span>
+                    </button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main id="main" class="page-main" tabindex="-1">
+        <article class="article" aria-labelledby="page-title">
+            <header class="article-head">
+                <nav class="crumbs" aria-label="Breadcrumb">
+                    <ol role="list">
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/#projects">Case studies</a></li>
+                        <li><span aria-current="page">Message-level encryption for the Amazon launch</span></li>
+                    </ol>
+                </nav>
+                <p class="case-code">ML-03 · Security</p>
+                <h1 id="page-title" class="page-title page-title--case">Message-level encryption for the Amazon launch</h1>
+                <p class="article-dek">Designing JWE/JWS message-level encryption on top of TLS for Finance Services APIs, with key management in AWS KMS.</p>
+                <dl class="article-meta">
+                    <div><dt>Where</dt><dd>Cox Automotive · Finance Services</dd></div>
+                    <div><dt>My part</dt><dd>Designed the encryption and key management</dd></div>
+                    <div><dt>Driver</dt><dd>Amazon's production launch</dd></div>
+                </dl>
+            </header>
+
+            <div class="sheet prose">
+                <section class="tldr" aria-labelledby="tldr-title">
+                    <h2 id="tldr-title" class="tldr-label">In short</h2>
+                    <p>Amazon's production launch set security requirements for Finance Services APIs beyond transport-level TLS. I designed message-level encryption (JWE/JWS) on top of TLS, and defined key management with AWS KMS, key rotation, and partner onboarding, with backward compatibility. The design is backed by a full automated security test suite.</p>
+                    <dl class="facts facts--words">
+                        <div><dt>Signing and encryption</dt><dd>JWS + JWE</dd></div>
+                        <div><dt>Layered on top of</dt><dd>TLS</dd></div>
+                        <div><dt>Key management</dt><dd>AWS KMS</dd></div>
+                    </dl>
+                </section>
+
+                <section aria-labelledby="context-title">
+                    <h2 id="context-title">Context</h2>
+                    <p>Cox Automotive's Finance Services division builds the credit application, lender connectivity, contracting, and document signing platforms used by about 10,000 US dealerships and major lenders, and works with partners including AutoTrader, VinSolutions, Amazon, RouteOne, Honda, and Subaru.</p>
+                    <p>Amazon's production launch set security requirements for the Finance Services APIs that went beyond transport-level TLS.</p>
+                    <h3>Why encrypt the message as well as the connection</h3>
+                    <p>TLS protects data while it travels between two endpoints. Message-level encryption protects the message itself: a <strong>JWS</strong> (JSON Web Signature) lets the receiver check who sent a message and that it was not changed, and a <strong>JWE</strong> (JSON Web Encryption) keeps its contents readable only by the holder of the decryption key.</p>
+                </section>
+
+                <section aria-labelledby="did-title">
+                    <h2 id="did-title">What I did</h2>
+                    <ul class="list" role="list">
+                        <li>Designed <strong>message-level encryption (JWE/JWS)</strong> for Finance Services APIs, layered on top of TLS.</li>
+                        <li>Defined <strong>key management with AWS KMS</strong>, including key rotation.</li>
+                        <li>Defined <strong>partner onboarding</strong> for the new scheme.</li>
+                        <li>Kept it <strong>backward compatible</strong>.</li>
+                        <li>Backed it with a <strong>full automated security test suite</strong>.</li>
+                    </ul>
+
+                    <figure class="figure" aria-labelledby="mle-caption">
+                        <svg class="diagram" viewBox="0 0 420 536" role="img" aria-labelledby="mle-svg-title mle-svg-desc">
+                            <title id="mle-svg-title">Simplified request path with message-level encryption</title>
+                            <desc id="mle-svg-desc">A partner client signs the request payload (JWS), then encrypts it (JWE). The encrypted message travels inside a TLS connection to the Finance Services API, which decrypts it and verifies the signature. Key management uses AWS KMS, with key rotation.</desc>
+                            <defs>
+                                <marker id="mle-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                                    <path class="dg-arrowhead" d="M0 0 10 5 0 10z"/>
+                                </marker>
+                            </defs>
+                            <rect class="dg-node" x="60" y="4" width="300" height="52" rx="12"/>
+                            <text x="210" y="36" text-anchor="middle">Partner client</text>
+
+                            <line class="dg-flow" x1="210" y1="56" x2="210" y2="98" marker-end="url(#mle-arrow)"/>
+                            <text class="dg-note" x="224" y="83">signs, then encrypts</text>
+
+                            <rect class="dg-layer dg-tls" x="10" y="104" width="400" height="232" rx="18"/>
+                            <text class="dg-label dg-tls-text" x="30" y="130">TLS · transport</text>
+                            <rect class="dg-layer dg-jwe" x="30" y="142" width="360" height="180" rx="14"/>
+                            <text class="dg-label dg-jwe-text" x="48" y="166">JWE · encrypted</text>
+                            <rect class="dg-layer dg-jws" x="50" y="180" width="320" height="128" rx="12"/>
+                            <text class="dg-label dg-jws-text" x="68" y="204">JWS · signed</text>
+                            <rect class="dg-node" x="70" y="218" width="280" height="74" rx="10"/>
+                            <text x="210" y="261" text-anchor="middle">Request payload</text>
+
+                            <line class="dg-flow" x1="210" y1="336" x2="210" y2="380" marker-end="url(#mle-arrow)"/>
+                            <text class="dg-note" x="224" y="364">decrypts, then verifies</text>
+
+                            <rect class="dg-node" x="60" y="386" width="300" height="52" rx="12"/>
+                            <text x="210" y="418" text-anchor="middle">Finance Services API</text>
+
+                            <line class="dg-flow" x1="210" y1="438" x2="210" y2="470" stroke-dasharray="4 4"/>
+                            <rect class="dg-node dg-node--muted" x="60" y="470" width="300" height="62" rx="12"/>
+                            <text x="210" y="497" text-anchor="middle">AWS KMS</text>
+                            <text class="dg-note" x="210" y="519" text-anchor="middle">key management · rotation</text>
+                        </svg>
+                        <figcaption id="mle-caption">Simplified and illustrative: how the layers wrap a request. The step-by-step version follows.</figcaption>
+                    </figure>
+
+                    <h3>The request path, step by step</h3>
+                    <ol class="steps" role="list">
+                        <li>The partner's client signs the request payload as a JWS.</li>
+                        <li>It then encrypts the signed payload as a JWE. Signing first and encrypting second is the usual order for nested JSON Web Tokens (<a href="https://www.rfc-editor.org/rfc/rfc7519#section-11.2">RFC 7519</a>).</li>
+                        <li>The encrypted message travels inside a TLS connection, as before.</li>
+                        <li>The Finance Services API decrypts the message and verifies the signature. Key management uses AWS KMS, with key rotation.</li>
+                    </ol>
+                </section>
+
+                <!-- OWNER: a "Decisions and trade-offs" section, and who built and tested this with you, need facts only
+                     you can supply. They are left out until you add them; publish nothing confidential. -->
+
+                <section aria-labelledby="result-title">
+                    <h2 id="result-title">Result</h2>
+                    <p>Designed to meet Amazon's production launch security requirements, with backward compatibility, and backed by a full automated security test suite.</p>
+                    <!-- OWNER: add the launch outcome here if it can be stated publicly. -->
+                </section>
+
+                <section aria-labelledby="stack-title">
+                    <h2 id="stack-title">Stack</h2>
+                    <ul class="tags" role="list"><li>JWE/JWS</li><li>AWS KMS</li><li>TLS</li><li>Key rotation</li></ul>
+                </section>
+            </div>
+
+            <aside class="panel page-cta" aria-labelledby="cta-title">
+                <h2 id="cta-title">Want to talk about this work?</h2>
+                <p>Happy to talk about distributed systems, AI-assisted engineering, security and identity, or growing engineering teams. Email or LinkedIn is the best way to reach me.</p>
+                <div class="contact-actions">
+                    <a class="btn btn-primary" href="mailto:arhant@nyu.edu" data-copy-email data-track="copy_email">
+                        <svg class="icon" aria-hidden="true" focusable="false"><use href="/img/icons.svg#i-envelope"/></svg>
+                        <span class="email-text">arhant@nyu.edu</span>
+                        <svg class="icon email-copy-icon" aria-hidden="true" focusable="false"><use href="/img/icons.svg#i-copy"/></svg>
+                    </a>
+                    <a class="btn btn-ghost" href="https://www.linkedin.com/in/arhant-jain" target="_blank" rel="noopener" data-track="linkedin"><svg class="icon icon--brand" aria-hidden="true" focusable="false"><use href="/img/icons.svg#i-linkedin-in"/></svg> LinkedIn<span class="sr-only"> (opens in a new tab)</span></a>
+                </div>
+            </aside>
+
+            <div class="article-foot">
+                <a class="back-link" href="/#ml-mle"><svg class="icon" aria-hidden="true" focusable="false"><use href="/img/icons.svg#i-arrow-left"/></svg>Back to case studies</a>
+                <nav aria-labelledby="more-title">
+                    <h2 id="more-title" class="more-title">More case studies</h2>
+                    <ul class="more-list" role="list">
+                        <li><a href="/work/spec-driven-development/">Spec-driven development with AI agents</a></li>
+                        <li><a href="/work/credit-application-apis/">Credit Application &amp; Leads APIs</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </article>
+    </main>
+
+    <!-- Copy confirmation: the toast is visual only; screen readers hear the live region -->
+    <div class="toast" id="toast" aria-hidden="true">
+        <svg class="icon" aria-hidden="true" focusable="false"><use href="/img/icons.svg#i-check"/></svg>
+        <span class="toast-msg"></span>
+        <span class="toast-detail"></span>
+    </div>
+    <p class="sr-only" id="live-status" role="status" aria-live="polite"></p>
+
+    <footer class="footer">
+        <nav aria-label="Footer">
+            <ul class="footer-links" role="list">
+                <li><a href="/">Home</a></li>
+                <li><a href="/#projects">Case Studies</a></li>
+                <li><a href="/black-hole/">Black hole explainer</a></li>
+                <li><a href="/#contact">Contact</a></li>
+            </ul>
+        </nav>
+        <p>© 2026 Arhant Jain. All rights reserved.</p>
+    </footer>
+</body>
+</html>

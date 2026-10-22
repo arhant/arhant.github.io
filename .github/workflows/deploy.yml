@@ -15,7 +15,17 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # The blocking checks from ci.yml (links and #anchors, axe-core). ci.yml has no push trigger,
+  # so this call is the only time they run for a push. Its Lighthouse job is warn-only and
+  # never fails this gate.
+  checks:
+    name: Checks
+    uses: ./.github/workflows/ci.yml
+    permissions:
+      contents: read
+
   deploy:
+    needs: checks
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -35,8 +45,10 @@ jobs:
             echo "::error::GA_MEASUREMENT_ID must look like G-XXXXXXXXXX."
             exit 1
           fi
-          sed -i "s/__GA_MEASUREMENT_ID__/${GA_MEASUREMENT_ID}/g" index.html
-          grep -q "$GA_MEASUREMENT_ID" index.html
+          # Every page that carries the GA snippet: the homepage, the case studies and /black-hole/
+          pages=(index.html work/*/index.html black-hole/index.html)
+          sed -i "s/__GA_MEASUREMENT_ID__/${GA_MEASUREMENT_ID}/g" "${pages[@]}"
+          for f in "${pages[@]}"; do grep -q "$GA_MEASUREMENT_ID" "$f"; done
 
       - uses: actions/configure-pages@v5
 
