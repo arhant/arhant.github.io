@@ -99,6 +99,11 @@ Without the secret, the site still deploys; it just has no analytics.
 - Archive project links currently point to the GitHub profile. Replace them with repo URLs (look for the `TODO` in
   `index.html`).
 
+## License
+Copyright (c) 2026 Arhant Jain. All rights reserved. The code, design, text and images here may not be copied, reused
+or republished without written permission; see [LICENSE](LICENSE). Third-party components keep their own licenses;
+see [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
+
 ## Credits
 - [Three.js](https://threejs.org/) (MIT)
 - Icons: [Font Awesome Free](https://fontawesome.com/) 6.5.1 (CC BY 4.0)

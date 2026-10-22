@@ -1,0 +1,31 @@
+Copyright (c) 2026 Arhant Jain. All rights reserved.
+
+This repository and the website published from it (https://arhant.github.io/),
+including its source code, design, text, images and other content, are the
+property of Arhant Jain.
+
+No permission is granted to copy, modify, merge, publish, distribute,
+sublicense, sell, or otherwise use any part of it, in whole or in part, without
+prior written permission from the copyright holder. Visiting the website, and
+viewing or forking this repository on GitHub as allowed by GitHub's Terms of
+Service, does not grant any such permission.
+
+To ask for permission, contact arhant@nyu.edu.
+
+
+THIRD-PARTY COMPONENTS
+
+The components below are not covered by the notice above. They remain under
+their own licenses, reproduced or referenced in THIRD-PARTY-NOTICES.md:
+
+- Three.js r170 (js/vendor/three/): MIT License, Copyright 2010-2024 Three.js
+  Authors. Full text in js/vendor/three/LICENSE.
+- Font Awesome Free 6.5.1 icons (the inline SVG sprite in index.html):
+  CC BY 4.0, Fonticons, Inc. https://fontawesome.com/license/free
+- 3D simplex noise (js/space/shaders/common.glsl.js): MIT License,
+  Ashima Arts and Stefan Gustavson.
+- "Hash without Sine" functions (js/space/shaders/common.glsl.js): MIT License,
+  David Hoskins.
+
+The Inter, JetBrains Mono and Space Grotesk fonts are loaded from Google Fonts
+under the SIL Open Font License 1.1 and are not part of this repository.
